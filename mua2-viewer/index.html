@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MUA2 // Alchemy Asset Viewer</title>
+  <link rel="stylesheet" href="src/style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three.module.js",
+        "three/addons/": "./vendor/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">MUA<span>2</span></span>
+        <div class="brand-text">
+          <strong>Alchemy Asset Viewer</strong>
+          <span>Modelos, texturas e VFX extraídos do jogo</span>
+        </div>
+      </div>
+      <div class="status" id="status">carregando…</div>
+    </header>
+
+    <aside class="sidebar">
+      <div class="sidebar-label">Personagens</div>
+      <input id="model-search" class="model-search" type="search" placeholder="Filtrar por nome…" autocomplete="off">
+      <nav id="model-list" class="model-list"></nav>
+      <div class="sidebar-label" style="margin-top: 22px;">Sobre</div>
+      <p class="about">
+        Meshes IGZ v6 (Alchemy 6) convertidos para glTF 2.0 com texturas DXT1 / ATX2.
+        <b>Anti</b>, <b>Alt</b> e <b>Pro</b> são variantes de uniforme do jogo. Use o mouse para orbitar, scroll para zoom e arraste com o botão direito para pan.
+      </p>
+      <div class="hint">
+        <kbd>1</kbd>–<kbd>9</kbd> trocar &nbsp; <kbd>R</kbd> reset &nbsp; <kbd>W</kbd> wireframe &nbsp; <kbd>B</kbd> rig
+      </div>
+    </aside>
+
+    <main class="stage">
+      <div id="viewport"></div>
+      <div class="vignette"></div>
+      <div class="stage-caption">
+        <span id="model-name">—</span>
+        <span id="model-meta" class="meta"></span>
+      </div>
+      <div class="anim-control">
+        <select id="anim-select" class="anim-select" title="Escolher animação">
+          <option value="none">Bind Pose (Estático)</option>
+          <option value="idle" selected>Idle (Respiração)</option>
+          <option value="combat">Combate (Guarda)</option>
+          <option value="walk">Caminhada</option>
+          <option value="attack">Ataque (Combo)</option>
+          <option value="heroic">Pose Heroica</option>
+        </select>
+        <button id="btn-anim-play" class="chip active" title="Play/Pause animação">⏸</button>
+        <button id="btn-anim-speed" class="chip" title="Velocidade">1.0x</button>
+      </div>
+      <div class="toolbar">
+        <button id="btn-rotate" class="chip active" title="Auto-rotação">⟳ Orbit</button>
+        <button id="btn-wire" class="chip" title="Wireframe">◈ Wireframe</button>
+        <button id="btn-tex" class="chip active" title="Texturas">▣ Texturas</button>
+        <button id="btn-grid" class="chip active" title="Grid">⊞ Grid</button>
+        <button id="btn-reset" class="chip" title="Reset camera">⌖ Reset</button>
+        <button id="btn-rig" class="chip" title="Mostrar esqueleto">🦴 Rig</button>
+        <button id="btn-vfx" class="chip" title="Galeria de VFX">✦ VFX</button>
+      </div>
+    </main>
+
+    <div class="modal" id="vfx-modal">
+    <div class="modal-head">
+      <div>
+        <div class="sidebar-label">Efeitos extraídos de <code>effects_igx.bin</code></div>
+        <h2>VFX Gallery</h2>
+        <p class="modal-sub">Texturas e definições de efeitos dos personagens. Clique em um card para ampliar.</p>
+      </div>
+      <button class="modal-close" id="vfx-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="vfx-grid" id="vfx-grid"></div>
+      <aside class="vfx-detail" id="vfx-detail">
+        <div class="vfx-empty">Selecione um efeito para ver os detalhes.</div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <span id="loading-text">Carregando modelo…</span>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

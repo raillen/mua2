@@ -1,0 +1,12 @@
+# Imagens de disco e dumps brutos do jogo (5GB+ / 7GB+)
+*.iso
+_work/
+
+# Binários compilados
+mua2-viewer/tools/mua2bin
+
+# Python e SO
+__pycache__/
+*.py[cod]
+*$py.class
+.DS_Store

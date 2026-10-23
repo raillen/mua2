@@ -1,0 +1,821 @@
+{
+ "effects": [
+  {
+   "name": "spiderman_fusiontornado_web_trails",
+   "path": "char/spiderman/spiderman_fusiontornado_web_trails.igz",
+   "textures": [
+    "fxt_webbing_add_d.tga",
+    "fxt_webbing_mask_d.tga",
+    "fxt_webbing02_n.tga",
+    "fxt_white_d.tga",
+    "fxt_default_d.tga"
+   ],
+   "preview": "spiderman_fusiontornado_web_trails.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_webbing_add_d.igz",
+   "thumb": "assets/vfx/thumbs/spiderman_fusiontornado_web_trails.png"
+  },
+  {
+   "name": "wolverine_fusionthor_beamfocus",
+   "path": "char/wolverine/wolverine_fusionthor_beamfocus.igz",
+   "textures": [
+    "fxt_default_d.tga",
+    "fxt_distortion1_d.tga",
+    "fxt_distort_firesmall.tga",
+    "fxt_wolverine_scorchmark02_d.tga",
+    "fxt_sm3_gradient.tga",
+    "fxt_wolverine_scorchmark01_d.tga",
+    "fxt_lightning_ambient_d.tga",
+    "fxt_sm3_lit_smoke_h.tga"
+   ],
+   "preview": "wolverine_fusionthor_beamfocus.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_default_d.igz",
+   "thumb": "assets/vfx/thumbs/wolverine_fusionthor_beamfocus.png"
+  },
+  {
+   "name": "wolverine_fusionstorm_beamfocus",
+   "path": "char/wolverine/wolverine_fusionstorm_beamfocus.igz",
+   "textures": [
+    "fxt_default_d.tga",
+    "fxt_distortion1_d.tga",
+    "fxt_distort_firesmall.tga",
+    "fxt_wolverine_scorchmark02_d.tga",
+    "fxt_sm3_gradient.tga",
+    "fxt_wolverine_scorchmark01_d.tga",
+    "fxt_lightning_ambient_d.tga",
+    "fxt_sm3_lit_smoke_h.tga"
+   ],
+   "preview": "wolverine_fusionstorm_beamfocus.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_default_d.igz",
+   "thumb": "assets/vfx/thumbs/wolverine_fusionstorm_beamfocus.png"
+  },
+  {
+   "name": "ironman_blast_impact",
+   "path": "map/chemplantmap2/ironman_blast_impact.igz",
+   "textures": [
+    "fxt_fire09_d.tga",
+    "fxt_distortion1_d.tga",
+    "fxt_distort_firelarge.tga",
+    "fxt_default_d.tga",
+    "fxt_fire01_blue_d.tga",
+    "fxt_sm3_firebara.tga"
+   ],
+   "preview": "ironman_blast_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/fire/fxt_fire09_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_blast_impact.png"
+  },
+  {
+   "name": "ironman_handbeam_impact",
+   "path": "map/chemicalplant/cpa_map2/ironman_handbeam_impact.igz",
+   "textures": [
+    "fxt_fire09_d.tga",
+    "fxt_distortion1_d.tga",
+    "fxt_distort_firelarge.tga",
+    "fxt_default_d.tga",
+    "fxt_fire01_blue_d.tga",
+    "fxt_sm3_firebara.tga"
+   ],
+   "preview": "ironman_handbeam_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/fire/fxt_fire09_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_handbeam_impact.png"
+  },
+  {
+   "name": "storm_f_cb_blast_beam",
+   "path": "char/storm/storm_f_cb_blast_beam.igz",
+   "textures": [
+    "fxt_crack06_d.tga",
+    "fxt_crack06_n.tga",
+    "fxt_default_d.tga",
+    "fxt_crack09_d.tga",
+    "fxt_burn02_d.tga",
+    "fxt_burn05_d.tga",
+    "fxt_smoke04_d.tga",
+    "fxt_smoke03_d.tga"
+   ],
+   "preview": "storm_f_cb_blast_beam.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/decals/fxt_crack06_d.igz",
+   "thumb": "assets/vfx/thumbs/storm_f_cb_blast_beam.png"
+  },
+  {
+   "name": "storm_fusion_beamsplit_blast",
+   "path": "char/storm/storm_fusion_beamsplit_blast.igz",
+   "textures": [
+    "default.tga",
+    "fxt_default_d.tga",
+    "fxt_lightning_bolt_d.tga",
+    "fxt_sm3_lightninge05.tga",
+    "fxt_sm3_smoke4.tga",
+    "fxt_smoke15_d.tga",
+    "fxt_sm3_lightningf02.tga",
+    "fxt_sm3_misc_hitflash.tga"
+   ],
+   "preview": "storm_fusion_beamsplit_blast.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_textures/default.igz",
+   "thumb": "assets/vfx/thumbs/storm_fusion_beamsplit_blast.png"
+  },
+  {
+   "name": "wolverine_fusionthor_impact",
+   "path": "char/wolverine/wolverine_fusionthor_impact.igz",
+   "textures": [
+    "fxt_gradient02_inverted_d.tga",
+    "fxt_distortion1_D.tga",
+    "fxt_distort_firelarge.tga",
+    "fxt_default_d.tga",
+    "fxt_lightning_ambient_d.tga",
+    "fxt_smoke15_d.tga",
+    "fxt_hitflash01_d.tga"
+   ],
+   "preview": "wolverine_fusionthor_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_gradient02_inverted_d.igz",
+   "thumb": "assets/vfx/thumbs/wolverine_fusionthor_impact.png"
+  },
+  {
+   "name": "wolverine_fusionstorm_impact",
+   "path": "char/wolverine/wolverine_fusionstorm_impact.igz",
+   "textures": [
+    "fxt_gradient02_inverted_d.tga",
+    "fxt_distortion1_D.tga",
+    "fxt_distort_firelarge.tga",
+    "fxt_default_d.tga",
+    "fxt_lightning_ambient_d.tga",
+    "fxt_smoke15_d.tga",
+    "fxt_hitflash01_d.tga"
+   ],
+   "preview": "wolverine_fusionstorm_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_gradient02_inverted_d.igz",
+   "thumb": "assets/vfx/thumbs/wolverine_fusionstorm_impact.png"
+  },
+  {
+   "name": "ironman_f_cb_blast_impact",
+   "path": "char/ironman/ironman_f_cb_blast_impact.igz",
+   "textures": [
+    "fxt_smoke15_d.tga",
+    "fxt_sm3_smoke4.tga",
+    "fxt_mask02_d.tga",
+    "fxt_distort_ring05.tga",
+    "fxt_sm3_streaks_3.tga",
+    "fxt_flare2_blue_d.tga"
+   ],
+   "preview": "ironman_f_cb_blast_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/smoke/fxt_smoke15_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_f_cb_blast_impact.png"
+  },
+  {
+   "name": "ironman_power_uniblast_02impact",
+   "path": "char/ironman/ironman_power_uniblast_02impact.igz",
+   "textures": [
+    "fxt_sm3_misc_hitflash.tga",
+    "fxt_mask01_d.tga",
+    "fxt_distortion2.tga",
+    "fxt_smoke02_d.tga",
+    "fxt_default_d.tga",
+    "default.tga",
+    "distort_mask1.tga",
+    "fxt_distort_ring01.tga"
+   ],
+   "preview": "ironman_power_uniblast_02impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/glows/fxt_sm3_misc_hitflash.igz",
+   "thumb": "assets/vfx/thumbs/ironman_power_uniblast_02impact.png"
+  },
+  {
+   "name": "ironman_power_uniblast_impact_charge",
+   "path": "char/ironman/ironman_power_uniblast_impact_charge.igz",
+   "textures": [
+    "fxt_default_d.tga",
+    "default.tga",
+    "distort_mask1.tga",
+    "fxt_distort_ring01.tga",
+    "l_graystreak.tga",
+    "fxt_explosion07_aqua_d.tga",
+    "glow.tga",
+    "fxt_sm3_whiteplasmaringa.tga"
+   ],
+   "preview": "ironman_power_uniblast_impact_charge.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_default_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_power_uniblast_impact_charge.png"
+  },
+  {
+   "name": "furyatk_energyexplosion_beam_hit",
+   "path": "char/nanitenickfury/furyatk_energyexplosion_beam_hit.igz",
+   "textures": [
+    "spark.tga",
+    "fxt_mask02_d.tga",
+    "distortion01.tga",
+    "fxt_default_d.tga",
+    "fxt_sm3_whiteglowg.tga",
+    "fxt_glow01_d.tga"
+   ],
+   "preview": "furyatk_energyexplosion_beam_hit.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_textures/spark.igz",
+   "thumb": "assets/vfx/thumbs/furyatk_energyexplosion_beam_hit.png"
+  },
+  {
+   "name": "spiderman_webyank_impact",
+   "path": "char/spiderman/spiderman_webyank_impact.igz",
+   "textures": [
+    "fxt_distortion1_d.tga",
+    "fxt_distort_ring01.tga",
+    "fxt_splash04.tga",
+    "fxt_sm3_websplatb.tga",
+    "fxt_sm3_spillb.tga",
+    "fxt_webbing02_d.tga",
+    "fxt_smoke04_d.tga",
+    "fxt_sm3_cell_1a.tga"
+   ],
+   "preview": "spiderman_webyank_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/distortion/fxt_distortion1_d.igz",
+   "thumb": "assets/vfx/thumbs/spiderman_webyank_impact.png"
+  },
+  {
+   "name": "spiderman_webzip_impact",
+   "path": "char/spiderman/spiderman_webzip_impact.igz",
+   "textures": [
+    "fxt_glowcloud01_d.tga",
+    "fxt_maskcylinder_d.tga",
+    "fxt_distort_clawring.tga",
+    "fxt_sm3_webstickyb2.tga",
+    "fxt_default_d.tga",
+    "fxt_crack08_d.tga",
+    "fxt_crack08_n.tga",
+    "fxt_crack08_s.tga"
+   ],
+   "preview": "spiderman_webzip_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/glows/fxt_glowcloud01_d.igz",
+   "thumb": "assets/vfx/thumbs/spiderman_webzip_impact.png"
+  },
+  {
+   "name": "thor_f_cb_blast_trail",
+   "path": "char/thor/thor_f_cb_blast_trail.igz",
+   "textures": [
+    "fxt_lightning_ambient_d.tga",
+    "fxt_maskfire01_d.tga",
+    "fxt_distort_atlantisweather.tga",
+    "fxt_testband02_d.tga",
+    "fxt_smoke04_d.tga",
+    "fxt_crack08_d.tga",
+    "fxt_crack08_n.tga"
+   ],
+   "preview": "thor_f_cb_blast_trail.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/lightning/fxt_lightning_ambient_d.igz",
+   "thumb": "assets/vfx/thumbs/thor_f_cb_blast_trail.png"
+  },
+  {
+   "name": "deadpool_f_cb_blast_impact",
+   "path": "char/deadpool/deadpool_f_cb_blast_impact.igz",
+   "textures": [
+    "fxt_smoke15_d.tga",
+    "fxt_smoke04_d.tga",
+    "fxt_film_explosion01_d.tga",
+    "fxt_mask01_d.tga",
+    "fxt_distort_fire02.tga",
+    "fxt_default_d.tga",
+    "ng_avalanche.tga",
+    "fxt_sm3_smoke4.tga"
+   ],
+   "preview": "deadpool_f_cb_blast_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/smoke/fxt_smoke15_d.igz",
+   "thumb": "assets/vfx/thumbs/deadpool_f_cb_blast_impact.png"
+  },
+  {
+   "name": "wolverine_fusionthor_beamstart",
+   "path": "char/wolverine/wolverine_fusionthor_beamstart.igz",
+   "textures": [
+    "fxt_lightning_bolt_d.tga",
+    "fxt_sm3_lightning_gate_02.tga"
+   ],
+   "preview": "wolverine_fusionthor_beamstart.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/lightning/fxt_lightning_bolt_d.igz",
+   "thumb": "assets/vfx/thumbs/wolverine_fusionthor_beamstart.png"
+  },
+  {
+   "name": "thor_f_cb_blast_impact",
+   "path": "char/thor/thor_f_cb_blast_impact.igz",
+   "textures": [
+    "fxt_sm3_smoke4.tga",
+    "fxt_mask02_d.tga",
+    "fxt_distort_ring05.tga",
+    "fxt_sm3_streaks_3.tga",
+    "fxt_flare2_blue_d.tga"
+   ],
+   "preview": "thor_f_cb_blast_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/smoke/fxt_sm3_smoke4.igz",
+   "thumb": "assets/vfx/thumbs/thor_f_cb_blast_impact.png"
+  },
+  {
+   "name": "wolverine_fusionstorm_beamstart",
+   "path": "char/wolverine/wolverine_fusionstorm_beamstart.igz",
+   "textures": [
+    "fxt_lightning_bolt_d.tga",
+    "fxt_sm3_lightning_gate_02.tga"
+   ],
+   "preview": "wolverine_fusionstorm_beamstart.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/lightning/fxt_lightning_bolt_d.igz",
+   "thumb": "assets/vfx/thumbs/wolverine_fusionstorm_beamstart.png"
+  },
+  {
+   "name": "furyatk_energyexplosion_beam",
+   "path": "char/nanitenickfury/furyatk_energyexplosion_beam.igz",
+   "textures": [
+    "fxt_default_d.tga",
+    "fxt_sm3_whitesparkd.tga",
+    "fxt_sm3_hitsparka.tga",
+    "fxt_whitebeam01_d.tga",
+    "fxt_level_lightning_d.tga"
+   ],
+   "preview": "furyatk_energyexplosion_beam.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_default_d.igz",
+   "thumb": "assets/vfx/thumbs/furyatk_energyexplosion_beam.png"
+  },
+  {
+   "name": "spiderman_websack_beam",
+   "path": "char/spiderman/spiderman_websack_beam.igz",
+   "textures": [
+    "fxt_default_d.tga",
+    "spiderweb_funnel_fade.tga",
+    "spiderweb_funnel.tga"
+   ],
+   "preview": "spiderman_websack_beam.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_default_d.igz",
+   "thumb": "assets/vfx/thumbs/spiderman_websack_beam.png"
+  },
+  {
+   "name": "captainamerica_shieldcharge_impact",
+   "path": "char/captainamerica/captainamerica_shieldcharge_impact.igz",
+   "textures": [
+    "fxt_avalanche_d.tga",
+    "bolt_sharp.tga",
+    "fxt_sm3_smoke4.tga",
+    "fxt_default_d.tga",
+    "fxt_sm3_misc_hitflash.tga",
+    "fxt_mask02_d.tga",
+    "fxt_distort_ring01.tga",
+    "l_graystreak.tga"
+   ],
+   "preview": "captainamerica_shieldcharge_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_avalanche_d.igz",
+   "thumb": "assets/vfx/thumbs/captainamerica_shieldcharge_impact.png"
+  },
+  {
+   "name": "captainamerica_shieldthrow_impact",
+   "path": "char/captainamerica/captainamerica_shieldthrow_impact.igz",
+   "textures": [
+    "fxt_default_d.tga",
+    "fxt_smoke04_d.tga",
+    "default.tga",
+    "distort_mask1.tga",
+    "distort_ring1.tga",
+    "l_graystreak.tga",
+    "burstline_flipped.tga",
+    "energy1.tga"
+   ],
+   "preview": "captainamerica_shieldthrow_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_default_d.igz",
+   "thumb": "assets/vfx/thumbs/captainamerica_shieldthrow_impact.png"
+  },
+  {
+   "name": "deadpool_f_cb_blast_beam",
+   "path": "char/deadpool/deadpool_f_cb_blast_beam.igz",
+   "textures": [
+    "fxt_sm3_hitsparkb.tga",
+    "default.tga",
+    "fx_mystique2.tga"
+   ],
+   "preview": "deadpool_f_cb_blast_beam.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/glows/fxt_sm3_hitsparkb.igz",
+   "thumb": "assets/vfx/thumbs/deadpool_f_cb_blast_beam.png"
+  },
+  {
+   "name": "furyatk_energyexplosion_impact",
+   "path": "char/nanitenickfury/furyatk_energyexplosion_impact.igz",
+   "textures": [
+    "distort_mask1.tga",
+    "distort_ring2.tga",
+    "fxt_default_d.tga",
+    "l_graystreak.tga",
+    "glow.tga",
+    "firecloud_aqua.tga",
+    "whitestar.tga",
+    "misc_elec1.tga"
+   ],
+   "preview": "furyatk_energyexplosion_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_textures/nextgen/distort_mask1.igz",
+   "thumb": "assets/vfx/thumbs/furyatk_energyexplosion_impact.png"
+  },
+  {
+   "name": "boss3explosion_shieldimpact_new",
+   "path": "char/captainamerica/boss3explosion_shieldimpact_new.igz",
+   "textures": [
+    "fxt_default_d.tga",
+    "fire4.tga",
+    "default.tga",
+    "white.tga",
+    "distort_ring1.tga",
+    "firecloud3.tga",
+    "ng_avalanche.tga",
+    "s_fire2.tga"
+   ],
+   "preview": "boss3explosion_shieldimpact_new.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_default_d.igz",
+   "thumb": "assets/vfx/thumbs/boss3explosion_shieldimpact_new.png"
+  },
+  {
+   "name": "thor_fusionbeamsplit_impact",
+   "path": "char/thor/thor_fusionbeamsplit_impact.igz",
+   "textures": [
+    "fxt_sm3_lightningd02.tga",
+    "fxt_candle_flame_d.tga",
+    "fxt_default_d.tga",
+    "anark_hud_goldglow.tga"
+   ],
+   "preview": "thor_fusionbeamsplit_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/lightning/fxt_sm3_lightningd02.igz",
+   "thumb": "assets/vfx/thumbs/thor_fusionbeamsplit_impact.png"
+  },
+  {
+   "name": "deadpool_teleportzip_impact",
+   "path": "char/deadpool/deadpool_teleportzip_impact.igz",
+   "textures": [
+    "fxt_glowcloud01_d.tga",
+    "fxt_maskcylinder_d.tga",
+    "fxt_distort_clawring.tga",
+    "fxt_sm3_webstickyb2.tga",
+    "fxt_default_d.tga",
+    "fxt_crack08_d.tga",
+    "fxt_crack08_n.tga",
+    "fxt_crack08_s.tga"
+   ],
+   "preview": "deadpool_teleportzip_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/glows/fxt_glowcloud01_d.igz",
+   "thumb": "assets/vfx/thumbs/deadpool_teleportzip_impact.png"
+  },
+  {
+   "name": "spiderman_fusiongrabrodeo_webbingbeam",
+   "path": "char/spiderman/spiderman_fusiongrabrodeo_webbingbeam.igz",
+   "textures": [
+    "fxt_webbing01_d.tga",
+    "fxt_webbing02_d.tga"
+   ],
+   "preview": "spiderman_fusiongrabrodeo_webbingbeam.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_webbing01_d.igz",
+   "thumb": "assets/vfx/thumbs/spiderman_fusiongrabrodeo_webbingbeam.png"
+  },
+  {
+   "name": "spiderman_webbing_beam",
+   "path": "char/spiderman/spiderman_webbing_beam.igz",
+   "textures": [
+    "spiderweb_funnel_fade.tga",
+    "spiderweb_funnel.tga"
+   ],
+   "preview": "spiderman_webbing_beam.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_textures/nextgen/spiderweb_funnel_fade.igz",
+   "thumb": "assets/vfx/thumbs/spiderman_webbing_beam.png"
+  },
+  {
+   "name": "spiderman_webbing_beam_shot",
+   "path": "char/spiderman/spiderman_webbing_beam_shot.igz",
+   "textures": [
+    "spiderweb_funnel_fade.tga",
+    "spiderweb_funnel.tga"
+   ],
+   "preview": "spiderman_webbing_beam_shot.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_textures/nextgen/spiderweb_funnel_fade.igz",
+   "thumb": "assets/vfx/thumbs/spiderman_webbing_beam_shot.png"
+  },
+  {
+   "name": "ironman_blast_power",
+   "path": "map/chemplantmap2/ironman_blast_power.igz",
+   "textures": [
+    "fxt_energyline01_d.tga",
+    "fxt_avalanche02_d.tga",
+    "fxt_flash_orange_half_d.tga",
+    "firecloud3.tga",
+    "fxt_explosion04_blue_d.tga",
+    "fxt_sm3_lightninge04.tga",
+    "fxt_level_lightning_d.tga",
+    "fxt_whitebeam02_d.tga"
+   ],
+   "preview": "ironman_blast_power.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_energyline01_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_blast_power.png"
+  },
+  {
+   "name": "ironman_handblast",
+   "path": "map/prisontransport/pta_map3/ironman_handblast.igz",
+   "textures": [
+    "fxt_glow01_d.tga",
+    "fxt_glowcloud03_d.tga",
+    "fxt_maskfire01_d.tga",
+    "fxt_distort_ring01.tga",
+    "fxt_default_d.tga",
+    "ring3.tga",
+    "dot.tga",
+    "whitestar.tga"
+   ],
+   "preview": "ironman_handblast.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/glows/fxt_glow01_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_handblast.png"
+  },
+  {
+   "name": "ironman_uniblast_projectile",
+   "path": "map/chemicalplant/cpa_map2/ironman_uniblast_projectile.igz",
+   "textures": [
+    "fxt_maskfire01_d.tga",
+    "fxt_distort_ring01.tga",
+    "fxt_default_d.tga",
+    "default.tga",
+    "distort_mask2.tga",
+    "distort_ring1.tga",
+    "bolt_sharp.tga",
+    "glow.tga"
+   ],
+   "preview": "ironman_uniblast_projectile.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/distortion/fxt_maskfire01_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_uniblast_projectile.png"
+  },
+  {
+   "name": "ironman_uniblast_shoot",
+   "path": "map/chemicalplant/cpa_map2/ironman_uniblast_shoot.igz",
+   "textures": [
+    "fxt_maskfire01_d.tga",
+    "fxt_distort_ring01.tga",
+    "fxt_default_d.tga",
+    "glow.tga",
+    "misc_hitflash.tga",
+    "fx_avalanche.tga",
+    "ring3.tga"
+   ],
+   "preview": "ironman_uniblast_shoot.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/distortion/fxt_maskfire01_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_uniblast_shoot.png"
+  },
+  {
+   "name": "magneto_f_cb_blast_impact",
+   "path": "char/magneto/magneto_f_cb_blast_impact.igz",
+   "textures": [
+    "fxt_crack06_d.tga",
+    "fxt_crack01_d.tga",
+    "fxt_sm3_stone_3.tga"
+   ],
+   "preview": "magneto_f_cb_blast_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/decals/fxt_crack06_d.igz",
+   "thumb": "assets/vfx/thumbs/magneto_f_cb_blast_impact.png"
+  },
+  {
+   "name": "ironman_handbeam_long",
+   "path": "map/chemicalplant/cpa_map2/ironman_handbeam_long.igz",
+   "textures": [
+    "fxt_default_d.tga",
+    "fxt_sm3_lightninge04.tga",
+    "fxt_level_lightning_d.tga",
+    "fxt_whitebeam02_d.tga",
+    "fxt_glowcloud02_d.tga",
+    "fxt_hitflash01_d.tga",
+    "default.tga"
+   ],
+   "preview": "ironman_handbeam_long.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_default_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_handbeam_long.png"
+  },
+  {
+   "name": "ironman_handbeam_short",
+   "path": "map/chemicalplant/cpa_map2/ironman_handbeam_short.igz",
+   "textures": [
+    "fxt_default_d.tga",
+    "fxt_sm3_lightninge04.tga",
+    "fxt_level_lightning_d.tga",
+    "fxt_whitebeam02_d.tga",
+    "fxt_glowcloud02_d.tga",
+    "fxt_hitflash01_d.tga",
+    "default.tga"
+   ],
+   "preview": "ironman_handbeam_short.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_default_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_handbeam_short.png"
+  },
+  {
+   "name": "spiderman_webbing_impact",
+   "path": "char/spiderman/spiderman_webbing_impact.igz",
+   "textures": [
+    "fxt_glowcloud02_d.tga",
+    "fxt_sm3_cell_1a.tga"
+   ],
+   "preview": "spiderman_webbing_impact.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/glows/fxt_glowcloud02_d.igz",
+   "thumb": "assets/vfx/thumbs/spiderman_webbing_impact.png"
+  },
+  {
+   "name": "deadpool_f_cb_blast_trail",
+   "path": "char/deadpool/deadpool_f_cb_blast_trail.igz",
+   "textures": [
+    "fxt_redspark2_d.tga",
+    "fxt_flare2_red_d.tga"
+   ],
+   "preview": "deadpool_f_cb_blast_trail.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/sparks/fxt_redspark2_d.igz",
+   "thumb": "assets/vfx/thumbs/deadpool_f_cb_blast_trail.png"
+  },
+  {
+   "name": "wolverine_fusionthor_power",
+   "path": "char/wolverine/wolverine_fusionthor_power.igz",
+   "textures": [
+    "fxt_lightning_ambient_d.tga",
+    "fxt_concusionwave_mask_02.tga",
+    "fxt_distort_firelarge.tga",
+    "fxt_default_d.tga",
+    "fxt_shockband02_d.tga",
+    "fxt_film_smoke02.tga",
+    "fxt_gambit_cardglow_d.tga"
+   ],
+   "preview": "wolverine_fusionthor_power.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/lightning/fxt_lightning_ambient_d.igz",
+   "thumb": "assets/vfx/thumbs/wolverine_fusionthor_power.png"
+  },
+  {
+   "name": "wolverine_fusionstorm_power",
+   "path": "char/wolverine/wolverine_fusionstorm_power.igz",
+   "textures": [
+    "fxt_lightning_ambient_d.tga",
+    "fxt_concusionwave_mask_02.tga",
+    "fxt_distort_firelarge.tga",
+    "fxt_default_d.tga",
+    "fxt_shockband02_d.tga",
+    "fxt_film_smoke02.tga",
+    "fxt_gambit_cardglow_d.tga"
+   ],
+   "preview": "wolverine_fusionstorm_power.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/lightning/fxt_lightning_ambient_d.igz",
+   "thumb": "assets/vfx/thumbs/wolverine_fusionstorm_power.png"
+  },
+  {
+   "name": "wolverine_fusionbuff_ironman",
+   "path": "char/wolverine/wolverine_fusionbuff_ironman.igz",
+   "textures": [
+    "fireglow1.tga",
+    "fxt_sm3_smoke4.tga",
+    "fxt_distortion1_d.tga",
+    "fxt_distort_firemed.tga",
+    "fxt_default_d.tga"
+   ],
+   "preview": "wolverine_fusionbuff_ironman.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_textures/nextgen/fireglow1.igz",
+   "thumb": "assets/vfx/thumbs/wolverine_fusionbuff_ironman.png"
+  },
+  {
+   "name": "thor_fusionbeamsplit_trail",
+   "path": "char/thor/thor_fusionbeamsplit_trail.igz",
+   "textures": [
+    "fxt_sm3_lightningd02.tga"
+   ],
+   "preview": "thor_fusionbeamsplit_trail.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/lightning/fxt_sm3_lightningd02.igz",
+   "thumb": "assets/vfx/thumbs/thor_fusionbeamsplit_trail.png"
+  },
+  {
+   "name": "fireballspawn_blast",
+   "path": "map/finalshowdown/fs_map3/fireballspawn_blast.igz",
+   "textures": [
+    "fxt_default_d.tga",
+    "fxt_mask01_d.tga",
+    "fxt_distort_fire02.tga",
+    "fxt_smoke15_d.tga",
+    "fxt_sm3_big_fire_05.tga",
+    "fxt_explosion07_d.tga",
+    "fxt_explosion05_d.tga",
+    "fxt_burn02_d.tga"
+   ],
+   "preview": "fireballspawn_blast.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_default_d.igz",
+   "thumb": "assets/vfx/thumbs/fireballspawn_blast.png"
+  },
+  {
+   "name": "rha1_copterfire_blast",
+   "path": "map/rebelhideout/rha_map1/rha1_copterfire_blast.igz",
+   "textures": [
+    "fxt_burn02_d.tga",
+    "fxt_burn02_n.tga",
+    "fxt_default_d.tga",
+    "firecloud3.tga",
+    "s_fire2.tga",
+    "default.tga",
+    "fxt_smoke15_d.tga",
+    "fxt_flame01_d.tga"
+   ],
+   "preview": "rha1_copterfire_blast.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/decals/fxt_burn02_d.igz",
+   "thumb": "assets/vfx/thumbs/rha1_copterfire_blast.png"
+  },
+  {
+   "name": "sw2_wizard_fireball_blast",
+   "path": "map/secretwar/sw_map2/sw2_wizard_fireball_blast.igz",
+   "textures": [
+    "fxt_default_d.tga",
+    "fxt_mask01_d.tga",
+    "fxt_distort_fire02.tga",
+    "fxt_smoke15_d.tga",
+    "fxt_sm3_big_fire_05.tga",
+    "fxt_explosion07_d.tga",
+    "fxt_explosion05_d.tga",
+    "fxt_burn02_d.tga"
+   ],
+   "preview": "sw2_wizard_fireball_blast.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_default_d.igz",
+   "thumb": "assets/vfx/thumbs/sw2_wizard_fireball_blast.png"
+  },
+  {
+   "name": "ironman_uniblast_spawn",
+   "path": "map/chemicalplant/cpa_map2/ironman_uniblast_spawn.igz",
+   "textures": [
+    "misc_hitflash.tga",
+    "fxt_glowstar_d.tga",
+    "fxt_sm3_whitesparkd.tga",
+    "fxt_sheildtrim.tga"
+   ],
+   "preview": "ironman_uniblast_spawn.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_textures/misc_hitflash.igz",
+   "thumb": "assets/vfx/thumbs/ironman_uniblast_spawn.png"
+  },
+  {
+   "name": "ironman_f_cb_blast_start",
+   "path": "char/ironman/ironman_f_cb_blast_start.igz",
+   "textures": [
+    "fxt_glow01_d.tga",
+    "fxt_flare_ring.tga",
+    "fxt_sm3_whiteplasmaringb.tga",
+    "bright01.tga",
+    "fxt_default_d.tga",
+    "fxt_arm_swipe_d.tga",
+    "fxt_smoke15_d.tga",
+    "fxt_distortion1_d.tga"
+   ],
+   "preview": "ironman_f_cb_blast_start.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/glows/fxt_glow01_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_f_cb_blast_start.png"
+  },
+  {
+   "name": "ironman_power_uniblast_01spawn",
+   "path": "char/ironman/ironman_power_uniblast_01spawn.igz",
+   "textures": [
+    "fxt_maskfire01_d.tga",
+    "fxt_distort_ring01.tga",
+    "fxt_default_d.tga",
+    "glow.tga",
+    "misc_hitflash.tga",
+    "fx_avalanche.tga",
+    "ring3.tga",
+    "fxt_hitflash01_d.tga"
+   ],
+   "preview": "ironman_power_uniblast_01spawn.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/distortion/fxt_maskfire01_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_power_uniblast_01spawn.png"
+  },
+  {
+   "name": "ironman_power_uniblast_spawn_charge",
+   "path": "char/ironman/ironman_power_uniblast_spawn_charge.igz",
+   "textures": [
+    "fxt_maskfire01_d.tga",
+    "fxt_distort_ring01.tga",
+    "fxt_default_d.tga",
+    "glow.tga",
+    "misc_hitflash.tga",
+    "fx_avalanche.tga",
+    "ring3.tga",
+    "default.tga"
+   ],
+   "preview": "ironman_power_uniblast_spawn_charge.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/distortion/fxt_maskfire01_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_power_uniblast_spawn_charge.png"
+  },
+  {
+   "name": "ironman_f_cp_charge_beam",
+   "path": "char/ironman/ironman_f_cp_charge_beam.igz",
+   "textures": [
+    "fxt_smoke04_d.tga",
+    "fxt_distortion1_d.tga",
+    "fxt_distort_atlantisweather.tga",
+    "fxt_default_d.tga",
+    "fxt_hitflash02_d.tga",
+    "fxt_glowcloud02_d.tga",
+    "fxt_sm3_lightninge04.tga",
+    "fxt_level_lightning_d.tga"
+   ],
+   "preview": "ironman_f_cp_charge_beam.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/smoke/fxt_smoke04_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_f_cp_charge_beam.png"
+  },
+  {
+   "name": "ironman_fusion_beampower_cutscene",
+   "path": "char/ironman/ironman_fusion_beampower_cutscene.igz",
+   "textures": [
+    "fxt_default_d.tga",
+    "fxt_sm3_lightninge04.tga",
+    "fxt_level_lightning_d.tga",
+    "fxt_whitebeam02_d.tga",
+    "fxt_glowcloud02_d.tga",
+    "fxt_hitflash01_d.tga",
+    "default.tga"
+   ],
+   "preview": "ironman_fusion_beampower_cutscene.png",
+   "preview_file": "/home/raillen/Documentos/decomp-games/_work/igz_materials/effects/misc/fxt_default_d.igz",
+   "thumb": "assets/vfx/thumbs/ironman_fusion_beampower_cutscene.png"
+  }
+ ]
+}
