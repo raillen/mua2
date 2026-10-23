@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MUA2 // Alchemy Asset Viewer</title>
-  <link rel="stylesheet" href="src/style.css">
+  <link rel="stylesheet" href="src/style.css?v=5">
   <script type="importmap">
     {
       "imports": {
@@ -16,39 +16,117 @@
 </head>
 <body>
   <div id="app">
+    <!-- Topbar Header -->
     <header class="topbar">
-      <div class="brand">
-        <span class="brand-mark">MUA<span>2</span></span>
-        <div class="brand-text">
-          <strong>Alchemy Asset Viewer</strong>
-          <span>Modelos, texturas e VFX extraídos do jogo</span>
+      <div class="brand-group">
+        <button id="btn-sidebar-toggle" class="sidebar-toggle-btn" title="Alternar barra lateral" aria-label="Alternar barra lateral">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+        <div class="brand">
+          <span class="brand-mark">MUA<span>2</span></span>
+          <div class="brand-text">
+            <strong>Alchemy Asset Viewer</strong>
+            <span>Modelos, texturas e VFX extraídos do jogo</span>
+          </div>
         </div>
       </div>
-      <div class="status" id="status">carregando…</div>
+
+      <!-- Navigation Menus (Requirement 7) -->
+      <nav class="topbar-nav" aria-label="Navegação de assets">
+        <button id="nav-btn-chars" class="topbar-nav-btn active" data-tab="characters">
+          <span class="nav-icon">👤</span>
+          <span class="nav-label">Personagens</span>
+          <span class="nav-badge" id="nav-chars-count">184</span>
+        </button>
+        <button id="nav-btn-props" class="topbar-nav-btn" data-tab="props">
+          <span class="nav-icon">📦</span>
+          <span class="nav-label">Props</span>
+          <span class="nav-badge notice">Em breve</span>
+        </button>
+        <button id="nav-btn-vfx" class="topbar-nav-btn" data-tab="vfx">
+          <span class="nav-icon">✦</span>
+          <span class="nav-label">VFX</span>
+          <span class="nav-badge" id="nav-vfx-count">54</span>
+        </button>
+      </nav>
+
+      <div class="header-right">
+        <div class="status" id="status" aria-live="polite">pronto</div>
+      </div>
     </header>
 
-    <aside class="sidebar">
-      <div class="sidebar-label">Personagens</div>
-      <input id="model-search" class="model-search" type="search" placeholder="Filtrar por nome…" autocomplete="off">
-      <nav id="model-list" class="model-list"></nav>
-      <div class="sidebar-label" style="margin-top: 22px;">Sobre</div>
-      <p class="about">
-        Meshes IGZ v6 (Alchemy 6) convertidos para glTF 2.0 com texturas DXT1 / ATX2.
-        <b>Anti</b>, <b>Alt</b> e <b>Pro</b> são variantes de uniforme do jogo. Use o mouse para orbitar, scroll para zoom e arraste com o botão direito para pan.
-      </p>
-      <div class="hint">
-        <kbd>1</kbd>–<kbd>9</kbd> trocar &nbsp; <kbd>R</kbd> reset &nbsp; <kbd>W</kbd> wireframe &nbsp; <kbd>B</kbd> rig
+    <!-- Sidebar (Left Panel - Resizable, Requirement 1, 2, 3) -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title-row">
+          <span class="sidebar-label">MODELOS 3D</span>
+          <!-- View toggle: Lista vs Miniaturas (Requirement 3) -->
+          <div class="view-mode-toggle" role="group" aria-label="Modo de exibição">
+            <button id="btn-view-cards" class="view-toggle-chip active" title="Exibição em Miniaturas (Cards)" aria-pressed="true">
+              <span class="icon">⊞</span> Cards
+            </button>
+            <button id="btn-view-list" class="view-toggle-chip" title="Exibição em Lista Compacta" aria-pressed="false">
+              <span class="icon">☰</span> Lista
+            </button>
+          </div>
+        </div>
+
+        <!-- Button "Modo Galeria" (Requirement 2) -->
+        <button id="btn-open-gallery" class="gallery-launch-btn" title="Abrir Galeria Completa em Tela Cheia">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="launch-icon">⊞</span>
+            <span class="launch-text">Modo Galeria</span>
+          </div>
+          <span class="launch-badge" id="gallery-launch-count">184</span>
+        </button>
+
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input id="model-search" class="model-search" type="search" placeholder="Filtrar por nome, traje ou ID…" autocomplete="off" aria-label="Buscar modelo">
+          <button id="btn-clear-search" class="search-clear-btn" title="Limpar busca" style="display:none;">✕</button>
+        </div>
+
+        <div class="filter-summary">
+          <span id="filter-count-text">103 personagens · 184 variações</span>
+          <button id="btn-collapse-all" class="collapse-all-btn" title="Recolher / Expandir todos">Recolher todos</button>
+        </div>
+      </div>
+
+      <!-- Accordion list (Requirement 1 & 3) -->
+      <nav id="model-list" class="model-list view-cards" aria-label="Lista de modelos"></nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-label">SOBRE OS ASSETS</div>
+        <p class="about">
+          Meshes IGZ v6 (Alchemy 6) convertidos para glTF 2.0 com texturas DXT1 / ATI2.
+          <b>Anti</b>, <b>Alt</b> e <b>Pro</b> são variantes de uniforme do jogo.
+        </p>
+        <div class="hint">
+          <kbd>1</kbd>–<kbd>9</kbd> trocar &nbsp; <kbd>R</kbd> reset &nbsp; <kbd>W</kbd> wireframe &nbsp; <kbd>B</kbd> rig &nbsp; <kbd>Espaço</kbd> girar
+        </div>
       </div>
     </aside>
 
-    <main class="stage">
+    <!-- Resizer Divider (Requirement 1) -->
+    <div class="sidebar-resizer" id="sidebar-resizer" role="separator" aria-orientation="vertical" tabindex="0" title="Arraste para redimensionar o painel"></div>
+
+    <!-- Main 3D Stage -->
+    <main class="stage" id="stage">
       <div id="viewport"></div>
       <div class="vignette"></div>
-      <div class="stage-caption">
-        <span id="model-name">—</span>
-        <span id="model-meta" class="meta"></span>
+
+      <!-- Stage Caption moved to Top-Left (Requirement 6) -->
+      <div class="stage-caption" id="stage-caption">
+        <div class="caption-title-row">
+          <span id="model-name">—</span>
+          <span id="model-costume-tag" class="costume-badge" style="display:none;"></span>
+        </div>
+        <div id="model-meta" class="meta"></div>
       </div>
+
+      <!-- Animation Controls (Top-Right) -->
       <div class="anim-control">
+        <label for="anim-select" class="sr-only">Animação</label>
         <select id="anim-select" class="anim-select" title="Escolher animação">
           <option value="none">Bind Pose (Estático)</option>
           <option value="idle" selected>Idle (Respiração)</option>
@@ -57,43 +135,149 @@
           <option value="attack">Ataque (Combo)</option>
           <option value="heroic">Pose Heroica</option>
         </select>
-        <button id="btn-anim-play" class="chip active" title="Play/Pause animação">⏸</button>
-        <button id="btn-anim-speed" class="chip" title="Velocidade">1.0x</button>
+        <button id="btn-anim-play" class="chip active" title="Play/Pause animação" aria-label="Play/Pause animação">⏸</button>
+        <button id="btn-anim-speed" class="chip" title="Velocidade da animação" aria-label="Velocidade da animação">1.0x</button>
       </div>
-      <div class="toolbar">
-        <button id="btn-rotate" class="chip active" title="Auto-rotação">⟳ Orbit</button>
-        <button id="btn-wire" class="chip" title="Wireframe">◈ Wireframe</button>
-        <button id="btn-tex" class="chip active" title="Texturas">▣ Texturas</button>
-        <button id="btn-grid" class="chip active" title="Grid">⊞ Grid</button>
-        <button id="btn-reset" class="chip" title="Reset camera">⌖ Reset</button>
-        <button id="btn-rig" class="chip" title="Mostrar esqueleto">🦴 Rig</button>
-        <button id="btn-vfx" class="chip" title="Galeria de VFX">✦ VFX</button>
-      </div>
+
+      <!-- Floating Bottom Control Bar - Centered and Refined (Requirement 4 & 5) -->
+      <nav class="toolbar" id="toolbar" aria-label="Controles da cena">
+        <div class="toolbar-group">
+          <button id="btn-rotate" class="chip active" title="Alternar auto-rotação (Espaço)" aria-pressed="true">
+            <span class="chip-icon">⟳</span>
+            <span class="chip-text">Orbit</span>
+          </button>
+          <button id="btn-reset" class="chip" title="Resetar câmera (R)">
+            <span class="chip-icon">⌖</span>
+            <span class="chip-text">Reset</span>
+          </button>
+        </div>
+
+        <div class="toolbar-divider" aria-hidden="true"></div>
+
+        <div class="toolbar-group">
+          <button id="btn-wire" class="chip" title="Alternar wireframe (W)" aria-pressed="false">
+            <span class="chip-icon">◈</span>
+            <span class="chip-text">Wire</span>
+          </button>
+          <button id="btn-tex" class="chip active" title="Alternar texturas (T)" aria-pressed="true">
+            <span class="chip-icon">▣</span>
+            <span class="chip-text">Texturas</span>
+          </button>
+          <button id="btn-grid" class="chip active" title="Alternar grid de chão" aria-pressed="true">
+            <span class="chip-icon">⊞</span>
+            <span class="chip-text">Grid</span>
+          </button>
+        </div>
+
+        <div class="toolbar-divider" aria-hidden="true"></div>
+
+        <div class="toolbar-group">
+          <button id="btn-rig" class="chip" title="Alternar esqueleto (B)" aria-pressed="false">
+            <span class="chip-icon">🦴</span>
+            <span class="chip-text">Rig</span>
+          </button>
+          <button id="btn-vfx" class="chip" title="Galeria de efeitos VFX">
+            <span class="chip-icon">✦</span>
+            <span class="chip-text">VFX</span>
+          </button>
+        </div>
+      </nav>
     </main>
 
-    <div class="modal" id="vfx-modal">
-    <div class="modal-head">
-      <div>
-        <div class="sidebar-label">Efeitos extraídos de <code>effects_igx.bin</code></div>
-        <h2>VFX Gallery</h2>
-        <p class="modal-sub">Texturas e definições de efeitos dos personagens. Clique em um card para ampliar.</p>
-      </div>
-      <button class="modal-close" id="vfx-close">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="vfx-grid" id="vfx-grid"></div>
-      <aside class="vfx-detail" id="vfx-detail">
-        <div class="vfx-empty">Selecione um efeito para ver os detalhes.</div>
-      </aside>
-    </div>
-  </div>
+    <!-- Overlay for mobile drawer -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-  <div class="loading" id="loading">
+    <!-- Gallery Modal (Requirement 2) -->
+    <div class="modal gallery-modal" id="gallery-modal" role="dialog" aria-modal="true" aria-labelledby="gallery-title">
+      <div class="modal-dialog resizable-modal" id="gallery-modal-dialog">
+        <div class="modal-head">
+          <div class="modal-head-title">
+            <div class="sidebar-label">CATÁLOGO ALCHEMY 6</div>
+            <h2 id="gallery-title">Galeria de Modelos 3D</h2>
+            <p class="modal-sub">Explore todos os personagens, uniformes e variantes extraídos de MUA2.</p>
+          </div>
+          <div class="modal-head-controls">
+            <div class="gallery-search-wrap">
+              <span class="search-icon">🔍</span>
+              <input id="gallery-search" class="gallery-search-input" type="search" placeholder="Buscar personagem, traje, ID..." autocomplete="off">
+            </div>
+            <select id="gallery-category-select" class="gallery-filter-select" aria-label="Filtrar por categoria">
+              <option value="all">Todas as Categorias</option>
+              <option value="heroes">Heróis</option>
+              <option value="villains">Vilões & Chefes</option>
+              <option value="npcs">Inimigos & NPCs</option>
+              <option value="props">Props & Acessórios</option>
+            </select>
+            <button class="modal-close" id="gallery-close" title="Fechar galeria (Esc)" aria-label="Fechar">✕</button>
+          </div>
+        </div>
+
+        <div class="modal-toolbar-bar">
+          <div class="gallery-stats-text" id="gallery-stats-text">Exibindo 184 modelos</div>
+          <div class="gallery-filter-chips" id="gallery-char-pills"></div>
+        </div>
+
+        <div class="gallery-modal-body">
+          <div class="gallery-cards-grid" id="gallery-grid" role="list"></div>
+        </div>
+        
+        <div class="modal-resize-handle" title="Arraste para redimensionar a janela"></div>
+      </div>
+    </div>
+
+    <!-- Props Modal / Notice (Requirement 7) -->
+    <div class="modal props-modal" id="props-modal" role="dialog" aria-modal="true" aria-labelledby="props-title">
+      <div class="modal-dialog small-modal" id="props-modal-dialog">
+        <div class="modal-head">
+          <div>
+            <div class="sidebar-label">ARQUIVO DE CENÁRIOS & OBJETOS</div>
+            <h2 id="props-title">Props & Cenários (Em Breve)</h2>
+            <p class="modal-sub">Modelos de ambiente, armas e objetos interativos da Alchemy Engine.</p>
+          </div>
+          <button class="modal-close" id="props-close" title="Fechar" aria-label="Fechar">✕</button>
+        </div>
+        <div class="props-modal-body">
+          <div class="props-info-card">
+            <div class="props-icon">📦</div>
+            <div class="props-details">
+              <h3>5.341 Modelos Extraídos</h3>
+              <p>O arquivo <code>models.bin</code> contém todos os cenários (fábrica química, prisão da Zona Negativa, Washington DC, Wakanda) e armas/objetos do jogo.</p>
+              <p>Armas de personagens (como os bastões do Demolidor, cartas do Gambit e garras do Aranha de Ferro) já estão integradas como itens do catálogo!</p>
+            </div>
+          </div>
+          <div class="props-action-row">
+            <button id="btn-props-view-weapons" class="chip active">Ver Acessórios / Armas Já Disponíveis</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VFX Modal -->
+    <div class="modal" id="vfx-modal" role="dialog" aria-modal="true" aria-labelledby="vfx-title">
+      <div class="modal-dialog resizable-modal" id="vfx-modal-dialog">
+        <div class="modal-head">
+          <div>
+            <div class="sidebar-label">Efeitos extraídos de <code>effects_igx.bin</code></div>
+            <h2 id="vfx-title">Galeria de VFX</h2>
+            <p class="modal-sub">Texturas e definições de efeitos dos personagens. Clique em um card para ampliar.</p>
+          </div>
+          <button class="modal-close" id="vfx-close" title="Fechar galeria de VFX" aria-label="Fechar">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="vfx-grid" id="vfx-grid"></div>
+          <aside class="vfx-detail" id="vfx-detail">
+            <div class="vfx-empty">Selecione um efeito para ver os detalhes.</div>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading" id="loading" aria-live="assertive">
       <div class="spinner"></div>
       <span id="loading-text">Carregando modelo…</span>
     </div>
   </div>
 
-  <script type="module" src="src/main.js"></script>
+  <script type="module" src="src/main.js?v=5"></script>
 </body>
 </html>

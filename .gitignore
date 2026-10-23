@@ -4,6 +4,7 @@ _work/
 
 # Binários compilados
 mua2-viewer/tools/mua2bin
+tools-vendor/
 
 # Python e SO
 __pycache__/
