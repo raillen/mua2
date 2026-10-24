@@ -360,6 +360,7 @@ function setLoading(on, text = 'Carregando modelo…') {
 }
 
 function clearModel() {
+  if (vfxCatalog) vfxCatalog.onModelChange(null);
   if (mixer) {
     mixer.stopAllAction();
     if (current) mixer.uncacheRoot(current);
@@ -559,6 +560,7 @@ function loadEntry(entry) {
       clearModel();
       current = gltf.scene;
       prepare(current, entry);
+      if (vfxCatalog) vfxCatalog.onModelChange(current);
       setLoading(false);
       resolve(gltf);
     }, (ev) => {
@@ -1390,6 +1392,9 @@ renderer.setAnimationLoop(() => {
   if (mixer && animPlaying) {
     mixer.update(delta * animSpeed);
   }
+  if (vfxCatalog) {
+    vfxCatalog.update(delta);
+  }
   controls.update();
   renderer.render(scene, camera);
 });
@@ -1405,6 +1410,11 @@ vfxCatalog = initVfxCatalog({
   openModal,
   closeModal,
   refreshIcons,
+  scene,
+  camera,
+  renderer,
+  getModel: () => current,
+  THREE,
 });
 window.__vfxCatalog = vfxCatalog;
 

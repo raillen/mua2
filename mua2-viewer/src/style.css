@@ -2021,6 +2021,96 @@ html, body {
   height: 14px;
 }
 
+.vfx-player-box {
+  background: var(--panel-3);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vfx-player-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.vfx-player-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 10px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.vfx-player-btn:hover {
+  background: var(--line);
+  color: #fff;
+}
+
+.vfx-player-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.vfx-player-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+
+.vfx-player-btn i,
+.vfx-player-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.vfx-player-speed {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 5px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.vfx-player-speed:hover {
+  border-color: var(--text-dim);
+}
+
+.vfx-attachment-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--muted);
+  padding: 4px 6px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+.vfx-attachment-info i,
+.vfx-attachment-info svg {
+  width: 12px;
+  height: 12px;
+  color: #38bdf8;
+  flex-shrink: 0;
+}
+
 .vfx-char-action-box {
   background: var(--panel-3);
   border: 1px solid var(--line);

@@ -227,6 +227,39 @@ def test_exported_textures():
             assert w <= 256 and h <= 256, f"Thumbnail {sf} exceeds 256x256 max bounds: {w}x{h}"
             assert img.format == 'PNG', f"Texture {sf} format is not PNG: {img.format}"
 
+def test_vfx_texture_map_and_runtime_conformance():
+    """Verify texture_map.json validity, exported texture targets, and vfx.js runtime exports."""
+    map_path = os.path.abspath('mua2-viewer/assets/vfx/texture_map.json')
+    assert os.path.exists(map_path), f"Missing texture_map.json: {map_path}"
+
+    with open(map_path, 'r', encoding='utf-8') as f:
+        tex_map = json.load(f)
+
+    assert isinstance(tex_map, dict) and len(tex_map) >= 500, f"Expected >= 500 entries, got {len(tex_map)}"
+    tex_path_re = re.compile(r'^assets/vfx/textures/[0-9a-f]{16}\.png$')
+
+    for k, target in list(tex_map.items())[:50]:
+        assert tex_path_re.match(target), f"Invalid texture target for {k}: {target}"
+        abs_target = os.path.abspath(os.path.join('mua2-viewer', target))
+        assert os.path.exists(abs_target), f"Referenced texture file does not exist: {abs_target}"
+
+    # Verify vfx.js symbols
+    vfx_js_path = os.path.abspath('mua2-viewer/src/vfx.js')
+    assert os.path.exists(vfx_js_path), f"Missing vfx.js: {vfx_js_path}"
+    with open(vfx_js_path, 'r', encoding='utf-8') as f:
+        vfx_src = f.read()
+
+    for symbol in (
+        'export class VfxRuntime',
+        'export class VfxCatalogController',
+        'export function resolveAttachmentTarget',
+        'export function parseHexColor',
+        'export function evaluateColorRamp',
+        'export function resolveBlendMode',
+        'export function selfCheckVfxCatalog',
+    ):
+        assert symbol in vfx_src, f"Missing expected export symbol in vfx.js: {symbol}"
+
 def run_all_tests():
     """Execute all regression tests and report elapsed time."""
     print("Running MUA2 VFX regression test suite...", file=sys.stderr)
@@ -238,6 +271,7 @@ def run_all_tests():
         test_vectorized_texture_codecs,
         test_effects_catalog_schema_and_integrity,
         test_exported_textures,
+        test_vfx_texture_map_and_runtime_conformance,
     ]
     for t in tests:
         t()
