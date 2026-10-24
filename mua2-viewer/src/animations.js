@@ -1,372 +1,119 @@
 import * as THREE from 'three';
 
 /**
- * Procedural animation clips for MUA2 characters based on Bip01 hierarchy.
+ * Authentic Havok animation loader for MUA2 characters.
  *
- * MUA2 Bone Local Space (3ds Max Biped):
- *   - Character World: +X forward, +Y up, +Z right, -Z left.
- *   - Spine / Neck:
- *       +Z lean forward,   -Z lean backward
- *       +Y lean right,     -Y lean left
- *       +X axial twist
- *   - Head:
- *       +Z nod down,       -Z look up
- *       +Y turn right,     -Y turn left
- *   - Thigh:
- *       +Z swing forward,  -Z swing backward
- *       L Thigh: +Y abduct (outward/left),  -Y adduct (inward/right)
- *       R Thigh: -Y abduct (outward/right), +Y adduct (inward/left)
- *   - Calf (Knee):
- *       -Z bend knee backward,  0 straight (positive Z hyper-extends)
- *   - UpperArm:
- *       -Z swing forward,  +Z swing backward
- *       L Arm:   -Y abduct (outward/left),  +Y adduct (inward/right)
- *       R Arm:   +Y abduct (outward/right), -Y adduct (inward/left)
- *   - Forearm (Elbow):
- *       -Z bend elbow forward,  0 straight (positive Z hyper-extends)
+ * Reads extracted animation track data from assets/animations/{characterId}.json,
+ * binds tracks to model bone hierarchies, and builds Three.js AnimationClips.
+ * Procedural animations are strictly eliminated.
  */
 
-const X = new THREE.Vector3(1, 0, 0);
-const Y = new THREE.Vector3(0, 1, 0);
-const Z = new THREE.Vector3(0, 0, 1);
+// Cache for loaded animation data files
+const clipCache = new Map();
 
-function qRot(axis, rad) {
-  return new THREE.Quaternion().setFromAxisAngle(axis, rad);
-}
-
-function makeQuatTrack(boneName, times, quats) {
-  const values = [];
-  for (const q of quats) values.push(q.x, q.y, q.z, q.w);
-  return new THREE.QuaternionKeyframeTrack(`${boneName}.quaternion`, times, values);
-}
-
-function getBoneRest(model) {
-  const rest = {};
+/**
+ * Build a map of normalized bone names -> actual bone name in model
+ */
+function buildBoneMap(model) {
+  const map = new Map();
   model.traverse((o) => {
     if (o.isBone) {
-      rest[o.name] = {
-        quaternion: o.quaternion.clone(),
-        position: o.position.clone()
-      };
+      map.set(o.name, o.name);
+      // Also map space <-> underscore variants
+      map.set(o.name.replace(/ /g, '_'), o.name);
+      map.set(o.name.replace(/_/g, ' '), o.name);
     }
   });
-  return rest;
+  return map;
 }
 
 /**
- * 1. Idle (natural breathing, subtle sway).
+ * Load authentic Havok-decompiled animation clips for a character.
+ * @param {string} characterId - e.g. 'spiderman'
+ * @param {THREE.Object3D} model - Loaded character model
+ * @returns {Promise<Record<string, THREE.AnimationClip>>}
  */
-export function createIdleClip(model, duration = 3.0) {
-  const rest = getBoneRest(model);
-  const tracks = [];
-  const N = 25;
-  const times = [];
-  for (let i = 0; i < N; i++) times.push((i / (N - 1)) * duration);
+export async function loadGameAnimations(characterId, model) {
+  if (!characterId || !model) return {};
 
-  function apply(name, fn) {
-    const r = rest[name];
-    if (!r) return;
-    const quats = times.map((t) => r.quaternion.clone().multiply(fn(t)));
-    tracks.push(makeQuatTrack(name, times, quats));
+  const cleanId = characterId.toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  const url = `assets/animations/${cleanId}.json`;
+
+  let animData = clipCache.get(cleanId);
+  if (!animData) {
+    try {
+      let res = await fetch(url);
+      if (!res.ok) {
+        const baseId = cleanId.split('_')[0];
+        if (baseId !== cleanId) {
+          res = await fetch(`assets/animations/${baseId}.json`);
+        }
+      }
+      if (!res.ok) {
+        return {};
+      }
+      animData = await res.json();
+      clipCache.set(cleanId, animData);
+    } catch {
+      return {};
+    }
   }
 
-  // Spine breathing: gentle pitch on Z + subtle side sway
-  apply('Bip01_Spine', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    return qRot(Z, Math.sin(p) * 0.035).multiply(qRot(Y, Math.cos(p) * 0.015));
-  });
-  apply('Bip01_Spine1', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    return qRot(Z, Math.sin(p) * 0.025);
-  });
-  apply('Bip01_Spine2', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    return qRot(Z, Math.sin(p) * 0.015);
-  });
-
-  // Clavicles gently rising with breath
-  apply('Bip01_L_Clavicle', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    return qRot(Y, -Math.sin(p) * 0.02);
-  });
-  apply('Bip01_R_Clavicle', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    return qRot(Y, Math.sin(p) * 0.02);
-  });
-
-  // Head subtle counter-tilt
-  apply('Bip01_Head', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    return qRot(Z, -Math.sin(p) * 0.02).multiply(qRot(Y, Math.sin(p) * 0.025));
-  });
-
-  // Arms relaxed at sides with subtle breathing sway and natural slight elbow bend
-  apply('Bip01_L_UpperArm', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    return qRot(Z, -Math.sin(p) * 0.02).multiply(qRot(Y, -0.05));
-  });
-  apply('Bip01_L_Forearm', () => qRot(Z, -0.15));
-
-  apply('Bip01_R_UpperArm', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    return qRot(Z, -Math.sin(p) * 0.02).multiply(qRot(Y, 0.05));
-  });
-  apply('Bip01_R_Forearm', () => qRot(Z, -0.15));
-
-  return new THREE.AnimationClip('idle', duration, tracks);
-}
-
-/**
- * 2. Walk Cycle (anatomically correct knee/hip flexion and arm counter-swing).
- */
-export function createWalkClip(model, duration = 1.1) {
-  const rest = getBoneRest(model);
-  const tracks = [];
-  const N = 25;
-  const times = [];
-  for (let i = 0; i < N; i++) times.push((i / (N - 1)) * duration);
-
-  function apply(name, fn) {
-    const r = rest[name];
-    if (!r) return;
-    const quats = times.map((t) => r.quaternion.clone().multiply(fn(t)));
-    tracks.push(makeQuatTrack(name, times, quats));
+  if (!animData || !Array.isArray(animData.clips) || animData.clips.length === 0) {
+    return {};
   }
 
-  // Pelvis subtle yaw twist (X in Bip01) + roll (Y in Bip01)
-  apply('Bip01_Pelvis', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    return qRot(X, Math.sin(p) * 0.05).multiply(qRot(Y, Math.cos(p) * 0.03));
-  });
+  const boneMap = buildBoneMap(model);
+  const result = {};
 
-  // Left Leg: Thigh swings forward (+Z) & backward (-Z); Calf bends backward (-Z)
-  apply('Bip01_L_Thigh', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    return qRot(Z, Math.sin(p) * 0.42);
-  });
-  apply('Bip01_L_Calf', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    // Bends back (-Z) during the recovery/swing phase (when thigh moves forward)
-    const bend = -Math.max(0, Math.sin(p)) * 0.65;
-    return qRot(Z, bend);
-  });
+  for (const rawClip of animData.clips) {
+    if (!rawClip.name || typeof rawClip.duration !== 'number') continue;
 
-  // Right Leg (180 deg out of phase)
-  apply('Bip01_R_Thigh', (t) => {
-    const p = (t / duration) * Math.PI * 2 + Math.PI;
-    return qRot(Z, Math.sin(p) * 0.42);
-  });
-  apply('Bip01_R_Calf', (t) => {
-    const p = (t / duration) * Math.PI * 2 + Math.PI;
-    const bend = -Math.max(0, Math.sin(p)) * 0.65;
-    return qRot(Z, bend);
-  });
+    const tracks = [];
 
-  // Spine counter-rotates with pelvis
-  apply('Bip01_Spine', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    return qRot(X, -Math.sin(p) * 0.04).multiply(qRot(Z, 0.04));
-  });
+    for (const track of (rawClip.tracks || [])) {
+      const targetBone = boneMap.get(track.bone);
+      if (!targetBone) continue;
 
-  // Arms swing in opposition to legs:
-  // When Left leg is back (-sin), Left arm swings forward (-Z);
-  // When Left leg is forward (+sin), Left arm swings backward (+Z).
-  apply('Bip01_L_UpperArm', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    // Swing forward when sin(p) < 0 => rotation around Z is -sin(p) * 0.35
-    return qRot(Z, Math.sin(p) * 0.35).multiply(qRot(Y, -0.05));
-  });
-  apply('Bip01_L_Forearm', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    // Elbow flexes forward (-Z) during forward swing
-    const fwdSwing = Math.max(0, -Math.sin(p));
-    return qRot(Z, -(fwdSwing * 0.45 + 0.15));
-  });
+      const rotTimes = track.rotTimes || track.times || rawClip.times;
+      if (rotTimes && track.quaternions && track.quaternions.length === rotTimes.length * 4) {
+        tracks.push(
+          new THREE.QuaternionKeyframeTrack(
+            `${targetBone}.quaternion`,
+            rotTimes,
+            track.quaternions
+          )
+        );
+      }
 
-  // Right Arm (180 deg out of phase)
-  apply('Bip01_R_UpperArm', (t) => {
-    const p = (t / duration) * Math.PI * 2 + Math.PI;
-    return qRot(Z, Math.sin(p) * 0.35).multiply(qRot(Y, 0.05));
-  });
-  apply('Bip01_R_Forearm', (t) => {
-    const p = (t / duration) * Math.PI * 2 + Math.PI;
-    const fwdSwing = Math.max(0, -Math.sin(p));
-    return qRot(Z, -(fwdSwing * 0.45 + 0.15));
-  });
+      const posTimes = track.posTimes || track.times || rawClip.times;
+      if (posTimes && track.positions && track.positions.length === posTimes.length * 3) {
+        tracks.push(
+          new THREE.VectorKeyframeTrack(
+            `${targetBone}.position`,
+            posTimes,
+            track.positions
+          )
+        );
+      }
 
-  return new THREE.AnimationClip('walk', duration, tracks);
-}
+      const sclTimes = track.sclTimes || track.times || rawClip.times;
+      if (sclTimes && track.scales && track.scales.length === sclTimes.length * 3) {
+        tracks.push(
+          new THREE.VectorKeyframeTrack(
+            `${targetBone}.scale`,
+            sclTimes,
+            track.scales
+          )
+        );
+      }
+    }
 
-/**
- * 3. Combat Stance (crouched, elbows bent, hands ready).
- */
-export function createCombatClip(model, duration = 2.0) {
-  const rest = getBoneRest(model);
-  const tracks = [];
-  const N = 25;
-  const times = [];
-  for (let i = 0; i < N; i++) times.push((i / (N - 1)) * duration);
-
-  function apply(name, fn) {
-    const r = rest[name];
-    if (!r) return;
-    const quats = times.map((t) => r.quaternion.clone().multiply(fn(t)));
-    tracks.push(makeQuatTrack(name, times, quats));
+    if (tracks.length > 0) {
+      const clip = new THREE.AnimationClip(rawClip.name, rawClip.duration, tracks);
+      result[rawClip.name] = clip;
+    }
   }
 
-  // Spine leans forward (+Z) and twists slightly
-  apply('Bip01_Spine', (t) => {
-    const pulse = Math.sin((t / duration) * Math.PI * 2) * 0.02;
-    return qRot(Z, 0.12 + pulse).multiply(qRot(X, 0.1));
-  });
-  apply('Bip01_Spine1', () => qRot(Z, 0.06));
-  apply('Bip01_Head', (t) => {
-    const pulse = Math.sin((t / duration) * Math.PI * 2) * 0.015;
-    return qRot(Z, -0.1 + pulse).multiply(qRot(X, -0.1));
-  });
-
-  // Knees bent in stance (-Z is knee flexion)
-  apply('Bip01_L_Thigh', () => qRot(Z, 0.22).multiply(qRot(Y, 0.1)));
-  apply('Bip01_L_Calf', () => qRot(Z, -0.42));
-  apply('Bip01_R_Thigh', () => qRot(Z, -0.12).multiply(qRot(Y, -0.1)));
-  apply('Bip01_R_Calf', () => qRot(Z, -0.32));
-
-  // Arms up in guard:
-  // UpperArms swing forward (-Z) and inward (L: +Y, R: -Y)
-  // Forearms bend forward (-Z)
-  apply('Bip01_L_UpperArm', (t) => {
-    const weave = Math.sin((t / duration) * Math.PI * 2) * 0.02;
-    return qRot(Z, -0.55 + weave).multiply(qRot(Y, 0.22));
-  });
-  apply('Bip01_L_Forearm', () => qRot(Z, -0.92));
-
-  apply('Bip01_R_UpperArm', (t) => {
-    const weave = -Math.sin((t / duration) * Math.PI * 2) * 0.02;
-    return qRot(Z, -0.45 + weave).multiply(qRot(Y, -0.22));
-  });
-  apply('Bip01_R_Forearm', () => qRot(Z, -1.05));
-
-  return new THREE.AnimationClip('combat', duration, tracks);
-}
-
-/**
- * 4. Attack (Jab -> Cross combo).
- */
-export function createAttackClip(model, duration = 1.4) {
-  const rest = getBoneRest(model);
-  const tracks = [];
-  const N = 29;
-  const times = [];
-  for (let i = 0; i < N; i++) times.push((i / (N - 1)) * duration);
-
-  function apply(name, fn) {
-    const r = rest[name];
-    if (!r) return;
-    const quats = times.map((t) => r.quaternion.clone().multiply(fn(t)));
-    tracks.push(makeQuatTrack(name, times, quats));
-  }
-
-  // Torso twist driving punches (Spine X twist)
-  apply('Bip01_Spine', (t) => {
-    let twist = 0;
-    if (t < 0.6) {
-      // Left Jab: twist torso right (+X)
-      const p = t / 0.6;
-      twist = Math.sin(p * Math.PI) * 0.25;
-    } else if (t < 1.2) {
-      // Right Cross: twist torso left (-X)
-      const p = (t - 0.6) / 0.6;
-      twist = -Math.sin(p * Math.PI) * 0.45;
-    }
-    return qRot(X, twist).multiply(qRot(Z, 0.1));
-  });
-
-  // Left Arm (Jab at t 0..0.6)
-  apply('Bip01_L_UpperArm', (t) => {
-    if (t < 0.6) {
-      const p = t / 0.6;
-      const thrust = Math.sin(p * Math.PI);
-      return qRot(Z, -(0.35 + thrust * 0.75)).multiply(qRot(Y, 0.15 * (1 - thrust)));
-    }
-    return qRot(Z, -0.45).multiply(qRot(Y, 0.2));
-  });
-  apply('Bip01_L_Forearm', (t) => {
-    if (t < 0.6) {
-      const p = t / 0.6;
-      const thrust = Math.sin(p * Math.PI);
-      // unbends to strike (-0.95 -> -0.15), then returns
-      return qRot(Z, -(0.95 * (1 - thrust) + 0.15));
-    }
-    return qRot(Z, -0.92);
-  });
-
-  // Right Arm (Cross at t 0.6..1.2)
-  apply('Bip01_R_UpperArm', (t) => {
-    if (t >= 0.6 && t < 1.2) {
-      const p = (t - 0.6) / 0.6;
-      const thrust = Math.sin(p * Math.PI);
-      return qRot(Z, -(0.3 + thrust * 0.85)).multiply(qRot(Y, -0.15 * (1 - thrust)));
-    }
-    return qRot(Z, -0.35).multiply(qRot(Y, -0.2));
-  });
-  apply('Bip01_R_Forearm', (t) => {
-    if (t >= 0.6 && t < 1.2) {
-      const p = (t - 0.6) / 0.6;
-      const thrust = Math.sin(p * Math.PI);
-      return qRot(Z, -(1.05 * (1 - thrust) + 0.15));
-    }
-    return qRot(Z, -1.05);
-  });
-
-  // Stance stability
-  apply('Bip01_L_Thigh', () => qRot(Z, 0.15));
-  apply('Bip01_L_Calf', () => qRot(Z, -0.3));
-  apply('Bip01_R_Thigh', () => qRot(Z, -0.1));
-  apply('Bip01_R_Calf', () => qRot(Z, -0.25));
-
-  return new THREE.AnimationClip('attack', duration, tracks);
-}
-
-/**
- * 5. Heroic Pose (tall posture, arms akimbo on hips).
- */
-export function createHeroicClip(model, duration = 3.0) {
-  const rest = getBoneRest(model);
-  const tracks = [];
-  const N = 25;
-  const times = [];
-  for (let i = 0; i < N; i++) times.push((i / (N - 1)) * duration);
-
-  function apply(name, fn) {
-    const r = rest[name];
-    if (!r) return;
-    const quats = times.map((t) => r.quaternion.clone().multiply(fn(t)));
-    tracks.push(makeQuatTrack(name, times, quats));
-  }
-
-  // Chest puffed out (-Z lean back)
-  apply('Bip01_Spine', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    return qRot(Z, -0.08 + Math.sin(p) * 0.015);
-  });
-  apply('Bip01_Spine1', () => qRot(Z, -0.04));
-  apply('Bip01_Head', (t) => {
-    const p = (t / duration) * Math.PI * 2;
-    return qRot(Z, -0.08 + Math.sin(p) * 0.01).multiply(qRot(Y, 0.05));
-  });
-
-  // Arms akimbo (hands resting on hips):
-  // L Arm: abduct outward (-Y 0.32), swing slight forward (-Z 0.15), elbow bend forward (-Z 0.95)
-  // R Arm: abduct outward (+Y 0.32), swing slight forward (-Z 0.15), elbow bend forward (-Z 0.95)
-  apply('Bip01_L_UpperArm', () => qRot(Y, -0.32).multiply(qRot(Z, -0.15)));
-  apply('Bip01_L_Forearm', () => qRot(Z, -0.95));
-
-  apply('Bip01_R_UpperArm', () => qRot(Y, 0.32).multiply(qRot(Z, -0.15)));
-  apply('Bip01_R_Forearm', () => qRot(Z, -0.95));
-
-  // Solid grounded stance
-  apply('Bip01_L_Thigh', () => qRot(Y, 0.08));
-  apply('Bip01_R_Thigh', () => qRot(Y, -0.08));
-
-  return new THREE.AnimationClip('heroic', duration, tracks);
+  return result;
 }

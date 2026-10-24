@@ -2,13 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import {
-  createIdleClip,
-  createCombatClip,
-  createWalkClip,
-  createAttackClip,
-  createHeroicClip
-} from './animations.js';
+import { loadGameAnimations } from './animations.js';
 
 // Lucide icon refresh helper
 function refreshIcons() {
@@ -512,26 +506,23 @@ function prepare(model, entry) {
       }
     });
 
-    // Animation mixer + clips
+    // Animation mixer + authentic game clips
     mixer = new THREE.AnimationMixer(model);
     window.__viewer.mixer = mixer;
-    try {
-      animClips = {
-        idle: createIdleClip(model),
-        combat: createCombatClip(model),
-        walk: createWalkClip(model),
-        attack: createAttackClip(model),
-        heroic: createHeroicClip(model),
-      };
+    loadGameAnimations(entry.id, model).then((clips) => {
+      animClips = clips || {};
       window.__viewer.animClips = animClips;
-    } catch (err) {
-      console.warn('Procedural anim generation error:', err);
+      updateAnimDropdown(animClips);
+      applyAnimation(selectedAnim, 0.0);
+    }).catch((err) => {
+      console.warn('Authentic animation load error:', err);
       animClips = {};
-    }
-    applyAnimation(selectedAnim, 0.0);
+      updateAnimDropdown({});
+    });
   } else {
     mixer = null;
     animClips = {};
+    updateAnimDropdown({});
   }
 
   // Camera framing
@@ -1181,8 +1172,27 @@ btnViewList.classList.toggle('active', settings.sidebarView === 'list');
 btnViewList.setAttribute('aria-pressed', settings.sidebarView === 'list');
 
 // ========================================================
-// ANIMATION LOGIC & PROCEDURAL ACTIONS
+// AUTHENTIC GAME ANIMATION PLAYBACK
 // ========================================================
+function updateAnimDropdown(clips) {
+  if (!animSelect) return;
+  const currentVal = selectedAnim;
+  animSelect.innerHTML = '<option value="none">Bind Pose (Estático)</option>';
+  const names = Object.keys(clips || {});
+  for (const name of names) {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    animSelect.appendChild(opt);
+  }
+  if (clips && clips[currentVal]) {
+    animSelect.value = currentVal;
+  } else {
+    animSelect.value = 'none';
+    selectedAnim = 'none';
+  }
+}
+
 function applyAnimation(name, fadeDuration = 0.35) {
   selectedAnim = name;
   saveSetting('anim', name);
@@ -1221,6 +1231,11 @@ function applyAnimation(name, fadeDuration = 0.35) {
 if (animSelect) {
   animSelect.value = settings.anim;
   animSelect.addEventListener('change', (e) => {
+    if (e.target.value !== 'none') {
+      animPlaying = true;
+      saveSetting('animPlaying', true);
+      updateAnimPlayButton();
+    }
     applyAnimation(e.target.value);
   });
 }
