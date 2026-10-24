@@ -1,15 +1,28 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Spline layout/math adapted from HavokLib, Copyright (C) 2016-2023 Lukas Cone.
 # Cross-checked against soulstruct-havok (MIT). See hkx_PROVENANCE.md.
-"""Decode the single-block spline format observed in MUA2 Spider-Man HKX files."""
+"""Decode MUA2 transform splines, including shared-boundary multi-block clips."""
 from __future__ import annotations
 
-from bisect import bisect_right
-from dataclasses import dataclass
 import math
 import struct
+from bisect import bisect_right
+from dataclasses import dataclass
+from typing import overload
 
 from hkx_packfile import AnimationClipRaw
+
+
+def get_block_index_and_frame(frame: float, max_frames_per_block: int, num_blocks: int) -> tuple[int, float]:
+    """Map global animation frame to (block_index, frame_in_block) per Havok block partitioning."""
+    if max_frames_per_block < 2 or num_blocks < 1:
+        raise ValueError("Invalid block frame count")
+    if not math.isfinite(frame) or not 0 <= frame <= num_blocks * (max_frames_per_block - 1):
+        raise ValueError(f"Frame {frame} outside block domain")
+    frames_per_block = max_frames_per_block - 1
+    block_index = min(int(frame // frames_per_block), num_blocks - 1)
+    frame_in_block = float(frame - block_index * frames_per_block)
+    return block_index, frame_in_block
 
 
 def find_knot_span(degree: int, value: float, control_point_count: int, knots: list[int]) -> int:
@@ -54,51 +67,141 @@ class Curve:
     points: list[list[float]]
 
     def value(self, frame: float) -> list[float]:
+        frame_f = float(frame)
         if not self.knots:
             return self.points[0].copy()
-        span = find_knot_span(self.degree, frame, len(self.points), self.knots)
-        weights = _basis(span, self.degree, frame, self.knots)
+        span = find_knot_span(self.degree, frame_f, len(self.points), self.knots)
+        weights = _basis(span, self.degree, frame_f, self.knots)
         return [sum(self.points[span - i][a] * w for i, w in enumerate(weights))
                 for a in range(len(self.points[0]))]
 
 
 @dataclass
+class MultiBlockCurve:
+    curves: list[Curve]
+    max_frames_per_block: int
+    num_frames: int
+
+    @property
+    def knots(self) -> list[int]:
+        """Exporter dynamic marker, not a combined B-spline knot vector."""
+        for curve in self.curves:
+            if curve.knots:
+                return curve.knots
+        if any(curve.points != self.curves[0].points for curve in self.curves[1:]):
+            return [0, self.num_frames - 1]
+        return []
+
+    def value(self, frame: float) -> list[float]:
+        frame_f = float(frame)
+        if not math.isfinite(frame_f) or not (0.0 <= frame_f <= self.num_frames - 1):
+            raise ValueError(f"Frame {frame} outside spline domain")
+        block_idx, local_frame = get_block_index_and_frame(frame_f, self.max_frames_per_block, len(self.curves))
+        return self.curves[block_idx].value(local_frame)
+
+
+@dataclass
 class TransformTrack:
-    position: Curve
-    rotation: Curve
-    scale: Curve
+    position: Curve | MultiBlockCurve
+    rotation: Curve | MultiBlockCurve
+    scale: Curve | MultiBlockCurve
+
+    def sample(self, frame: float) -> tuple[list[float], list[float], list[float]]:
+        frame_f = float(frame)
+        return (
+            self.position.value(frame_f),
+            normalize_quaternion(self.rotation.value(frame_f)),
+            self.scale.value(frame_f),
+        )
 
 
 class SplineDecompressor:
-    def __init__(self, clip: AnimationClipRaw):
-        # ponytail: only observed one-block, zero-float-track payloads; add block dispatch before accepting others.
-        if clip.num_blocks != 1 or clip.block_offsets != [0] or clip.num_frames > clip.max_frames_per_block:
-            raise ValueError("Only single-block clips are supported")
+    def __init__(self, clip: AnimationClipRaw) -> None:
+        # ponytail: zero float tracks only; add float decoding when such clips appear.
+        if clip.num_blocks < 1 or clip.num_frames < 1 or clip.max_frames_per_block < 2:
+            raise ValueError("Invalid block/frame count")
+        frames_per_block = clip.max_frames_per_block - 1
+        expected_blocks = max(1, (clip.num_frames - 2) // frames_per_block + 1)
+        if clip.num_blocks != expected_blocks:
+            raise ValueError("Block count does not match frame count")
         if clip.num_tracks <= 0 or clip.mask_quant_size != 4 * clip.num_tracks:
             raise ValueError("Invalid transform mask size or unsupported float tracks")
-        if len(clip.float_block_offsets) != 1:
-            raise ValueError("Missing transform block end")
+        if len(clip.block_offsets) != clip.num_blocks or len(clip.float_block_offsets) != clip.num_blocks:
+            raise ValueError("Block offsets count mismatch")
+        self.clip = clip
         self.data = clip.data
-        self.end = clip.float_block_offsets[0]
-        if not clip.mask_quant_size <= self.end <= len(self.data):
-            raise ValueError("Invalid transform block bounds")
-        self.offset = 0
-        masks = [tuple(self.take(4)) for _ in range(clip.num_tracks)]
-        self.align(4)
-        self.tracks: list[TransformTrack] = []
         self.control_quaternion_norm_error = 0.0
-        for quant, pos, rot, scale in masks:
-            position = self.vector(quant & 3, pos, 0.0)
-            rotation = self.rotation((quant >> 2) & 15, rot)
+        self.blocks: list[list[TransformTrack]] = []
+        if clip.block_offsets[0] != 0:
+            raise ValueError("First block must start at zero")
+
+        block_curves: list[list[tuple[Curve, Curve, Curve]]] = []
+        for b in range(clip.num_blocks):
+            start = clip.block_offsets[b]
+            self.end = start + clip.float_block_offsets[b]
+            if not (0 <= start <= self.end <= len(self.data)) or (self.end - start) < clip.mask_quant_size:
+                raise ValueError("Invalid transform block bounds")
+            if start % 16 or (b + 1 < clip.num_blocks and
+                              (self.end + 15) // 16 * 16 != clip.block_offsets[b + 1]):
+                raise ValueError("Invalid transform block alignment or overlap")
+            self.offset = start
+            masks = [tuple(self.take(4)) for _ in range(clip.num_tracks)]
             self.align(4)
-            scaling = self.vector((quant >> 6) & 3, scale, 1.0)
-            self.tracks.append(TransformTrack(position, rotation, scaling))
-        if self.offset != self.end:
-            raise ValueError(f"{clip.name}: consumed {self.offset}, expected {self.end}")
-        for track in self.tracks:
-            for curve in (track.position, track.rotation, track.scale):
-                if curve.knots and (curve.knots[curve.degree] != 0 or curve.knots[len(curve.points)] != clip.num_frames - 1):
-                    raise ValueError("Spline domain does not match original frame count")
+            b_curves: list[tuple[Curve, Curve, Curve]] = []
+            for quant, pos, rot, scale in masks:
+                position = self.vector(quant & 3, pos, 0.0)
+                rotation = self.rotation((quant >> 2) & 15, rot)
+                self.align(4)
+                scaling = self.vector((quant >> 6) & 3, scale, 1.0)
+                b_curves.append((position, rotation, scaling))
+            if self.offset != self.end:
+                raise ValueError(f"{clip.name} block {b}: consumed {self.offset}, expected {self.end}")
+            local_num_frames = (
+                clip.max_frames_per_block
+                if b < clip.num_blocks - 1
+                else clip.num_frames - b * frames_per_block
+            )
+            for pos_c, rot_c, scl_c in b_curves:
+                for cv in (pos_c, rot_c, scl_c):
+                    if cv.knots and (cv.knots[cv.degree] != 0 or cv.knots[len(cv.points)] != local_num_frames - 1):
+                        raise ValueError("Spline domain does not match block frame count")
+            block_curves.append(b_curves)
+            self.blocks.append([TransformTrack(p, r, s) for p, r, s in b_curves])
+
+        if clip.num_blocks == 1:
+            self.tracks = self.blocks[0]
+        else:
+            self.tracks = []
+            for t in range(clip.num_tracks):
+                pos_curve = MultiBlockCurve(
+                    [block_curves[b][t][0] for b in range(clip.num_blocks)],
+                    clip.max_frames_per_block,
+                    clip.num_frames,
+                )
+                rot_curve = MultiBlockCurve(
+                    [block_curves[b][t][1] for b in range(clip.num_blocks)],
+                    clip.max_frames_per_block,
+                    clip.num_frames,
+                )
+                scl_curve = MultiBlockCurve(
+                    [block_curves[b][t][2] for b in range(clip.num_blocks)],
+                    clip.max_frames_per_block,
+                    clip.num_frames,
+                )
+                self.tracks.append(TransformTrack(pos_curve, rot_curve, scl_curve))
+
+    @overload
+    def sample(self, frame: float, track_idx: int) -> tuple[list[float], list[float], list[float]]: ...
+
+    @overload
+    def sample(self, frame: float, track_idx: None = None) -> list[tuple[list[float], list[float], list[float]]]: ...
+
+    def sample(
+        self, frame: float, track_idx: int | None = None
+    ) -> tuple[list[float], list[float], list[float]] | list[tuple[list[float], list[float], list[float]]]:
+        if track_idx is not None:
+            return self.tracks[track_idx].sample(frame)
+        return [track.sample(frame) for track in self.tracks]
 
     def take(self, size: int) -> bytes:
         if size < 0 or self.offset + size > self.end:
@@ -111,7 +214,7 @@ class SplineDecompressor:
         self.take((-self.offset) % alignment)
 
     def real(self) -> float:
-        value = struct.unpack('<f', self.take(4))[0]
+        value = float(struct.unpack('<f', self.take(4))[0])
         if not math.isfinite(value):
             raise ValueError("Non-finite spline value")
         return value

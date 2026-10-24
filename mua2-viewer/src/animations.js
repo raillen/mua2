@@ -3,13 +3,28 @@ import * as THREE from 'three';
 /**
  * Authentic Havok animation loader for MUA2 characters.
  *
- * Reads extracted animation track data from assets/animations/{characterId}.json,
- * binds tracks to model bone hierarchies, and builds Three.js AnimationClips.
- * Procedural animations are strictly eliminated.
+ * Reads explicit routing from assets/animations/index.json, loads canonical
+ * animation files, binds tracks to model bone hierarchies, and builds Three.js
+ * AnimationClips. Procedural generators and unsafe name-splitting fallbacks
+ * are strictly eliminated.
  */
 
-// Cache for loaded animation data files
+// Cache for manifest and loaded animation data files
+let manifestPromise = null;
 const clipCache = new Map();
+
+/**
+ * Fetch and cache the canonical animation manifest.
+ * @returns {Promise<Record<string, string | null>>}
+ */
+function getManifest() {
+  if (!manifestPromise) {
+    manifestPromise = fetch('assets/animations/index.json')
+      .then((res) => (res.ok ? res.json() : {}))
+      .catch(() => ({}));
+  }
+  return manifestPromise;
+}
 
 /**
  * Build a map of normalized bone names -> actual bone name in model
@@ -37,23 +52,25 @@ export async function loadGameAnimations(characterId, model) {
   if (!characterId || !model) return {};
 
   const cleanId = characterId.toLowerCase().replace(/[^a-z0-9_-]/g, '');
-  const url = `assets/animations/${cleanId}.json`;
+  const manifest = await getManifest();
+  const canonicalFile = manifest[cleanId];
 
-  let animData = clipCache.get(cleanId);
+  // Unsupported or empty model: fail visibly with empty clips; no unsafe fallback
+  if (!canonicalFile) {
+    return {};
+  }
+
+  const url = `assets/animations/${canonicalFile}`;
+
+  let animData = clipCache.get(canonicalFile);
   if (!animData) {
     try {
-      let res = await fetch(url);
-      if (!res.ok) {
-        const baseId = cleanId.split('_')[0];
-        if (baseId !== cleanId) {
-          res = await fetch(`assets/animations/${baseId}.json`);
-        }
-      }
+      const res = await fetch(url);
       if (!res.ok) {
         return {};
       }
       animData = await res.json();
-      clipCache.set(cleanId, animData);
+      clipCache.set(canonicalFile, animData);
     } catch {
       return {};
     }

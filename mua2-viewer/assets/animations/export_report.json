@@ -1,0 +1,903 @@
+{
+  "total_catalog_models": 184,
+  "mapped_models": 133,
+  "empty_models": 51,
+  "canonical_exports_count": 95,
+  "exports": [
+    {
+      "canonical_file": "spiderman.json",
+      "character": "spiderman",
+      "shared_models": [
+        "spiderman",
+        "spiderman_alt"
+      ],
+      "clip_count": 97,
+      "bytes": 7955384
+    },
+    {
+      "canonical_file": "ironman.json",
+      "character": "ironman",
+      "shared_models": [
+        "ironman",
+        "ironman_alt"
+      ],
+      "clip_count": 113,
+      "bytes": 8209792
+    },
+    {
+      "canonical_file": "wolverine.json",
+      "character": "wolverine",
+      "shared_models": [
+        "wolverine",
+        "wolverine_alt"
+      ],
+      "clip_count": 116,
+      "bytes": 8254069
+    },
+    {
+      "canonical_file": "captainamerica.json",
+      "character": "captainamerica",
+      "shared_models": [
+        "captainamerica",
+        "captainamerica_alt"
+      ],
+      "clip_count": 144,
+      "bytes": 10776364
+    },
+    {
+      "canonical_file": "thor.json",
+      "character": "thor",
+      "shared_models": [
+        "thor",
+        "thor_alt"
+      ],
+      "clip_count": 112,
+      "bytes": 12840111
+    },
+    {
+      "canonical_file": "hulk.json",
+      "character": "hulk",
+      "shared_models": [
+        "hulk",
+        "hulk_alt"
+      ],
+      "clip_count": 99,
+      "bytes": 8972438
+    },
+    {
+      "canonical_file": "deadpool.json",
+      "character": "deadpool",
+      "shared_models": [
+        "deadpool",
+        "deadpool_alt"
+      ],
+      "clip_count": 88,
+      "bytes": 7687418
+    },
+    {
+      "canonical_file": "venom.json",
+      "character": "venom",
+      "shared_models": [
+        "venom",
+        "venom_alt"
+      ],
+      "clip_count": 106,
+      "bytes": 10025265
+    },
+    {
+      "canonical_file": "magneto.json",
+      "character": "magneto",
+      "shared_models": [
+        "magneto",
+        "magneto_alt"
+      ],
+      "clip_count": 100,
+      "bytes": 8673838
+    },
+    {
+      "canonical_file": "storm.json",
+      "character": "storm",
+      "shared_models": [
+        "storm",
+        "storm_alt"
+      ],
+      "clip_count": 101,
+      "bytes": 10600866
+    },
+    {
+      "canonical_file": "psylocke.json",
+      "character": "psylocke",
+      "shared_models": [
+        "psylocke",
+        "psylocke_alt"
+      ],
+      "clip_count": 104,
+      "bytes": 7922303
+    },
+    {
+      "canonical_file": "mrfantastic.json",
+      "character": "mrfantastic",
+      "shared_models": [
+        "mrfantastic",
+        "mrfantastic_alt"
+      ],
+      "clip_count": 102,
+      "bytes": 11141885
+    },
+    {
+      "canonical_file": "daredevil.json",
+      "character": "daredevil",
+      "shared_models": [
+        "daredevil",
+        "daredevil_alt"
+      ],
+      "clip_count": 73,
+      "bytes": 5286211
+    },
+    {
+      "canonical_file": "thething.json",
+      "character": "thething",
+      "shared_models": [
+        "thething",
+        "thething_alt"
+      ],
+      "clip_count": 99,
+      "bytes": 8482194
+    },
+    {
+      "canonical_file": "gambit.json",
+      "character": "gambit",
+      "shared_models": [
+        "gambit",
+        "gambit_alt"
+      ],
+      "clip_count": 94,
+      "bytes": 10835138
+    },
+    {
+      "canonical_file": "iceman.json",
+      "character": "iceman",
+      "shared_models": [
+        "iceman",
+        "iceman_alt"
+      ],
+      "clip_count": 68,
+      "bytes": 6033147
+    },
+    {
+      "canonical_file": "blackpanther.json",
+      "character": "blackpanther",
+      "shared_models": [
+        "blackpanther"
+      ],
+      "clip_count": 50,
+      "bytes": 4751436
+    },
+    {
+      "canonical_file": "cable.json",
+      "character": "cable",
+      "shared_models": [
+        "cable"
+      ],
+      "clip_count": 43,
+      "bytes": 4090294
+    },
+    {
+      "canonical_file": "cable_alt.json",
+      "character": "cable_alt",
+      "shared_models": [
+        "cable_alt",
+        "cable_anti_1"
+      ],
+      "clip_count": 91,
+      "bytes": 8174083
+    },
+    {
+      "canonical_file": "yellowjacket.json",
+      "character": "yellowjacket",
+      "shared_models": [
+        "yellowjacket",
+        "yellowjacket_pro_1"
+      ],
+      "clip_count": 56,
+      "bytes": 7351570
+    },
+    {
+      "canonical_file": "jeangrey.json",
+      "character": "jeangrey",
+      "shared_models": [
+        "jeangrey",
+        "jeangrey_alt"
+      ],
+      "clip_count": 107,
+      "bytes": 8375358
+    },
+    {
+      "canonical_file": "humantorch.json",
+      "character": "humantorch",
+      "shared_models": [
+        "humantorch_flame",
+        "humantorch",
+        "humantorch_alt"
+      ],
+      "clip_count": 101,
+      "bytes": 6781188
+    },
+    {
+      "canonical_file": "msmarvel.json",
+      "character": "msmarvel",
+      "shared_models": [
+        "msmarvel",
+        "msmarvel_alt"
+      ],
+      "clip_count": 117,
+      "bytes": 11311450
+    },
+    {
+      "canonical_file": "nickfury.json",
+      "character": "nickfury",
+      "shared_models": [
+        "nickfury"
+      ],
+      "clip_count": 76,
+      "bytes": 7272246
+    },
+    {
+      "canonical_file": "lukecage.json",
+      "character": "lukecage",
+      "shared_models": [
+        "lukecage",
+        "lukecage_alt"
+      ],
+      "clip_count": 106,
+      "bytes": 9268387
+    },
+    {
+      "canonical_file": "greengoblin.json",
+      "character": "greengoblin",
+      "shared_models": [
+        "greengoblin",
+        "greengoblin_alt"
+      ],
+      "clip_count": 117,
+      "bytes": 11635554
+    },
+    {
+      "canonical_file": "invisiblewoman.json",
+      "character": "invisiblewoman",
+      "shared_models": [
+        "invisiblewoman",
+        "invisiblewoman_alt"
+      ],
+      "clip_count": 112,
+      "bytes": 7851992
+    },
+    {
+      "canonical_file": "shehulk.json",
+      "character": "shehulk",
+      "shared_models": [
+        "shehulk"
+      ],
+      "clip_count": 50,
+      "bytes": 4360474
+    },
+    {
+      "canonical_file": "colossus.json",
+      "character": "colossus",
+      "shared_models": [
+        "colossus"
+      ],
+      "clip_count": 24,
+      "bytes": 2093772
+    },
+    {
+      "canonical_file": "goliath.json",
+      "character": "goliath",
+      "shared_models": [
+        "goliath"
+      ],
+      "clip_count": 53,
+      "bytes": 7867841
+    },
+    {
+      "canonical_file": "hercules.json",
+      "character": "hercules",
+      "shared_models": [
+        "hercules"
+      ],
+      "clip_count": 45,
+      "bytes": 3511658
+    },
+    {
+      "canonical_file": "stanlee_pro_1.json",
+      "character": "stanlee_pro_1",
+      "shared_models": [
+        "stanlee_pro_1"
+      ],
+      "clip_count": 7,
+      "bytes": 1009642
+    },
+    {
+      "canonical_file": "tinkerer_anti_2.json",
+      "character": "tinkerer_anti_2",
+      "shared_models": [
+        "tinkerer_anti_2"
+      ],
+      "clip_count": 53,
+      "bytes": 10368701
+    },
+    {
+      "canonical_file": "tinkererwalker_01.json",
+      "character": "tinkererwalker_01",
+      "shared_models": [
+        "tinkererwalker_01"
+      ],
+      "clip_count": 41,
+      "bytes": 3006798
+    },
+    {
+      "canonical_file": "wakandaroyalguard_anti_1.json",
+      "character": "wakandaroyalguard_anti_1",
+      "shared_models": [
+        "wakandaroyalguard_anti_1",
+        "wakandaroyalguard_anti_1_2"
+      ],
+      "clip_count": 32,
+      "bytes": 2647636
+    },
+    {
+      "canonical_file": "mrfantastic_pro_2.json",
+      "character": "mrfantastic_pro_2",
+      "shared_models": [
+        "mrfantastic_pro_2"
+      ],
+      "clip_count": 1,
+      "bytes": 55949
+    },
+    {
+      "canonical_file": "mrfantastic_pro_2_2.json",
+      "character": "mrfantastic_pro_2_2",
+      "shared_models": [
+        "mrfantastic_pro_2_2"
+      ],
+      "clip_count": 1,
+      "bytes": 57897
+    },
+    {
+      "canonical_file": "nickfury_nanite_anti_1.json",
+      "character": "nickfury_nanite_anti_1",
+      "shared_models": [
+        "nickfury_nanite_anti_1"
+      ],
+      "clip_count": 105,
+      "bytes": 9423707
+    },
+    {
+      "canonical_file": "carnage_anti_1.json",
+      "character": "carnage_anti_1",
+      "shared_models": [
+        "carnage_anti_1",
+        "carnage_alt_1"
+      ],
+      "clip_count": 104,
+      "bytes": 6937514
+    },
+    {
+      "canonical_file": "blackpanther_pro_1.json",
+      "character": "blackpanther_pro_1",
+      "shared_models": [
+        "blackpanther_pro_1",
+        "blackpanther_alt_1"
+      ],
+      "clip_count": 110,
+      "bytes": 9390097
+    },
+    {
+      "canonical_file": "penance_pro_1.json",
+      "character": "penance_pro_1",
+      "shared_models": [
+        "penance_pro_1",
+        "penance_alt_1"
+      ],
+      "clip_count": 75,
+      "bytes": 5611259
+    },
+    {
+      "canonical_file": "nickfury_anti_1.json",
+      "character": "nickfury_anti_1",
+      "shared_models": [
+        "nickfury_anti_1"
+      ],
+      "clip_count": 46,
+      "bytes": 4647260
+    },
+    {
+      "canonical_file": "capekiller_pro_1.json",
+      "character": "capekiller_pro_1",
+      "shared_models": [
+        "capekiller_pro_1",
+        "capekiller_pro_1_2"
+      ],
+      "clip_count": 46,
+      "bytes": 4110045
+    },
+    {
+      "canonical_file": "songbird_pro_2.json",
+      "character": "songbird_pro_2",
+      "shared_models": [
+        "songbird_pro_2",
+        "songbird_alt_1"
+      ],
+      "clip_count": 123,
+      "bytes": 9216670
+    },
+    {
+      "canonical_file": "juggernaut_pro_1.json",
+      "character": "juggernaut_pro_1",
+      "shared_models": [
+        "juggernaut_pro_1",
+        "juggernaut_alt_2"
+      ],
+      "clip_count": 98,
+      "bytes": 6701605
+    },
+    {
+      "canonical_file": "a_bomb_anti_1.json",
+      "character": "a_bomb_anti_1",
+      "shared_models": [
+        "a_bomb_anti_1"
+      ],
+      "clip_count": 21,
+      "bytes": 1179946
+    },
+    {
+      "canonical_file": "spiderwoman_pro_1.json",
+      "character": "spiderwoman_pro_1",
+      "shared_models": [
+        "spiderwoman_pro_1"
+      ],
+      "clip_count": 41,
+      "bytes": 3600968
+    },
+    {
+      "canonical_file": "bishop_pro_2.json",
+      "character": "bishop_pro_2",
+      "shared_models": [
+        "bishop_pro_2"
+      ],
+      "clip_count": 65,
+      "bytes": 8057625
+    },
+    {
+      "canonical_file": "diamondback_pro_1.json",
+      "character": "diamondback_pro_1",
+      "shared_models": [
+        "diamondback_pro_1"
+      ],
+      "clip_count": 16,
+      "bytes": 792913
+    },
+    {
+      "canonical_file": "prodigy_pro_1.json",
+      "character": "prodigy_pro_1",
+      "shared_models": [
+        "prodigy_pro_1"
+      ],
+      "clip_count": 46,
+      "bytes": 5684923
+    },
+    {
+      "canonical_file": "whirlwind_pro_2.json",
+      "character": "whirlwind_pro_2",
+      "shared_models": [
+        "whirlwind_pro_2"
+      ],
+      "clip_count": 18,
+      "bytes": 731209
+    },
+    {
+      "canonical_file": "grimreaper_pro_1.json",
+      "character": "grimreaper_pro_1",
+      "shared_models": [
+        "grimreaper_pro_1"
+      ],
+      "clip_count": 27,
+      "bytes": 1999956
+    },
+    {
+      "canonical_file": "firestar_anti_1.json",
+      "character": "firestar_anti_1",
+      "shared_models": [
+        "firestar_anti_1"
+      ],
+      "clip_count": 37,
+      "bytes": 3905376
+    },
+    {
+      "canonical_file": "mariahill_pro_1.json",
+      "character": "mariahill_pro_1",
+      "shared_models": [
+        "mariahill_pro_1"
+      ],
+      "clip_count": 32,
+      "bytes": 3496855
+    },
+    {
+      "canonical_file": "warmachine_pro_1.json",
+      "character": "warmachine_pro_1",
+      "shared_models": [
+        "warmachine_pro_1"
+      ],
+      "clip_count": 44,
+      "bytes": 3359743
+    },
+    {
+      "canonical_file": "titaniumman_pro_1.json",
+      "character": "titaniumman_pro_1",
+      "shared_models": [
+        "titaniumman_pro_1"
+      ],
+      "clip_count": 23,
+      "bytes": 1736544
+    },
+    {
+      "canonical_file": "moltenman_anti_1.json",
+      "character": "moltenman_anti_1",
+      "shared_models": [
+        "moltenman_anti_1"
+      ],
+      "clip_count": 18,
+      "bytes": 834135
+    },
+    {
+      "canonical_file": "blackwidow_pro_1.json",
+      "character": "blackwidow_pro_1",
+      "shared_models": [
+        "blackwidow_pro_1"
+      ],
+      "clip_count": 33,
+      "bytes": 3701472
+    },
+    {
+      "canonical_file": "dagger_anti_1.json",
+      "character": "dagger_anti_1",
+      "shared_models": [
+        "dagger_anti_1"
+      ],
+      "clip_count": 27,
+      "bytes": 2150797
+    },
+    {
+      "canonical_file": "patriot_anti_1.json",
+      "character": "patriot_anti_1",
+      "shared_models": [
+        "patriot_anti_1"
+      ],
+      "clip_count": 45,
+      "bytes": 3910883
+    },
+    {
+      "canonical_file": "ironfist_anti_1.json",
+      "character": "ironfist_anti_1",
+      "shared_models": [
+        "ironfist_anti_1",
+        "ironfist_alt_1"
+      ],
+      "clip_count": 107,
+      "bytes": 9528033
+    },
+    {
+      "canonical_file": "bullseye_pro_1.json",
+      "character": "bullseye_pro_1",
+      "shared_models": [
+        "bullseye_pro_1"
+      ],
+      "clip_count": 20,
+      "bytes": 812556
+    },
+    {
+      "canonical_file": "equinox_anti_1.json",
+      "character": "equinox_anti_1",
+      "shared_models": [
+        "equinox_anti_1"
+      ],
+      "clip_count": 25,
+      "bytes": 1587586
+    },
+    {
+      "canonical_file": "ladydeathstrike_pro_1.json",
+      "character": "ladydeathstrike_pro_1",
+      "shared_models": [
+        "ladydeathstrike_pro_1"
+      ],
+      "clip_count": 28,
+      "bytes": 1545622
+    },
+    {
+      "canonical_file": "jackolantern_pro_1.json",
+      "character": "jackolantern_pro_1",
+      "shared_models": [
+        "jackolantern_pro_1"
+      ],
+      "clip_count": 31,
+      "bytes": 1483956
+    },
+    {
+      "canonical_file": "moonstone_pro_1.json",
+      "character": "moonstone_pro_1",
+      "shared_models": [
+        "moonstone_pro_1"
+      ],
+      "clip_count": 23,
+      "bytes": 1309361
+    },
+    {
+      "canonical_file": "electro_anti_1.json",
+      "character": "electro_anti_1",
+      "shared_models": [
+        "electro_anti_1"
+      ],
+      "clip_count": 14,
+      "bytes": 748435
+    },
+    {
+      "canonical_file": "scorcher_anti_1.json",
+      "character": "scorcher_anti_1",
+      "shared_models": [
+        "scorcher_anti_1"
+      ],
+      "clip_count": 18,
+      "bytes": 1182419
+    },
+    {
+      "canonical_file": "wizard_anti_2.json",
+      "character": "wizard_anti_2",
+      "shared_models": [
+        "wizard_anti_2"
+      ],
+      "clip_count": 28,
+      "bytes": 1329369
+    },
+    {
+      "canonical_file": "luciavonbardas_pro_1.json",
+      "character": "luciavonbardas_pro_1",
+      "shared_models": [
+        "luciavonbardas_pro_1",
+        "luciavonbardas_cyborg_pro_1"
+      ],
+      "clip_count": 24,
+      "bytes": 1307353
+    },
+    {
+      "canonical_file": "shocker_anti_1.json",
+      "character": "shocker_anti_1",
+      "shared_models": [
+        "shocker_anti_1"
+      ],
+      "clip_count": 16,
+      "bytes": 841510
+    },
+    {
+      "canonical_file": "justice_pro_1.json",
+      "character": "justice_pro_1",
+      "shared_models": [
+        "justice_pro_1"
+      ],
+      "clip_count": 34,
+      "bytes": 3398115
+    },
+    {
+      "canonical_file": "havok_pro_1.json",
+      "character": "havok_pro_1",
+      "shared_models": [
+        "havok_pro_1"
+      ],
+      "clip_count": 26,
+      "bytes": 1751108
+    },
+    {
+      "canonical_file": "wonderman_pro_2.json",
+      "character": "wonderman_pro_2",
+      "shared_models": [
+        "wonderman_pro_2"
+      ],
+      "clip_count": 15,
+      "bytes": 788690
+    },
+    {
+      "canonical_file": "cloak_anti_1.json",
+      "character": "cloak_anti_1",
+      "shared_models": [
+        "cloak_anti_1"
+      ],
+      "clip_count": 3,
+      "bytes": 303366
+    },
+    {
+      "canonical_file": "capekiller_pro_1_3.json",
+      "character": "capekiller_pro_1_3",
+      "shared_models": [
+        "capekiller_pro_1_3"
+      ],
+      "clip_count": 20,
+      "bytes": 729501
+    },
+    {
+      "canonical_file": "latveriancyborg_blade_pro_1.json",
+      "character": "latveriancyborg_blade_pro_1",
+      "shared_models": [
+        "latveriancyborg_blade_pro_1"
+      ],
+      "clip_count": 25,
+      "bytes": 1194841
+    },
+    {
+      "canonical_file": "latveriancyborg_rocket_pro_1.json",
+      "character": "latveriancyborg_rocket_pro_1",
+      "shared_models": [
+        "latveriancyborg_rocket_pro_1",
+        "latveriancyborg_rocket_pro_1_2"
+      ],
+      "clip_count": 21,
+      "bytes": 668466
+    },
+    {
+      "canonical_file": "latveriancyborg_shocker_pro_1.json",
+      "character": "latveriancyborg_shocker_pro_1",
+      "shared_models": [
+        "latveriancyborg_shocker_pro_1",
+        "latveriancyborg_shocker_pro_1_2"
+      ],
+      "clip_count": 16,
+      "bytes": 604988
+    },
+    {
+      "canonical_file": "latverianrobot_pro_1.json",
+      "character": "latverianrobot_pro_1",
+      "shared_models": [
+        "latverianrobot_pro_1"
+      ],
+      "clip_count": 54,
+      "bytes": 1778030
+    },
+    {
+      "canonical_file": "latverianrobot_gunner_pro_1.json",
+      "character": "latverianrobot_gunner_pro_1",
+      "shared_models": [
+        "latverianrobot_gunner_pro_1"
+      ],
+      "clip_count": 56,
+      "bytes": 1426398
+    },
+    {
+      "canonical_file": "tinkerer_anti_head_1.json",
+      "character": "tinkerer_anti_head_1",
+      "shared_models": [
+        "tinkerer_anti_head_1"
+      ],
+      "clip_count": 16,
+      "bytes": 1277933
+    },
+    {
+      "canonical_file": "superhumaninmateheavy_anti_2.json",
+      "character": "superhumaninmateheavy_anti_2",
+      "shared_models": [
+        "superhumaninmateheavy_anti_2"
+      ],
+      "clip_count": 35,
+      "bytes": 1758775
+    },
+    {
+      "canonical_file": "superhumaninmateheavy_anti_2_2.json",
+      "character": "superhumaninmateheavy_anti_2_2",
+      "shared_models": [
+        "superhumaninmateheavy_anti_2_2"
+      ],
+      "clip_count": 33,
+      "bytes": 1349103
+    },
+    {
+      "canonical_file": "superhumaninmateheavy_anti_2_3.json",
+      "character": "superhumaninmateheavy_anti_2_3",
+      "shared_models": [
+        "superhumaninmateheavy_anti_2_3"
+      ],
+      "clip_count": 17,
+      "bytes": 793078
+    },
+    {
+      "canonical_file": "superhumaninmate_basic_anti_2.json",
+      "character": "superhumaninmate_basic_anti_2",
+      "shared_models": [
+        "superhumaninmate_basic_anti_2",
+        "superhumaninmate_basic_anti_2_2",
+        "superhumaninmate_basic_anti_2_3"
+      ],
+      "clip_count": 17,
+      "bytes": 511097
+    },
+    {
+      "canonical_file": "shieldmedium_pro_1_2.json",
+      "character": "shieldmedium_pro_1_2",
+      "shared_models": [
+        "shieldmedium_pro_1_2"
+      ],
+      "clip_count": 17,
+      "bytes": 521334
+    },
+    {
+      "canonical_file": "daredevil_baton.json",
+      "character": "daredevil_baton",
+      "shared_models": [
+        "daredevil_baton"
+      ],
+      "clip_count": 19,
+      "bytes": 382321
+    },
+    {
+      "canonical_file": "daredevil_anti_1.json",
+      "character": "daredevil_anti_1",
+      "shared_models": [
+        "daredevil_anti_1"
+      ],
+      "clip_count": 1,
+      "bytes": 4980
+    },
+    {
+      "canonical_file": "fxt_playingcardfront.json",
+      "character": "fxt_playingcardfront",
+      "shared_models": [
+        "fxt_playingcardfront"
+      ],
+      "clip_count": 6,
+      "bytes": 66077
+    },
+    {
+      "canonical_file": "gambit_pro_staff.json",
+      "character": "gambit_pro_staff",
+      "shared_models": [
+        "gambit_pro_staff"
+      ],
+      "clip_count": 11,
+      "bytes": 40578
+    },
+    {
+      "canonical_file": "lukecage_2.json",
+      "character": "lukecage_2",
+      "shared_models": [
+        "lukecage_2"
+      ],
+      "clip_count": 9,
+      "bytes": 58674
+    },
+    {
+      "canonical_file": "spiderman_alt_3.json",
+      "character": "spiderman_alt_3",
+      "shared_models": [
+        "spiderman_alt_3"
+      ],
+      "clip_count": 27,
+      "bytes": 473062
+    },
+    {
+      "canonical_file": "fxt_webbing02.json",
+      "character": "fxt_webbing02",
+      "shared_models": [
+        "fxt_webbing02"
+      ],
+      "clip_count": 1,
+      "bytes": 12191
+    },
+    {
+      "canonical_file": "venom_pro_tongue.json",
+      "character": "venom_pro_tongue",
+      "shared_models": [
+        "venom_pro_tongue"
+      ],
+      "clip_count": 11,
+      "bytes": 494828
+    }
+  ],
+  "failures": [],
+  "total_bytes": 408785585
+}

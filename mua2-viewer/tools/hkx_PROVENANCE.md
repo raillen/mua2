@@ -26,8 +26,15 @@
      - Pure Python B-spline basis evaluation function implementations
      - ThreeComp40 40-bit integer bitfield masking and implicit component reconstruction
      - Quantized float linear interpolation between [min, max] extremes
+     - `get_block_index_and_frame`: multi-block shared boundary frame partitioning (`max_frames_per_block - 1` advance per block, matching Havok `getBlockAndTimeInBlock`)
 
 ## MUA2 Tailoring & Constraints
-- Tailored specifically for MUA2 Spider-Man animation packfiles (`09_spiderman.hkx`, `09_spiderman_4_combat.hkx`, `09_spiderman_4_conv.hkx`).
-- Invariant across all 97 clips: Havok 6.1.0-r1 64-bit LE, `numBlocks == 1`, `floatTracks == 0`.
+- Tailored for MUA2 character and zone animation packfiles.
+- Invariants across all 10,377 clips: Havok 6.1.0-r1 64-bit LE, zero float tracks (`mask_quant_size == 4 * num_tracks`).
+- Multi-block clips (`num_blocks > 1`):
+  - 8 multi-block character clips (2-3 blocks, 281-551 frames): `10_thor_4_combat.hkx` (`fusion_create_tornado_loop`), `110_goliath.hkx` (`idle`), `110_goliath_4_combat.hkx` (`power_18`), `115_yellowjacket.hkx` (`idle`), `158_nanitenickfury.hkx` (`power_26`, `power_28`), `160_cablehero.hkx` (`menu_action`), and `venom_tongue.hkx` (`power_20`).
+  - 463 multi-block zone/effect clips (2-6 blocks, up to 1,363 frames).
+  - Adjacent blocks share boundary frames (`frames_per_block = max_frames_per_block - 1 = 255`), validated against Havok 6.1 and `soulstruct-havok`.
+  - Block transform payloads span `block_offsets[b]` to `block_offsets[b] + float_block_offsets[b]`.
 - All rotations use `ThreeComp40` (q_type 1) with unit quaternion normalization upon curve evaluation.
+- `MultiBlockCurve` wraps per-block B-spline curves to preserve the transparent `.value(frame)` interface and provide `sample(frame)`.
