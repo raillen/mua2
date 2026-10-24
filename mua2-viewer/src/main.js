@@ -10,18 +10,40 @@ import {
   createHeroicClip
 } from './animations.js';
 
+// Lucide icon refresh helper
+function refreshIcons() {
+  if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    window.lucide.createIcons({
+      attrs: {
+        'stroke-width': 1.8,
+      },
+      nameAttr: 'data-lucide',
+    });
+  }
+}
+
+// Thumbnails were regenerated with the correct vertical orientation; the
+// version query busts the old browser/GitHub Pages cache.
+const THUMB_VERSION = 2;
+const thumbUrl = (value) => {
+  const src = typeof value === 'string' ? value : value.thumb;
+  return `${src}?v=${THUMB_VERSION}`;
+};
+
 // ========================================================
 // PERSISTENT SETTINGS (Requirement 5)
 // ========================================================
 const SETTINGS_KEY = 'mua2_viewer_settings';
+const SETTINGS_VERSION = 2;
 const DEFAULT_SETTINGS = {
+  _v: SETTINGS_VERSION,
   rotate: true,
   wire: false,
   tex: true,
   grid: true,
   rig: false,
-  anim: 'idle',
-  animPlaying: true,
+  anim: 'none',
+  animPlaying: false,
   animSpeed: 1.0,
   sidebarWidth: 320,
   sidebarView: 'cards', // 'cards' | 'list'
@@ -30,7 +52,23 @@ const DEFAULT_SETTINGS = {
 function loadSettings() {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
-    return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : { ...DEFAULT_SETTINGS };
+    if (!raw) return { ...DEFAULT_SETTINGS };
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return { ...DEFAULT_SETTINGS };
+    const result = { ...DEFAULT_SETTINGS };
+    for (const key of ['rotate', 'wire', 'tex', 'grid', 'rig', 'animPlaying']) {
+      if (typeof parsed[key] === 'boolean') result[key] = parsed[key];
+    }
+    if (['cards', 'list'].includes(parsed.sidebarView)) result.sidebarView = parsed.sidebarView;
+    if (Number.isFinite(parsed.sidebarWidth)) result.sidebarWidth = parsed.sidebarWidth;
+    if ([0.5, 1, 1.5, 2].includes(parsed.animSpeed)) result.animSpeed = parsed.animSpeed;
+    // Older settings defaulted to idle; migrate them to a static bind pose.
+    if (parsed._v === SETTINGS_VERSION && ['none', 'idle', 'combat', 'walk', 'attack', 'heroic'].includes(parsed.anim)) {
+      result.anim = parsed.anim;
+    } else {
+      result.animPlaying = false;
+    }
+    return result;
   } catch {
     return { ...DEFAULT_SETTINGS };
   }
@@ -53,6 +91,14 @@ const viewport = document.getElementById('viewport');
 const loading = document.getElementById('loading');
 const loadingText = document.getElementById('loading-text');
 const statusEl = document.getElementById('status');
+
+// Header info actions (changelog / roadmap)
+const btnChangelog = document.getElementById('btn-changelog');
+const btnRoadmap = document.getElementById('btn-roadmap');
+const changelogModal = document.getElementById('changelog-modal');
+const changelogClose = document.getElementById('changelog-close');
+const roadmapModal = document.getElementById('roadmap-modal');
+const roadmapClose = document.getElementById('roadmap-close');
 
 // Sidebar DOM
 const sidebarEl = document.getElementById('sidebar');
@@ -168,11 +214,12 @@ scene.add(new THREE.HemisphereLight(0xc8d6ff, 0x1b1e25, 0.8));
 const floor = new THREE.Mesh(
   new THREE.CircleGeometry(6, 64),
   new THREE.MeshStandardMaterial({
-    color: 0x13151b,
-    roughness: 0.92,
-    metalness: 0.05,
+    color: 0x0b0d12,
+    roughness: 1.0,
+    metalness: 0,
+    envMapIntensity: 0.2,
     transparent: true,
-    opacity: 0.9,
+    opacity: 0.95,
   })
 );
 floor.rotation.x = -Math.PI / 2;
@@ -249,6 +296,7 @@ scene.add(modelRoot);
 function applySidebarWidth(w) {
   const clamped = Math.max(260, Math.min(580, w));
   appEl.style.setProperty('--sidebar-width', `${clamped}px`);
+  sidebarResizer.setAttribute('aria-valuenow', clamped);
   saveSetting('sidebarWidth', clamped);
 }
 
@@ -298,14 +346,15 @@ sidebarResizer.addEventListener('keydown', (e) => {
 });
 
 // Mobile Sidebar Drawer Toggle (Requirement 8)
+function setSidebarOpen(open) {
+  sidebarEl.classList.toggle('mobile-open', open);
+  sidebarOverlay.classList.toggle('active', open);
+  btnSidebarToggle.setAttribute('aria-expanded', String(open));
+}
 btnSidebarToggle.addEventListener('click', () => {
-  sidebarEl.classList.toggle('mobile-open');
-  sidebarOverlay.classList.toggle('active', sidebarEl.classList.contains('mobile-open'));
+  setSidebarOpen(!sidebarEl.classList.contains('mobile-open'));
 });
-sidebarOverlay.addEventListener('click', () => {
-  sidebarEl.classList.remove('mobile-open');
-  sidebarOverlay.classList.remove('active');
-});
+sidebarOverlay.addEventListener('click', () => setSidebarOpen(false));
 
 // ========================================================
 // 3D MODEL PREPARATION & BOUNDING BOX
@@ -370,6 +419,31 @@ function countTris(root) {
     }
   });
   return Math.round(t);
+}
+
+// Fit the whole character (head to feet) inside the viewport with a safe
+// margin. Uses the vertical FOV so the framing stays correct on tall screens.
+function frameModel(model) {
+  if (!model) return;
+  const box = modelBox(model);
+  const size = new THREE.Vector3();
+  const center = new THREE.Vector3();
+  box.getSize(size);
+  box.getCenter(center);
+  if (!Number.isFinite(size.y) || size.y <= 0) return;
+
+  const target = new THREE.Vector3(0, size.y * 0.5, 0);
+  const vFov = THREE.MathUtils.degToRad(camera.fov);
+  const fitHeight = (size.y * 1.24) / (2 * Math.tan(vFov / 2));
+  const fitWidth = (size.x * 1.24) / (2 * Math.tan(vFov / 2) * Math.max(camera.aspect, 0.6));
+  const dist = Math.max(fitHeight, fitWidth, 2.4);
+
+  // Slightly above eye level, three-quarter view.
+  const dir = new THREE.Vector3(0.58, 0.22, 0.92).normalize();
+  controls.target.copy(target);
+  camera.position.copy(target).addScaledVector(dir, dist);
+  camera.updateProjectionMatrix();
+  controls.update();
 }
 
 function prepare(model, entry) {
@@ -461,12 +535,7 @@ function prepare(model, entry) {
   }
 
   // Camera framing
-  const target = new THREE.Vector3(0, size.y * 0.48, 0);
-  controls.target.copy(target);
-  const dist = Math.max(size.y * 1.15, size.x * 1.5, 2.2);
-  camera.position.set(dist * 0.62, size.y * 0.58, dist * 0.95);
-  camera.updateProjectionMatrix();
-  controls.update();
+  frameModel(model);
 
   // Caption update (Requirement 6 - Top-Left)
   nameEl.textContent = entry.name;
@@ -520,6 +589,8 @@ function updateActiveButtons(activeId) {
     group.classList.toggle('has-active', hasActiveChild);
     if (hasActiveChild) {
       group.classList.add('expanded');
+      const header = group.querySelector('.accordion-header');
+      if (header) header.setAttribute('aria-expanded', 'true');
     }
   });
   // Update gallery modal cards if open
@@ -531,6 +602,37 @@ function updateActiveButtons(activeId) {
 // ========================================================
 // CHARACTER GROUPING & ACCORDION (Requirement 1 & 3)
 // ========================================================
+const CATEGORY_ORDER = ['main', 'other', 'npc'];
+const CATEGORY_META = {
+  main: { label: 'Heróis & Vilões', icon: 'users' },
+  other: { label: 'Outras', icon: 'user-round' },
+  npc: { label: 'NPC Genérico', icon: 'shield' },
+};
+
+// Generic enemies, civilians and army-builder variants. These reuse the same
+// character models across many costumes, so they get their own section instead
+// of competing with the named roster.
+const NPC_KEYWORDS = [
+  'shield', 'latverian', 'polícia', 'policia', 'police_officer', 'policeman',
+  'wakandaroyalguard', 'nanite_inmate', 'senator', 'ped_', 'pedf',
+  'capekiller', 'whitestar', 'mercenary', 'intmerc', 'shocktrooper',
+  'cyborgblade', 'detento', 'prisioneiro', 'wdb_', 'superhumaninmate',
+  'escapedprisoner',
+];
+
+function categoryForGroup(group) {
+  const hay = `${group.name} ${group.items.map((item) => item.id).join(' ')}`.toLowerCase();
+  if (NPC_KEYWORDS.some((keyword) => hay.includes(keyword))) return 'npc';
+  // Named characters with multiple costumes stay in the main roster. A single
+  // variation (or an unlabelled/unknown id) goes to "Outras".
+  return group.items.length > 1 ? 'main' : 'other';
+}
+
+function categoryForModel(m) {
+  const group = characterGroups.get(m.name);
+  return group ? group.category : 'other';
+}
+
 function groupModels(list) {
   const groups = new Map();
   for (const m of list) {
@@ -544,6 +646,9 @@ function groupModels(list) {
     }
     groups.get(m.name).items.push(m);
   }
+  groups.forEach((group) => {
+    group.category = categoryForGroup(group);
+  });
   return groups;
 }
 
@@ -556,81 +661,57 @@ function buildList(filter = '') {
   let matchingGroupsCount = 0;
   let matchingItemsCount = 0;
 
-  characterGroups.forEach((group) => {
-    // Check if group name or any item matches search
-    const groupMatches = q ? group.name.toLowerCase().includes(q) : true;
-    const matchingItems = group.items.filter((item) => {
-      if (!q) return true;
-      const hay = `${item.name} ${item.costume || ''} ${item.source} ${item.id}`.toLowerCase();
-      return hay.includes(q);
-    });
+  CATEGORY_ORDER.forEach((cat) => {
+    const groupsInCategory = [...characterGroups.values()].filter((g) => g.category === cat);
+    if (!groupsInCategory.length) return;
 
-    if (q && !groupMatches && matchingItems.length === 0) return;
-
-    matchingGroupsCount++;
-    const itemsToRender = q && !groupMatches ? matchingItems : group.items;
-    matchingItemsCount += itemsToRender.length;
-
-    // Single item character (no accordion needed)
-    if (group.items.length === 1) {
-      const m = group.items[0];
-      const b = createModelButton(m, isCards);
-      listEl.appendChild(b);
-      return;
+    const visibleGroups = [];
+    for (const group of groupsInCategory) {
+      const groupMatches = q ? group.name.toLowerCase().includes(q) : true;
+      const matchingItems = group.items.filter((item) => {
+        if (!q) return true;
+        const hay = `${item.name} ${item.costume || ''} ${item.source} ${item.id}`.toLowerCase();
+        return hay.includes(q);
+      });
+      if (q && !groupMatches && matchingItems.length === 0) continue;
+      visibleGroups.push({ group, matchingItems, groupMatches });
+      matchingGroupsCount++;
+      matchingItemsCount += q && !groupMatches ? matchingItems.length : group.items.length;
     }
+    if (!visibleGroups.length) return;
 
-    // Multiple variations -> Accordion Group (Requirement 1)
-    const accGroup = document.createElement('div');
-    accGroup.className = 'accordion-group';
-    if (q) accGroup.classList.add('expanded'); // Auto-expand when searching
+    // Category section (Heróis & Vilões / Outras / NPC Genérico)
+    const section = document.createElement('section');
+    section.className = 'category-section';
+    section.dataset.category = cat;
 
-    const isCurrentActive = group.items.some((item) => currentEntry && item.id === currentEntry.id);
-    if (isCurrentActive) {
-      accGroup.classList.add('has-active', 'expanded');
-    }
-
-    // Header
-    const accHeader = document.createElement('button');
-    accHeader.className = 'accordion-header';
-    accHeader.setAttribute('aria-expanded', accGroup.classList.contains('expanded'));
-    accHeader.innerHTML = `
-      <span class="accordion-chevron" aria-hidden="true">▶</span>
-      ${isCards ? `
-        <div class="card-thumb-wrap" style="width:36px; height:36px;">
-          <img src="${group.thumb || group.items[0].thumb}" class="card-thumb" alt="${group.name}" loading="lazy">
-        </div>
-      ` : `
-        <span class="accordion-dot" style="--dot:${group.accent}"></span>
-      `}
-      <div class="accordion-title-wrap">
-        <span class="accordion-name">${group.name}</span>
-        <span class="accordion-badge">${group.items.length} variações</span>
-      </div>
+    const header = document.createElement('button');
+    header.type = 'button';
+    header.className = 'category-header';
+    header.setAttribute('aria-expanded', 'true');
+    const meta = CATEGORY_META[cat];
+    header.innerHTML = `
+      <span class="category-chevron" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
+      <span class="category-icon" aria-hidden="true"><i data-lucide="${meta.icon}"></i></span>
+      <span class="category-name">${meta.label}</span>
+      <span class="category-count">${visibleGroups.length}</span>
     `;
-
-    accHeader.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const willExpand = !accGroup.classList.contains('expanded');
-      accGroup.classList.toggle('expanded', willExpand);
-      accHeader.setAttribute('aria-expanded', willExpand);
-      // If expanding and not active, optionally load first costume
-      if (willExpand && (!currentEntry || !group.items.some(i => i.id === currentEntry.id))) {
-        loadEntry(group.items[0]);
-      }
+    header.addEventListener('click', () => {
+      const collapsed = section.classList.toggle('collapsed');
+      header.setAttribute('aria-expanded', String(!collapsed));
     });
 
-    // Body
-    const accBody = document.createElement('div');
-    accBody.className = 'accordion-body';
+    const body = document.createElement('div');
+    body.className = 'category-body';
 
-    itemsToRender.forEach((m) => {
-      const b = createModelButton(m, isCards, true);
-      accBody.appendChild(b);
+    visibleGroups.forEach(({ group, matchingItems, groupMatches }) => {
+      const itemsToRender = q && !groupMatches ? matchingItems : group.items;
+      appendGroup(group, itemsToRender, body, isCards, q);
     });
 
-    accGroup.appendChild(accHeader);
-    accGroup.appendChild(accBody);
-    listEl.appendChild(accGroup);
+    section.appendChild(header);
+    section.appendChild(body);
+    listEl.appendChild(section);
   });
 
   // Update counts
@@ -643,6 +724,70 @@ function buildList(filter = '') {
   if (matchingGroupsCount === 0) {
     listEl.innerHTML = '<div class="vfx-empty" style="text-align:center; padding:24px 8px;">Nenhum personagem encontrado.</div>';
   }
+
+  refreshIcons();
+}
+
+function appendGroup(group, itemsToRender, container, isCards, q) {
+  // Single item character (no accordion needed)
+  if (group.items.length === 1) {
+    const m = group.items[0];
+    container.appendChild(createModelButton(m, isCards));
+    return;
+  }
+
+  // Multiple variations -> Accordion Group (Requirement 1)
+  const accGroup = document.createElement('div');
+  accGroup.className = 'accordion-group';
+  if (q) accGroup.classList.add('expanded'); // Auto-expand when searching
+
+  const isCurrentActive = group.items.some((item) => currentEntry && item.id === currentEntry.id);
+  if (isCurrentActive) {
+    accGroup.classList.add('has-active', 'expanded');
+  }
+
+  // Header
+  const accHeader = document.createElement('button');
+  accHeader.className = 'accordion-header';
+  accHeader.setAttribute('aria-expanded', accGroup.classList.contains('expanded'));
+  accHeader.innerHTML = `
+    <span class="accordion-chevron" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+    ${isCards ? `
+      <div class="card-thumb-wrap" style="width:36px; height:36px;">
+        <img src="${thumbUrl(group.thumb || group.items[0].thumb)}" class="card-thumb" alt="${group.name}" loading="lazy">
+      </div>
+    ` : `
+      <span class="accordion-dot" style="--dot:${group.accent}"></span>
+    `}
+    <div class="accordion-title-wrap">
+      <span class="accordion-name">${group.name}</span>
+      <span class="accordion-badge">${group.items.length} variações</span>
+    </div>
+  `;
+
+  accHeader.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const willExpand = !accGroup.classList.contains('expanded');
+    accGroup.classList.toggle('expanded', willExpand);
+    accHeader.setAttribute('aria-expanded', willExpand);
+    // If expanding and not active, optionally load first costume
+    if (willExpand && (!currentEntry || !group.items.some((i) => i.id === currentEntry.id))) {
+      loadEntry(group.items[0]);
+    }
+  });
+
+  // Body
+  const accBody = document.createElement('div');
+  accBody.className = 'accordion-body';
+
+  itemsToRender.forEach((m) => {
+    const b = createModelButton(m, isCards, true);
+    accBody.appendChild(b);
+  });
+
+  accGroup.appendChild(accHeader);
+  accGroup.appendChild(accBody);
+  container.appendChild(accGroup);
 }
 
 function createModelButton(m, isCards, isVariation = false) {
@@ -657,7 +802,7 @@ function createModelButton(m, isCards, isVariation = false) {
     //               actor/0000 IGZ vX
     b.innerHTML = `
       <div class="card-thumb-wrap">
-        <img src="${m.thumb}" class="card-thumb" alt="${m.name}" loading="lazy">
+        <img src="${thumbUrl(m)}" class="card-thumb" alt="${m.name}" loading="lazy">
       </div>
       <div class="card-info">
         <div class="card-title-row">
@@ -686,8 +831,8 @@ function createModelButton(m, isCards, isVariation = false) {
     loadEntry(m);
     // Close mobile drawer if open
     if (sidebarEl.classList.contains('mobile-open')) {
-      sidebarEl.classList.remove('mobile-open');
-      sidebarOverlay.classList.remove('active');
+      setSidebarOpen(false);
+      btnSidebarToggle.focus();
     }
   });
 
@@ -732,21 +877,85 @@ btnCollapseAll.addEventListener('click', () => {
   allExpanded = !allExpanded;
   btnCollapseAll.textContent = allExpanded ? 'Expandir todos' : 'Recolher todos';
   listEl.querySelectorAll('.accordion-group').forEach((g) => {
-    g.classList.toggle('expanded', !allExpanded);
+    const expanded = !allExpanded;
+    g.classList.toggle('expanded', expanded);
+    const header = g.querySelector('.accordion-header');
+    if (header) header.setAttribute('aria-expanded', String(expanded));
+  });
+  listEl.querySelectorAll('.category-section').forEach((section) => {
+    section.classList.toggle('collapsed', allExpanded);
+    const header = section.querySelector('.category-header');
+    if (header) header.setAttribute('aria-expanded', String(!allExpanded));
   });
 });
+
+// ========================================================
+// MODAL MANAGEMENT & ACCESSIBILITY
+// ========================================================
+let lastFocusedElement = null;
+
+const mainLayoutElements = [
+  document.querySelector('.topbar'),
+  sidebarEl,
+  sidebarResizer,
+  document.getElementById('stage'),
+].filter(Boolean);
+
+function setBackgroundInert(inert) {
+  mainLayoutElements.forEach((el) => {
+    if (inert) el.setAttribute('inert', '');
+    else el.removeAttribute('inert');
+  });
+}
+
+function getOpenModal() {
+  const modals = [galleryModal, vfxModal, propsModal, changelogModal, roadmapModal];
+  return modals.find((m) => m && m.classList.contains('open'));
+}
+
+function openModal(modal, focusTarget) {
+  lastFocusedElement = document.activeElement;
+  setBackgroundInert(true);
+  modal.classList.add('open');
+  if (focusTarget) {
+    focusTarget.focus();
+  } else {
+    const focusable = modal.querySelector('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+    if (focusable) focusable.focus();
+  }
+}
+
+function closeModal(modal) {
+  if (!modal) return;
+  modal.classList.remove('open');
+  if (!getOpenModal()) {
+    setBackgroundInert(false);
+  }
+  if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+    lastFocusedElement.focus();
+    lastFocusedElement = null;
+  }
+}
+
+function closeAnyOpenModal() {
+  const open = getOpenModal();
+  if (open) {
+    closeModal(open);
+    return true;
+  }
+  return false;
+}
 
 // ========================================================
 // MODO GALERIA MODAL (Requirement 2)
 // ========================================================
 function openGalleryModal() {
-  galleryModal.classList.add('open');
   buildGalleryGrid();
-  gallerySearch.focus();
+  openModal(galleryModal, gallerySearch);
 }
 
 function closeGalleryModal() {
-  galleryModal.classList.remove('open');
+  closeModal(galleryModal);
 }
 
 function buildGalleryGrid() {
@@ -760,22 +969,12 @@ function buildGalleryGrid() {
       const hay = `${m.name} ${m.costume || ''} ${m.source} ${m.id}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
-    // Category filter
-    if (cat === 'heroes') {
-      const heroNames = ['spider', 'iron', 'wolverine', 'captain', 'thor', 'hulk', 'deadpool', 'storm', 'gambit', 'daredevil', 'iceman', 'panther', 'cable', 'jean', 'torch', 'invisible', 'fantastic', 'thing', 'luke', 'msmarvel', 'psylocke', 'fury', 'shehulk', 'colossus', 'hercules', 'goliath', 'songbird', 'penance', 'spiderwoman', 'widow', 'bishop'];
-      return heroNames.some(k => m.id.toLowerCase().includes(k) || m.name.toLowerCase().includes(k));
-    }
-    if (cat === 'villains') {
-      const villainNames = ['venom', 'goblin', 'magneto', 'carnage', 'juggernaut', 'tinkerer', 'shocker', 'scorcher', 'wizard', 'whirlwind', 'titanium', 'grimreaper', 'bullseye', 'electro', 'ladydeathstrike', 'jackolantern'];
-      return villainNames.some(k => m.id.toLowerCase().includes(k) || m.name.toLowerCase().includes(k));
-    }
+    // Category filter (mirrors the sidebar sections)
     if (cat === 'props') {
-      return ['baton', 'bola', 'staff', 'chain', 'waldos', 'webmace', 'tongue'].some(k => m.id.toLowerCase().includes(k));
+      return ['baton', 'bola', 'staff', 'chain', 'waldos', 'webmace', 'tongue'].some((k) => m.id.toLowerCase().includes(k));
     }
-    if (cat === 'npcs') {
-      const isHero = ['spider', 'iron', 'wolverine', 'captain', 'thor', 'hulk', 'deadpool', 'storm', 'gambit', 'daredevil', 'iceman', 'panther', 'cable', 'jean', 'torch', 'invisible', 'fantastic', 'thing', 'luke', 'msmarvel', 'psylocke', 'fury'].some(k => m.id.toLowerCase().includes(k));
-      const isVillain = ['venom', 'goblin', 'magneto', 'carnage', 'juggernaut'].some(k => m.id.toLowerCase().includes(k));
-      return !isHero && !isVillain;
+    if (cat !== 'all') {
+      return categoryForModel(m) === cat;
     }
     return true;
   });
@@ -783,13 +982,14 @@ function buildGalleryGrid() {
   galleryStatsText.textContent = `Exibindo ${filtered.length} de ${models.length} modelos`;
 
   filtered.forEach((m) => {
-    const card = document.createElement('div');
+    const card = document.createElement('button');
+    card.type = 'button';
     card.className = 'gallery-card';
     card.dataset.id = m.id;
     if (currentEntry && m.id === currentEntry.id) card.classList.add('active');
 
     card.innerHTML = `
-      <img src="${m.thumb}" class="gallery-card-thumb" alt="${m.name}" loading="lazy">
+      <img src="${thumbUrl(m)}" class="gallery-card-thumb" alt="${m.name}" loading="lazy">
       <div class="gallery-card-body">
         <div class="gallery-card-title-row">
           <span class="gallery-card-name" title="${m.name}">${m.name}</span>
@@ -827,10 +1027,10 @@ galleryModal.addEventListener('click', (e) => {
 // PROPS & SCENERY MODAL (Requirement 7)
 // ========================================================
 function openPropsModal() {
-  propsModal.classList.add('open');
+  openModal(propsModal);
 }
 function closePropsModal() {
-  propsModal.classList.remove('open');
+  closeModal(propsModal);
 }
 navBtnProps.addEventListener('click', openPropsModal);
 propsClose.addEventListener('click', closePropsModal);
@@ -842,6 +1042,27 @@ btnPropsViewWeapons.addEventListener('click', () => {
   openGalleryModal();
   galleryCategorySelect.value = 'props';
   buildGalleryGrid();
+});
+
+// ========================================================
+// CHANGELOG & ROADMAP MODALS
+// ========================================================
+function openInfoModal(modal) {
+  openModal(modal);
+}
+function closeInfoModal(modal) {
+  closeModal(modal);
+}
+
+btnChangelog.addEventListener('click', () => openInfoModal(changelogModal));
+btnRoadmap.addEventListener('click', () => openInfoModal(roadmapModal));
+changelogClose.addEventListener('click', () => closeInfoModal(changelogModal));
+roadmapClose.addEventListener('click', () => closeInfoModal(roadmapModal));
+changelogModal.addEventListener('click', (e) => {
+  if (e.target === changelogModal) closeInfoModal(changelogModal);
+});
+roadmapModal.addEventListener('click', (e) => {
+  if (e.target === roadmapModal) closeInfoModal(roadmapModal);
 });
 
 // ========================================================
@@ -933,12 +1154,7 @@ btnRig.addEventListener('click', (e) => {
 // 6. Camera Reset
 btnReset.addEventListener('click', () => {
   if (!current) return;
-  const box = modelBox(current);
-  const size = new THREE.Vector3(); box.getSize(size);
-  const dist = Math.max(size.y * 1.15, size.x * 1.5, 2.2);
-  camera.position.set(dist * 0.62, size.y * 0.58, dist * 0.95);
-  controls.target.set(0, size.y * 0.48, 0);
-  controls.update();
+  frameModel(current);
 });
 
 // 7. Open VFX Gallery from Toolbar
@@ -1009,15 +1225,21 @@ if (animSelect) {
   });
 }
 
+function updateAnimPlayButton() {
+  if (!btnAnimPlay) return;
+  btnAnimPlay.innerHTML = `<i data-lucide="${animPlaying ? 'pause' : 'play'}" class="chip-icon"></i>`;
+  btnAnimPlay.classList.toggle('active', animPlaying);
+  btnAnimPlay.setAttribute('aria-pressed', String(animPlaying));
+  refreshIcons();
+}
+
 if (btnAnimPlay) {
   animPlaying = settings.animPlaying;
-  btnAnimPlay.textContent = animPlaying ? '⏸' : '▶';
-  btnAnimPlay.classList.toggle('active', animPlaying);
+  updateAnimPlayButton();
   btnAnimPlay.addEventListener('click', () => {
     animPlaying = !animPlaying;
     saveSetting('animPlaying', animPlaying);
-    btnAnimPlay.textContent = animPlaying ? '⏸' : '▶';
-    btnAnimPlay.classList.toggle('active', animPlaying);
+    updateAnimPlayButton();
   });
 }
 
@@ -1034,15 +1256,61 @@ if (btnAnimSpeed) {
 }
 
 // ========================================================
-// KEYBOARD SHORTCUTS
+// KEYBOARD SHORTCUTS & FOCUS TRAP
 // ========================================================
 window.addEventListener('keydown', (e) => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-
   if (e.key === 'Escape') {
-    if (galleryModal.classList.contains('open')) closeGalleryModal();
-    if (vfxModal.classList.contains('open')) vfxModal.classList.remove('open');
-    if (propsModal.classList.contains('open')) closePropsModal();
+    if (closeAnyOpenModal()) {
+      e.preventDefault();
+      return;
+    }
+    if (sidebarEl.classList.contains('mobile-open')) {
+      e.preventDefault();
+      setSidebarOpen(false);
+      btnSidebarToggle.focus();
+      return;
+    }
+    if (e.target === searchEl) {
+      if (searchEl.value) {
+        searchEl.value = '';
+        btnClearSearch.style.display = 'none';
+        buildList('');
+      } else {
+        searchEl.blur();
+      }
+      return;
+    }
+    return;
+  }
+
+  const openDialog = getOpenModal();
+  if (openDialog) {
+    if (e.key === 'Tab') {
+      const focusables = Array.from(openDialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+        .filter((el) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden');
+      if (focusables.length > 0) {
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+    return;
+  }
+
+  if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
+  if (e.target.isContentEditable) return;
+
+  const isInteractive = e.target.closest('button, [role="button"], a');
+  if (e.code === 'Space') {
+    if (isInteractive) return; // allow native button/link activation
+    e.preventDefault();
+    btnRotate.click();
     return;
   }
 
@@ -1061,9 +1329,6 @@ window.addEventListener('keydown', (e) => {
     openGalleryModal();
   } else if (e.key.toLowerCase() === 'p') {
     if (btnAnimPlay) btnAnimPlay.click();
-  } else if (e.code === 'Space') {
-    e.preventDefault();
-    btnRotate.click();
   }
 });
 
@@ -1074,6 +1339,9 @@ function onWindowResize() {
   renderer.setSize(viewport.clientWidth, viewport.clientHeight);
 }
 window.addEventListener('resize', onWindowResize);
+
+// Convert every data-lucide placeholder in the static markup into an SVG icon.
+refreshIcons();
 
 // ========================================================
 // ANIMATION LOOP
@@ -1093,7 +1361,7 @@ renderer.setAnimationLoop(() => {
 let vfxLoaded = false;
 
 async function openVfx() {
-  vfxModal.classList.add('open');
+  openModal(vfxModal);
   if (vfxLoaded) return;
   vfxLoaded = true;
   vfxGrid.innerHTML = '<div class="vfx-empty">Carregando efeitos…</div>';
@@ -1134,9 +1402,13 @@ function showVfx(e, card) {
   `;
 }
 
-vfxClose.addEventListener('click', () => vfxModal.classList.remove('open'));
+function closeVfx() {
+  closeModal(vfxModal);
+}
+
+vfxClose.addEventListener('click', closeVfx);
 vfxModal.addEventListener('click', (e) => {
-  if (e.target === vfxModal) vfxModal.classList.remove('open');
+  if (e.target === vfxModal) closeVfx();
 });
 
 // ========================================================

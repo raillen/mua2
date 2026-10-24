@@ -5,8 +5,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 from scipy.ndimage import maximum_filter, minimum_filter
 
-sys.path.insert(0, os.environ.get('IGB_PKG', '/tmp/opencode/igb_pkg'))
-sys.path.insert(0, '/tmp/opencode')
+import igb_import
 from igb_blender.igz_format.igz_reader import IGZReader
 from igb_blender.igz_format.igz_geometry import IGZDataAllocator, _get_attr_list
 from mua2_glb import dxt1, dxt5

@@ -20,8 +20,9 @@ for i, m in enumerate(models):
         print(f'  MISSING {m["id"]} {src}', flush=True)
         continue
     glb = f'{OUT}/{m["id"]}.glb'
+    glb_tool = os.path.join(os.path.dirname(__file__), 'mua2_glb.py')
     res = subprocess.run(
-        [sys.executable, '/tmp/opencode/mua2_glb.py', src, glb, m['id'],
+        [sys.executable, glb_tool, src, glb, m['id'],
          '--max-texture', '512'],
         capture_output=True, text=True)
     if res.returncode != 0:

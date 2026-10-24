@@ -86,18 +86,14 @@ preview visual, não o grafo de partículas original.
 ## Dependência: parser IGZ
 
 O parser IGZ v6 usado é o do projeto
-[igb-blender](https://github.com/KaikoClanworth1/igb-blender) (GPL-3.0).
-Ele **não** está vendorizado aqui. Para usar:
+[igb-blender](https://github.com/KaikoClanworth1/igb-blender) (GPL-3.0),
+localizado em `tools-vendor/igb-blender`. O módulo `igb_import.py` cria o
+namespace `igb_blender` em tempo de execução sem carregar `__init__.py` (que
+importa `bpy` do Blender), permitindo rodar as ferramentas diretamente com
+Python padrão. Caso necessário, o caminho pode ser configurado via `IGB_SOURCE`:
 
 ```bash
-git clone https://github.com/KaikoClanworth1/igb-blender.git
-mkdir -p /tmp/opencode/igb_pkg/igb_blender
-touch /tmp/opencode/igb_pkg/igb_blender/__init__.py
-ln -s "$PWD/igb-blender/igz_format"   /tmp/opencode/igb_pkg/igb_blender/igz_format
-ln -s "$PWD/igb-blender/scene_graph"  /tmp/opencode/igb_pkg/igb_blender/scene_graph
-ln -s "$PWD/igb-blender/igb_format"   /tmp/opencode/igb_pkg/igb_blender/igb_format
-ln -s "$PWD/igb-blender/utils"        /tmp/opencode/igb_pkg/igb_blender/utils
-export IGB_PKG=/tmp/opencode/igb_pkg
+export IGB_SOURCE=/caminho/para/igb-blender
 ```
 
 Dependências Python: `numpy`, `scipy`, `Pillow`.

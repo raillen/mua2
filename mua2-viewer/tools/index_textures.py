@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Index MUA2 texture IGZ files: hash -> file, dimensions, format, data offset."""
 import sys, os, json, struct, glob
-sys.path.insert(0, '/tmp/opencode/igb_pkg')
+import igb_import
 from igb_blender.igz_format.igz_reader import IGZReader
 
 ROOTS = [

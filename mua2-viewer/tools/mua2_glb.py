@@ -10,13 +10,15 @@ import numpy as np
 from PIL import Image
 from scipy.ndimage import distance_transform_edt, label
 
-sys.path.insert(0, '/tmp/opencode/igb_pkg')
+import igb_import
 from igb_blender.igz_format.igz_reader import IGZReader
 from igb_blender.igz_format.igz_geometry import (IGZDataAllocator, extract_igz_geometry,
                                                  _get_attr_list, _get_child_list)
 from mua2_skeleton import parse_skeleton, bone_local_transforms
 
-TEX_INDEX = json.load(open('/home/raillen/Documentos/decomp-games/_work/texture_index.json'))
+TEX_INDEX_PATH = os.environ.get('MUA2_TEX_INDEX',
+                                os.path.abspath(os.path.join(os.path.dirname(__file__), '../../_work/texture_index.json')))
+TEX_INDEX = json.load(open(TEX_INDEX_PATH)) if os.path.exists(TEX_INDEX_PATH) else {}
 
 
 def find_texture(h):
@@ -213,27 +215,83 @@ def geom_from_node(reader, alloc, node):
     return extract_igz_geometry(reader, ga, alloc)
 
 
+def extract_bms_indices(reader, bms_node):
+    """Extract matrix palette from an igBlendMatrixSelect node."""
+    int_list = bms_node.get_ref(0xD0) or bms_node.get_ref(208)
+    if not int_list:
+        for ref in bms_node.references.values():
+            if getattr(ref, 'type_name', None) == 'igIntList':
+                int_list = ref
+                break
+    if not int_list or getattr(int_list, 'type_name', None) != 'igIntList':
+        raise ValueError(f"igBlendMatrixSelect @{bms_node.global_offset:#x} missing igIntList")
+
+    count = int_list.read_u32(0x10)
+    data_off = int_list.get_raw_ref(0x20)
+    if data_off is None:
+        data_off = int_list.references.get(32)
+    if not isinstance(data_off, int):
+        raise ValueError(f"igIntList @{int_list.global_offset:#x} missing data pointer at +0x20")
+
+    raw = reader.get_data_at(data_off, count * 4)
+    if len(raw) != count * 4:
+        raise ValueError(f"Truncated palette data at offset {data_off:#x}: expected {count * 4} bytes, got {len(raw)}")
+    return list(struct.unpack(f"<{count}i", raw))
+
+
+def remap_joints(indices, weights, palette, bones) -> np.ndarray:
+    """Map mesh-local indices through blend matrices into skin joint order."""
+    if len(indices) != len(weights):
+        raise ValueError('Joint/weight vertex counts differ')
+    blend_to_joint = {b['blend']: i for i, b in enumerate(bones) if b['blend'] >= 0}
+    if len(blend_to_joint) != sum(b['blend'] >= 0 for b in bones):
+        raise ValueError('Duplicate skeleton blend matrix index')
+    result = []
+    for vi, (index_row, weight_row) in enumerate(zip(indices, weights)):
+        if len(index_row) != 4 or len(weight_row) != 4:
+            raise ValueError(f'Vertex {vi}: expected four joints and weights')
+        row = []
+        for index, weight in zip(index_row, weight_row):
+            if not math.isfinite(weight) or weight < 0:
+                raise ValueError(f'Vertex {vi}: invalid weight {weight}')
+            if weight == 0:
+                row.append(0)
+                continue
+            if index < 0 or (palette is not None and index >= len(palette)):
+                raise ValueError(f'Vertex {vi}: positive-weight index {index} outside palette')
+            blend = palette[index] if palette is not None else index
+            if blend not in blend_to_joint:
+                raise ValueError(f'Vertex {vi}: positive-weight blend matrix {blend} missing from skeleton')
+            joint = blend_to_joint[blend]
+            if joint > 65535:
+                raise ValueError('Joint index exceeds uint16')
+            row.append(joint)
+        result.append(row)
+    return np.array(result, dtype='<u2').reshape(-1, 4)
+
+
 def walk_character(reader, alloc):
-    """Return list of (geometry, texture_info_by_unit)."""
+    """Return list of (geometry, texture_info_by_unit, bms_indices)."""
     results = []
     seen = set()
 
-    def add_geom(geom_node, tex):
+    def add_geom(geom_node, tex, bms_indices=None):
         if geom_node.global_offset in seen:
             return
         g = geom_from_node(reader, alloc, geom_node)
         if g and g.positions and g.indices:
             seen.add(geom_node.global_offset)
-            results.append((g, tex))
+            results.append((g, tex, bms_indices))
 
     def collect_from_attrset(attrset, tex):
         for child in _get_child_list(reader, attrset):
             if child.type_name == 'igGeometry':
-                add_geom(child, tex)
+                add_geom(child, tex, None)
             elif child.type_name == 'igBlendMatrixSelect':
+                bms_indices = extract_bms_indices(reader, child)
                 for geom_node in _get_child_list(reader, child):
                     if geom_node.type_name == 'igGeometry':
-                        add_geom(geom_node, tex)
+                        add_geom(geom_node, tex, bms_indices)
 
     groups = reader.get_objects_by_type('igGroup')
     if groups:
@@ -294,7 +352,7 @@ def export_glb(actor_path, out_path, name, invert_green=True, use_spec=False, ma
     # Vertices stay in the original (Z-up) space; a root node carries the
     # Y-up + centre + scale transform so the rig and the mesh stay aligned.
     all_pos = []
-    for g, tex in parts:
+    for g, tex, bms_indices in parts:
         all_pos.extend(g.positions)
     all_pos = np.array(all_pos, np.float32)
     yup = np.stack([all_pos[:, 0], all_pos[:, 2], -all_pos[:, 1]], axis=1)
@@ -350,7 +408,7 @@ def export_glb(actor_path, out_path, name, invert_green=True, use_spec=False, ma
             tex_alpha[len(textures) - 1] = True
         return mat_cache[key]
 
-    for gi, (g, tex) in enumerate(parts):
+    for gi, (g, tex, bms_indices) in enumerate(parts):
         pos = np.array(g.positions, np.float32)
         if g.normals:
             nrm = np.array(g.normals, np.float32)
@@ -369,8 +427,11 @@ def export_glb(actor_path, out_path, name, invert_green=True, use_spec=False, ma
 
         # skinning
         if bones and g.blend_indices and g.blend_weights:
-            joints = np.array(g.blend_indices, np.uint16)
+            joints = remap_joints(g.blend_indices, g.blend_weights, bms_indices, bones)
             weights = np.array(g.blend_weights, np.float32)
+            w_sum = weights.sum(axis=1, keepdims=True)
+            w_sum = np.where(w_sum > 1e-6, w_sum, 1.0)
+            weights = weights / w_sum
             attrs['JOINTS_0'] = add_accessor(joints, 5123, 'VEC4', len(joints), 34962)
             attrs['WEIGHTS_0'] = add_accessor(weights, 5126, 'VEC4', len(weights), 34962)
 
@@ -493,8 +554,8 @@ def export_glb(actor_path, out_path, name, invert_green=True, use_spec=False, ma
         f.write(struct.pack('<II', len(json_bytes), 0x4E4F534A)); f.write(json_bytes)
         f.write(struct.pack('<II', len(bin_bytes), 0x004E4942)); f.write(bin_bytes)
     return {'name': name, 'actor': os.path.basename(actor_path), 'parts': len(parts),
-            'verts': sum(len(g.positions) for g, _ in parts),
-            'tris': sum(len(g.indices) // 3 for g, _ in parts),
+            'verts': sum(len(g.positions) for g, _, _ in parts),
+            'tris': sum(len(g.indices) // 3 for g, _, _ in parts),
             'textures': len(images), 'size': total}
 
 

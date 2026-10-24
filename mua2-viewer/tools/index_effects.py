@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Index MUA2 effect IGZ files (strings only) and extract preview textures."""
 import sys, os, glob, json, re, collections
-sys.path.insert(0, '/tmp/opencode/igb_pkg')
+import igb_import
 from igb_blender.igz_format.igz_reader import IGZReader
 from PIL import Image
 
