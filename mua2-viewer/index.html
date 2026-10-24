@@ -48,7 +48,7 @@
         <button id="nav-btn-vfx" class="topbar-nav-btn" data-tab="vfx">
           <i data-lucide="sparkles" class="nav-icon"></i>
           <span class="nav-label">VFX</span>
-          <span class="nav-badge" id="nav-vfx-count">54</span>
+          <span class="nav-badge" id="nav-vfx-count">—</span>
         </button>
       </nav>
 
@@ -66,6 +66,7 @@
 
     <!-- Sidebar (Left Panel - Resizable, Requirement 1, 2, 3) -->
     <aside class="sidebar" id="sidebar">
+      <div id="models-catalog" class="catalog-panel">
       <div class="sidebar-header">
         <div class="sidebar-title-row">
           <span class="sidebar-label">MODELOS 3D</span>
@@ -128,6 +129,62 @@
           </div>
         </div>
       </div>
+      </div>
+      <section id="vfx-catalog" class="catalog-panel vfx-catalog" hidden aria-label="Catálogo de VFX">
+        <div class="sidebar-header">
+          <div class="sidebar-title-row">
+            <span class="sidebar-label">CATÁLOGO VFX</span>
+            <div class="view-mode-toggle" role="group" aria-label="Exibição de VFX">
+              <button id="vfx-view-cards" class="view-toggle-chip" aria-pressed="true"><i data-lucide="layout-grid"></i> Cards</button>
+              <button id="vfx-view-list" class="view-toggle-chip" aria-pressed="false"><i data-lucide="list"></i> Lista</button>
+            </div>
+          </div>
+          <button id="vfx-open-gallery" class="gallery-launch-btn" aria-haspopup="dialog">
+            <div class="gallery-launch-inner">
+              <i data-lucide="grid-2x2" class="launch-icon"></i>
+              <span class="launch-text">Modo Galeria VFX</span>
+            </div>
+            <span id="vfx-catalog-count" class="launch-badge">—</span>
+          </button>
+          <div class="search-box">
+            <i data-lucide="search" class="search-icon"></i>
+            <input id="vfx-search" class="model-search" type="search" placeholder="Filtrar por nome, pasta ou textura…" autocomplete="off" aria-label="Buscar efeito VFX">
+            <button id="btn-clear-vfx-search" class="search-clear-btn" title="Limpar busca" style="display:none;" aria-label="Limpar busca">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="vfx-filter-controls">
+            <div class="vfx-filter-group">
+              <label for="vfx-category-select" class="vfx-filter-label">Categoria</label>
+              <select id="vfx-category-select" class="vfx-filter-select" aria-label="Filtrar efeitos por categoria">
+                <option value="all">Todas as categorias</option>
+              </select>
+            </div>
+            <div class="vfx-filter-group">
+              <label for="vfx-character-select" class="vfx-filter-label">Personagem</label>
+              <select id="vfx-character-select" class="vfx-filter-select" aria-label="Filtrar efeitos por personagem">
+                <option value="all">Todos os personagens</option>
+              </select>
+            </div>
+          </div>
+          <div class="filter-summary">
+            <span id="vfx-results" role="status">Carregando catálogo de VFX…</span>
+            <button id="vfx-reload-btn" class="collapse-all-btn" title="Recarregar catálogo">Recarregar</button>
+          </div>
+        </div>
+        <div class="vfx-catalog-scroll">
+          <nav id="vfx-sidebar-list" class="vfx-sidebar-list view-cards" aria-label="Lista de efeitos VFX"></nav>
+          <div id="vfx-sidebar-pages" class="vfx-pages" hidden></div>
+        </div>
+        <section id="vfx-sidebar-detail" class="vfx-selection" aria-label="Detalhes do efeito selecionado" hidden></section>
+        <div class="sidebar-footer">
+          <div class="sidebar-label">SOBRE OS EFEITOS</div>
+          <p class="about">
+            Efeitos extraídos de <code>effects_igx.bin</code>.
+            Reprodução de emissores aguarda decodificação do motor Alchemy.
+          </p>
+        </div>
+      </section>
     </aside>
 
     <!-- Resizer Divider (Requirement 1) -->
@@ -287,14 +344,41 @@
           <div>
             <div class="sidebar-label">Efeitos extraídos de <code>effects_igx.bin</code></div>
             <h2 id="vfx-title">Galeria de VFX</h2>
-            <p class="modal-sub">Texturas e definições de efeitos dos personagens. Clique em um card para ampliar.</p>
+            <p class="modal-sub">Texturas e metadados dos efeitos do jogo. Clique em um card para inspecionar.</p>
           </div>
           <button class="modal-close" id="vfx-close" title="Fechar galeria de VFX" aria-label="Fechar">
             <i data-lucide="x"></i>
           </button>
         </div>
+        <div class="vfx-modal-toolbar">
+          <div class="search-box">
+            <i data-lucide="search" class="search-icon"></i>
+            <input id="vfx-modal-search" class="model-search" type="search" placeholder="Filtrar efeitos por nome, pasta ou textura…" autocomplete="off" aria-label="Buscar na galeria de VFX">
+            <button id="btn-clear-vfx-modal-search" class="search-clear-btn" title="Limpar busca" style="display:none;" aria-label="Limpar busca">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="vfx-filter-controls">
+            <div class="vfx-filter-group">
+              <label for="vfx-modal-category-select" class="sr-only">Categoria</label>
+              <select id="vfx-modal-category-select" class="vfx-filter-select" aria-label="Filtrar por categoria">
+                <option value="all">Todas as categorias</option>
+              </select>
+            </div>
+            <div class="vfx-filter-group">
+              <label for="vfx-modal-character-select" class="sr-only">Personagem</label>
+              <select id="vfx-modal-character-select" class="vfx-filter-select" aria-label="Filtrar por personagem">
+                <option value="all">Todos os personagens</option>
+              </select>
+            </div>
+          </div>
+          <span id="vfx-modal-stats" class="gallery-stats" role="status"></span>
+        </div>
         <div class="modal-body">
-          <div class="vfx-grid" id="vfx-grid"></div>
+          <div class="vfx-grid-container">
+            <div class="vfx-grid" id="vfx-grid"></div>
+            <div id="vfx-modal-pages" class="vfx-pages" style="display:none;"></div>
+          </div>
           <aside class="vfx-detail" id="vfx-detail">
             <div class="vfx-empty">Selecione um efeito para ver os detalhes.</div>
           </aside>

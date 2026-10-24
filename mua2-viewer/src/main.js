@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { loadGameAnimations } from './animations.js';
+import { initVfxCatalog } from './vfx.js';
 
 // Lucide icon refresh helper
 function refreshIcons() {
@@ -150,9 +151,8 @@ const btnPropsViewWeapons = document.getElementById('btn-props-view-weapons');
 
 // VFX Modal DOM
 const vfxModal = document.getElementById('vfx-modal');
-const vfxClose = document.getElementById('vfx-close');
-const vfxGrid = document.getElementById('vfx-grid');
-const vfxDetail = document.getElementById('vfx-detail');
+const modelsCatalog = document.getElementById('models-catalog');
+const vfxCatalogPanel = document.getElementById('vfx-catalog');
 
 // ========================================================
 // THREE.JS RENDERER & SCENE SETUP
@@ -269,6 +269,7 @@ let wireframe = settings.wire;
 let texturesOn = settings.tex;
 let showRig = settings.rig;
 let skeletonHelper = null;
+let vfxCatalog = null;
 
 // Animation state
 const clock = new THREE.Clock();
@@ -545,7 +546,7 @@ function prepare(model, entry) {
 }
 
 function loadEntry(entry) {
-  if (!entry) return;
+  if (!entry) return Promise.resolve(null);
   currentEntry = entry;
   setLoading(true, `Carregando ${entry.name}…`);
   statusEl.textContent = 'carregando…';
@@ -553,19 +554,23 @@ function loadEntry(entry) {
   // Highlight active button in sidebar and modal
   updateActiveButtons(entry.id);
 
-  loader.load(entry.file, (gltf) => {
-    clearModel();
-    current = gltf.scene;
-    prepare(current, entry);
-    setLoading(false);
-  }, (ev) => {
-    if (ev.total) {
-      const pct = Math.round((ev.loaded / ev.total) * 100);
-      loadingText.textContent = `Carregando ${entry.name}… ${pct}%`;
-    }
-  }, (err) => {
-    console.error(err);
-    loadingText.textContent = `Falha ao carregar ${entry.name}`;
+  return new Promise((resolve, reject) => {
+    loader.load(entry.file, (gltf) => {
+      clearModel();
+      current = gltf.scene;
+      prepare(current, entry);
+      setLoading(false);
+      resolve(gltf);
+    }, (ev) => {
+      if (ev.total) {
+        const pct = Math.round((ev.loaded / ev.total) * 100);
+        loadingText.textContent = `Carregando ${entry.name}… ${pct}%`;
+      }
+    }, (err) => {
+      console.error(err);
+      loadingText.textContent = `Falha ao carregar ${entry.name}`;
+      reject(err);
+    });
   });
 }
 
@@ -1057,18 +1062,35 @@ roadmapModal.addEventListener('click', (e) => {
 });
 
 // ========================================================
-// TOPBAR NAVIGATION TABS
+// TOPBAR NAVIGATION TABS & SIDEBAR CATALOG SWITCHING
 // ========================================================
+function switchSidebarTab(tab) {
+  if (tab === 'vfx') {
+    navBtnChars.classList.remove('active');
+    navBtnProps.classList.remove('active');
+    navBtnVfx.classList.add('active');
+    if (modelsCatalog) modelsCatalog.hidden = true;
+    if (vfxCatalogPanel) {
+      vfxCatalogPanel.hidden = false;
+      if (vfxCatalog) vfxCatalog.activate();
+    }
+  } else {
+    navBtnChars.classList.add('active');
+    navBtnProps.classList.remove('active');
+    navBtnVfx.classList.remove('active');
+    if (modelsCatalog) modelsCatalog.hidden = false;
+    if (vfxCatalogPanel) vfxCatalogPanel.hidden = true;
+  }
+}
+
 navBtnChars.addEventListener('click', () => {
-  navBtnChars.classList.add('active');
-  navBtnProps.classList.remove('active');
-  navBtnVfx.classList.remove('active');
+  switchSidebarTab('chars');
   searchEl.value = '';
   buildList('');
 });
 
 navBtnVfx.addEventListener('click', () => {
-  openVfx();
+  switchSidebarTab('vfx');
 });
 
 // ========================================================
@@ -1149,7 +1171,9 @@ btnReset.addEventListener('click', () => {
 });
 
 // 7. Open VFX Gallery from Toolbar
-btnVfx.addEventListener('click', openVfx);
+btnVfx.addEventListener('click', () => {
+  if (vfxCatalog) vfxCatalog.openGalleryModal();
+});
 
 // Apply initial UI button active states from settings
 btnRotate.classList.toggle('active', settings.rotate);
@@ -1370,61 +1394,19 @@ renderer.setAnimationLoop(() => {
   renderer.render(scene, camera);
 });
 
-// ========================================================
-// VFX GALLERY IMPLEMENTATION
-// ========================================================
-let vfxLoaded = false;
-
-async function openVfx() {
-  openModal(vfxModal);
-  if (vfxLoaded) return;
-  vfxLoaded = true;
-  vfxGrid.innerHTML = '<div class="vfx-empty">Carregando efeitos…</div>';
-  try {
-    const res = await fetch('assets/vfx/effects_curated.json');
-    const data = await res.json();
-    vfxGrid.innerHTML = '';
-    data.effects.forEach((e) => {
-      const card = document.createElement('button');
-      card.className = 'vfx-card';
-      card.innerHTML = `
-        <img src="${e.thumb}" alt="${e.name}">
-        <div class="vfx-name">${e.name.replace(/_/g, ' ')}</div>
-        <div class="vfx-path">${e.path}</div>
-      `;
-      card.addEventListener('click', () => showVfx(e, card));
-      vfxGrid.appendChild(card);
-    });
-    if (data.effects.length) {
-      showVfx(data.effects[0], vfxGrid.children[0]);
-    }
-  } catch (err) {
-    vfxGrid.innerHTML = '<div class="vfx-empty">Falha ao carregar a galeria de VFX.</div>';
-  }
-}
-
-function showVfx(e, card) {
-  vfxGrid.querySelectorAll('.vfx-card').forEach((c) => c.classList.toggle('active', c === card));
-  vfxDetail.innerHTML = `
-    <h3>${e.name.replace(/_/g, ' ')}</h3>
-    <div class="effect-path">${e.path}</div>
-    <div class="vfx-preview"><img src="${e.thumb}" alt="${e.name}"></div>
-    <ul class="vfx-tex-list">
-      ${e.textures.map((t) => `<li>${t}</li>`).join('')}
-    </ul>
-    <p class="vfx-note">Textura original do efeito extraída de <code>effects_igx.bin</code>.
-    A animação é um preview visual da textura original do motor.</p>
-  `;
-}
-
-function closeVfx() {
-  closeModal(vfxModal);
-}
-
-vfxClose.addEventListener('click', closeVfx);
+// VFX gallery uses the same focus trap and Escape handling as other dialogs.
 vfxModal.addEventListener('click', (e) => {
-  if (e.target === vfxModal) closeVfx();
+  if (e.target === vfxModal) closeModal(vfxModal);
 });
+
+vfxCatalog = initVfxCatalog({
+  models,
+  loadModel: loadEntry,
+  openModal,
+  closeModal,
+  refreshIcons,
+});
+window.__vfxCatalog = vfxCatalog;
 
 // ========================================================
 // BOOT
