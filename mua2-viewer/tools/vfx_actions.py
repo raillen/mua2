@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Derive authentic VFX action bindings from MUA2 powerstyles.
+"""Derive authentic VFX action bindings from MUA2 combat and entity data.
 
-The game links every combat effect to a combat node (action), an animation
-enum, a trigger time and an attachment bolt inside ``powerstyles/*.muc``.
-Those files are stored inside ``data.bin``; this tool extracts them with the
-existing ``mua2bin`` helper (unless a directory is supplied) and projects the
-bindings into ``mua2-viewer/assets/vfx/action_map.json``.
+Read powerstyles, fusion and fightstyles recursively, plus standalone entity
+metadata, from a full ``data.bin`` extraction (or a legacy powerstyles folder).
+Only explicit object references are followed; entity effects without a spawn
+edge remain separate from action bindings.
 
 Only data present in the game files is emitted: no effect is associated with a
 character, clip, time or bone by guessing.  When an enum has no corresponding
@@ -24,6 +23,8 @@ import sys
 import tempfile
 from collections import Counter, defaultdict
 from typing import Any, Iterable
+
+IGX_RE = re.compile(r'<igx\s+name="([^"]+)"', re.I)
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 DEFAULT_DATA_BIN = os.path.join(ROOT, '_work', 'extracted', 'data.bin')
@@ -46,7 +47,9 @@ PS_ALIASES = {
     'vanbardos': 'luciavonbardas',
     'cablehero': 'cable',
     'blackpantherhero': 'blackpanther',
+    'bphero': 'blackpanther',
     'captainamericaboss': 'captainamerica',
+    'capambient': 'captainamerica',
     'deadpoolminiboss': 'deadpool',
     'venomwakmb': 'venom',
     'ironmanboss': 'ironman',
@@ -192,14 +195,46 @@ def parse_objects(text: str) -> dict[str, dict[str, Any]]:
     return objects
 
 
-def resolve_ref(value: str | None) -> str | None:
-    """Resolve ``ps_name.local_ref`` to the local object key."""
+def extract_namespace_and_aliases(text: str, objects: dict[str, Any]) -> tuple[str, dict[str, str]]:
+    match = IGX_RE.search(text)
+    aliases = {}
+    for obj in objects.values():
+        if obj['type'] == 'PeachesAlias':
+            values = obj['vars']
+            if values.get('_aliasName') and values.get('_realName'):
+                aliases[values['_aliasName'].lower()] = values['_realName'].lower()
+    return match.group(1).lower() if match else '', aliases
+
+
+def resolve_object(
+    value: str | None, source: dict[str, Any], namespaces: dict[str, Any],
+    seen: set[tuple[str, str]] | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]] | None:
+    """Resolve exact namespaces/aliases, never another namespace's local suffix."""
     if not value:
         return None
-    key = value.lstrip('@')
+    key = value.lstrip('@').lower()
+    seen = set() if seen is None else seen
+    identity = (source['sourcePath'], key)
+    if identity in seen:
+        return None
+    seen.add(identity)
+    local = key
     if '.' in key:
-        key = key.split('.', 1)[1]
-    return key.lower()
+        namespace, local = key.split('.', 1)
+        if namespace != source['namespace']:
+            alias = source['aliases'].get(key)
+            if alias:
+                return resolve_object(alias, source, namespaces, seen)
+            other = namespaces.get(namespace)
+            return resolve_object(key, other, namespaces, seen) if other else None
+    obj = source['objects'].get(local)
+    if obj:
+        return obj, source
+    alias = source['aliases'].get(key)
+    if alias:
+        return resolve_object(alias, source, namespaces, seen)
+    return None
 
 
 def parse_float(value: Any) -> float | None:
@@ -224,11 +259,16 @@ def normalize_effect_name(value: str | None) -> str | None:
 # Bolt resolution
 # ---------------------------------------------------------------------------
 
-def resolve_bolt_value(value: str | None, objects: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def resolve_bolt_value(
+    value: str | None,
+    source: dict[str, Any] | None = None,
+    namespaces: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Resolve a bolt reference to a bone name plus ordered candidates."""
     raw = value
-    if isinstance(value, str) and value.startswith('@'):
-        target = objects.get(resolve_ref(value) or '')
+    if isinstance(value, str) and value.startswith('@') and source is not None:
+        resolved = resolve_object(value, source, namespaces or {})
+        target = resolved[0] if resolved else None
         if target:
             fields = target['vars']
             for key in ('_bolt', 'mBolt', 'mBoltName', '_bone', 'mBoneName'):
@@ -285,6 +325,10 @@ def default_bolt() -> dict[str, Any]:
     return {'raw': None, 'bone': 'Bip01', 'candidates': ['Bip01', 'Bip01 Pelvis'], 'anchor': 'bone', 'resolved': False}
 
 
+def default_target_bolt() -> dict[str, Any]:
+    return {'raw': None, 'bone': None, 'candidates': [], 'anchor': None, 'resolved': False}
+
+
 # ---------------------------------------------------------------------------
 # Catalog helpers
 # ---------------------------------------------------------------------------
@@ -332,11 +376,10 @@ def extract_powerstyles(data_bin: str, mua2bin: str, target: str) -> str:
     if not os.path.isfile(mua2bin):
         raise SystemExit(f'mua2bin helper not found: {mua2bin}')
     os.makedirs(target, exist_ok=True)
-    subprocess.run([mua2bin, data_bin, target, 'powerstyles/'], check=True)
-    folder = os.path.join(target, 'powerstyles')
-    if not os.path.isdir(folder):
+    subprocess.run([mua2bin, data_bin, target], check=True)
+    if not os.path.isdir(os.path.join(target, 'powerstyles')):
         raise SystemExit(f'powerstyles directory was not extracted from {data_bin}')
-    return folder
+    return target
 
 
 def load_json(path: str) -> Any:
@@ -356,77 +399,128 @@ def sha256_file(path: str) -> str:
 # Action extraction
 # ---------------------------------------------------------------------------
 
-def infer_actor_from_effects(
-    objects: dict[str, dict[str, Any]],
-    catalog_by_id: dict[str, dict[str, Any]],
-) -> str | None:
-    """Infer a powerstyle performer from the characters that own its effects.
-
-    ``ps_robotlatverian`` and ``ps_baton_advanced`` are not character names, but
-    every effect they trigger belongs to a single catalog character
-    (``latverian_cyborg`` / ``minion``).  Only a single unambiguous character is
-    accepted; a powerstyle that mixes characters keeps ``actor`` null.
-    """
-    characters: set[str] = set()
-    for node in objects.values():
-        if node['type'] != 'CCombatNode':
-            continue
-        triggers = objects.get(resolve_ref(node['vars'].get('_triggers')) or '')
-        if not triggers:
-            continue
-        for trigger_key in triggers['items']:
-            trigger = objects.get(resolve_ref(trigger_key) or '')
-            if not trigger:
-                continue
-            for ref in collect_effect_refs(trigger, objects):
-                effect = catalog_by_id.get(ref['fx'])
-                if effect and effect.get('character'):
-                    characters.add(effect['character'])
-    return next(iter(characters)) if len(characters) == 1 else None
+def powerup_recipient(values: dict[str, str], inherited: str) -> str:
+    # Probability and owner/sharee FX filters do not select a combat recipient.
+    combat_target = values.get('mApplyCombatTarget', '').lower()
+    targets = [values.get(key, '').lower() for key in
+               ('mApplyAllies', 'mApplyAlly', 'mApplyHeld')]
+    has_target = any(value not in ('', 'false', '0', 'eapply_none') for value in targets)
+    has_target |= combat_target not in ('', 'false', '0', 'ects_none', 'ects_self')
+    apply_self = values.get('mApplySelf', '').lower()
+    owner_only = values.get('mApplyOwnerOnly', '').lower() in ('true', '1')
+    has_self = apply_self in ('true', '1') or owner_only or combat_target == 'ects_self'
+    if has_target:
+        return 'unknown' if has_self else 'target'
+    if has_self:
+        return 'caster'
+    if apply_self in ('false', '0'):
+        return 'unknown'
+    return inherited
 
 
-def collect_effect_refs(trigger: dict[str, Any], objects: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
-    """Return effect references carried by one combat trigger object."""
-    type_name = trigger['type']
-    values = trigger['vars']
+def collect_effect_refs(
+    trigger: dict[str, Any], source: dict[str, Any], namespaces: dict[str, Any],
+    recipient: str = 'caster',
+) -> list[dict[str, Any]]:
+    """Walk explicit references only; entity edges must stay in the spawn file."""
     refs: list[dict[str, Any]] = []
+    active: set[tuple[str, str]] = set()
 
-    def add(name: str | None, **kwargs: Any) -> None:
-        effect = normalize_effect_name(name)
-        if effect:
-            refs.append({'fx': effect, **kwargs})
+    def walk(obj: dict[str, Any], owner: dict[str, Any], who: str,
+             entity: bool = False, timing: str = 'trigger',
+             bolt_ctx: str | None = None) -> None:
+        identity = (owner['sourcePath'], obj['refname'].lower())
+        if identity in active:
+            return
+        active.add(identity)
+        values, type_name = obj['vars'], obj['type']
+        who = powerup_recipient(values, who)
 
-    if type_name in ('CCEEffectFile', 'CCEEffectTrail'):
-        add(values.get('mEffectName'), kind='effect', bolt=values.get('mBolt'), bolt2=values.get('mBolt2'))
-    elif type_name == 'CCEAtkBeam':
-        bolt = values.get('mBeamBolt')
-        bolt2 = values.get('mBeamBolt2')
-        add(values.get('mBeamEffectName'), kind='beam', bolt=bolt, bolt2=bolt2)
-        add(values.get('mLoopEffectName'), kind='beam_loop', bolt=bolt, bolt2=bolt2)
-        add(values.get('mTrailEffectName'), kind='beam_trail', bolt=bolt, bolt2=bolt2)
-        add(values.get('mSpawnEffectName'), kind='beam_spawn', bolt=bolt, bolt2=bolt2)
-    elif type_name == 'CCEAtkSpawnProjectile':
-        spawn = objects.get(resolve_ref(values.get('mSpawnData')) or '')
-        if spawn:
-            add(spawn['vars'].get('mSpawnEffectName'), kind='projectile_spawn', bolt=values.get('mActorBolt'))
-    elif type_name == 'CCEPowerup':
-        powerup = objects.get(resolve_ref(values.get('mPowerup')) or '')
-        if powerup:
-            add(powerup['vars'].get('_effect'), kind='powerup', bolt=values.get('mBolt'))
-            fx_list = objects.get(resolve_ref(powerup['vars'].get('_specialFxs')) or '')
-            if fx_list:
-                for item in fx_list['items']:
-                    fx_data = objects.get(resolve_ref(item) or '')
-                    if not fx_data or fx_data['type'] != 'CFxCoreData':
-                        continue
-                    fx_values = fx_data['vars']
-                    add(
-                        fx_values.get('_fxName'),
-                        kind='fx_core',
-                        bolt=fx_values.get('_bolt') or values.get('mBolt'),
-                        bolt2=fx_values.get('_bolt2') or values.get('mBolt2'),
-                        how=fx_values.get('mHowFxIsUsed'),
-                    )
+        def add(field: str, kind: str, target: str = who, when: str = timing,
+                bolt: str | None = None, bolt2: str | None = None) -> None:
+            effect = normalize_effect_name(values.get(field))
+            if effect and not effect.startswith('@'):
+                refs.append({
+                    'fx': effect, 'kind': kind, 'recipient': target, 'timing': when,
+                    'bolt': resolve_bolt_value(bolt, owner, namespaces) if bolt else None,
+                    'bolt2': resolve_bolt_value(bolt2, owner, namespaces) if bolt2 else None,
+                    'how': values.get('mHowFxIsUsed'), 'object': obj['refname'],
+                    'field': field, 'sourcePath': owner['sourcePath'],
+                    'sourceSha256': owner['sourceSha256'],
+                })
+
+        def follow(value: str | None, target: str = who, as_entity: bool = entity,
+                   when: str = timing, bolt: str | None = None) -> None:
+            found = resolve_object(value, owner, namespaces)
+            if found and (not as_entity or found[1] is owner):
+                walk(found[0], found[1], target, as_entity, when, bolt)
+
+        if type_name in ('CCEEffectFile', 'CCEEffectTrail', 'CCEEffectSound'):
+            add('mEffectName', 'effect', bolt=values.get('mBolt'), bolt2=values.get('mBolt2'))
+        elif type_name in ('CCEAtkBeam', 'CCEAtkBeamFrenzy'):
+            for field, kind in (('mBeamEffectName', 'beam'), ('mLoopEffectName', 'beam_loop'),
+                                ('mTrailEffectName', 'beam_trail'), ('mSpawnEffectName', 'beam_spawn')):
+                add(field, kind, bolt=values.get('mBeamBolt'), bolt2=values.get('mBeamBolt2'))
+        elif type_name == 'CCEAtkSpawnProjectile':
+            follow(values.get('mSpawnData'), as_entity=True, bolt=values.get('mActorBolt'))
+        elif type_name == 'CProjSpawnDataVal':
+            add('mSpawnEffectName', 'projectile_spawn', bolt=values.get('mBolt') or bolt_ctx)
+            follow(values.get('mEntityDef'), 'projectile', True)
+        elif type_name == 'CEntityDef' and entity:
+            follow(values.get('mEntity'), 'projectile', True)
+        elif entity and type_name.endswith('Entity'):
+            for field, kind in (('_loopFx', 'entity_loop'), ('_trailFx', 'entity_trail'),
+                                ('_spawnFx', 'entity_spawn')):
+                add(field, kind, 'projectile', 'entity_event')
+            for field in ('mSpawnBundle', 'mDeathBundle', 'mActBundle', 'mPainBundle'):
+                follow(values.get(field), 'projectile', True, 'entity_event')
+        elif type_name == 'CEventBundle' and entity:
+            add('_effect', 'entity_bundle', 'projectile', 'entity_event')
+        elif type_name == 'CFxCoreData':
+            for field in ('_fxName', 'mFxName'):
+                add(field, 'fx_core', bolt=values.get('_bolt') or values.get('mFxBolt'),
+                    bolt2=values.get('_bolt2'))
+        elif type_name == 'CCEPowerup' or type_name == 'CPowerup' or type_name.startswith('CPU'):
+            add('_effect', 'powerup')
+            for value in values.values():
+                if value.startswith('@'):
+                    found = resolve_object(value, owner, namespaces)
+                    if found and (found[0]['type'] in ('CPowerup', 'CFxCoreData')
+                                  or found[0]['type'].startswith('CPU')
+                                  or found[0]['type'].endswith('List')):
+                        follow(value)
+        if obj['items']:
+            for item in obj['items']:
+                follow(item)
+        if values.get('mAtkData'):
+            found = resolve_object(values['mAtkData'], owner, namespaces)
+            if found:
+                walk(found[0], found[1], 'target', False, 'hit')
+        if timing == 'hit':
+            add('mHitEffectName', 'attack_hit', 'target', 'hit')
+            add('mHitEnemyEffectName', 'attack_hit_enemy', 'target', 'hit')
+        active.remove(identity)
+
+    walk(trigger, source, recipient)
+    return refs
+
+
+def collect_entity_effects(source: dict[str, Any]) -> list[dict[str, Any]]:
+    refs = []
+    for obj in source['objects'].values():
+        fields = ['_loopFx', '_trailFx', '_spawnFx']
+        if obj['type'] == 'CEventBundle':
+            fields.append('_effect')
+        for field in fields:
+            effect = normalize_effect_name(obj['vars'].get(field))
+            if effect:
+                refs.append({
+                    'fx': effect, 'entity': obj['refname'], 'entityType': obj['type'],
+                    'field': field, 'actor': None, 'clip': None, 'time': None,
+                    'recipient': 'projectile' if obj['type'] == 'CProjectileEntity' else 'unknown',
+                    'timing': 'entity_event', 'bone': None, 'boneCandidates': [], 'anchor': None,
+                    'sourcePath': source['sourcePath'], 'sourceSha256': source['sourceSha256'],
+                })
     return refs
 
 
@@ -524,84 +618,130 @@ def build_action_map(
     default_bolt_entries = 0
     total_entries = 0
     seen: set[tuple[Any, ...]] = set()
+    sources: list[dict[str, Any]] = []
+    namespaces: dict[str, Any] = {}
+    legacy = not os.path.isdir(os.path.join(muc_dir, 'powerstyles'))
+    for folder, dirs, files in os.walk(muc_dir):
+        dirs.sort()
+        for file_name in sorted(files):
+            if not file_name.lower().endswith(('.muc', '.mua')):
+                continue
+            path = os.path.join(folder, file_name)
+            with open(path, encoding='latin1') as handle:
+                text = handle.read()
+            objects = parse_objects(text)
+            namespace, aliases = extract_namespace_and_aliases(text, objects)
+            rel = os.path.relpath(path, muc_dir).replace(os.sep, '/')
+            source = {
+                'sourcePath': 'powerstyles/' + rel if legacy else rel,
+                'sourceSha256': sha256_file(path), 'namespace': namespace,
+                'aliases': aliases, 'objects': objects,
+            }
+            sources.append(source)
+            if namespace:
+                if namespace in namespaces:
+                    raise ValueError(f'Duplicate igx namespace: {namespace}')
+                namespaces[namespace] = source
 
-    for file_name in sorted(os.listdir(muc_dir)):
-        if not file_name.lower().endswith('.muc'):
+    entity_effects: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    unresolved_entities: Counter[str] = Counter()
+    for source in sources:
+        parts = source['sourcePath'].split('/')
+        group = parts[0]
+        if group in ('entities', 'effects_ents'):
+            for ref in collect_entity_effects(source):
+                catalog_effect = catalog_by_id.get(ref['fx'])
+                if catalog_effect:
+                    entity_effects[catalog_effect['id']].append({k: v for k, v in ref.items() if k != 'fx'})
+                else:
+                    unresolved_entities[ref['fx']] += 1
+        if group not in ('powerstyles', 'fusion', 'fightstyles') or not source['objects']:
             continue
-        ps_name = os.path.splitext(file_name)[0]
-        path = os.path.join(muc_dir, file_name)
-        text = open(path, encoding='latin1').read()
-        objects = parse_objects(text)
-        actor = resolve_ps_actor(ps_name, characters)
-        if actor is None:
-            actor = infer_actor_from_effects(objects, catalog_by_id)
-            if actor:
+        ps_name = os.path.splitext(parts[-1])[0]
+        victim = 'victim' in ps_name.lower() or 'carryguy' in ps_name.lower()
+        actor_key = parts[1] if group == 'fusion' and len(parts) > 2 else ps_name
+        actor = None if victim else resolve_ps_actor(actor_key, characters)
+        if group == 'fusion' and actor in ('shared', 'sharedfusion'):
+            actor = None
+        # Preserve legacy powerstyle inference only; victim and fusion ownership
+        # cannot be inferred from the character that owns an effect.
+        if actor is None and not victim and group == 'powerstyles':
+            owners: set[str] = set()
+            for node in source['objects'].values():
+                if node['type'] != 'CCombatNode':
+                    continue
+                found = resolve_object(node['vars'].get('_triggers'), source, namespaces)
+                if not found:
+                    continue
+                for trigger_key in found[0]['items']:
+                    trigger_found = resolve_object(trigger_key, found[1], namespaces)
+                    if trigger_found:
+                        for ref in collect_effect_refs(*trigger_found, namespaces):
+                            effect = catalog_by_id.get(ref['fx'])
+                            if effect and effect.get('character') and ref['recipient'] == 'caster':
+                                owners.add(effect['character'])
+            if len(owners) == 1:
+                actor = next(iter(owners))
                 inferred_actors[ps_name] = actor
         node_count = 0
         effect_count = 0
 
-        for key, node in objects.items():
+        for node in source['objects'].values():
             if node['type'] != 'CCombatNode':
                 continue
             enum = node['vars'].get('_animEnum')
-            if not enum or enum.upper() == 'EA_NONE':
-                continue
-            triggers = objects.get(resolve_ref(node['vars'].get('_triggers')) or '')
-            if not triggers:
+            found = resolve_object(node['vars'].get('_triggers'), source, namespaces)
+            if not found:
                 continue
             node_count += 1
             node_name = node['vars'].get('_name') or node['refname']
             clip = resolve_clip(enum, actor, actor_clips)
-            if actor and clip is None:
+            if actor and enum and enum.upper() != 'EA_NONE' and clip is None:
                 unmapped_enums[actor][enum] += 1
 
-            for trigger_key in triggers['items']:
-                trigger = objects.get(resolve_ref(trigger_key) or '')
-                if not trigger:
+            for trigger_key in found[0]['items']:
+                trigger_found = resolve_object(trigger_key, found[1], namespaces)
+                if not trigger_found:
                     continue
+                trigger, trigger_source = trigger_found
                 trigger_time = parse_float(trigger['vars'].get('_time'))
-                for ref in collect_effect_refs(trigger, objects):
-                    effect_id = ref['fx']
-                    catalog_effect = catalog_by_id.get(effect_id)
+                recipient = 'target' if victim else 'caster'
+                for ref in collect_effect_refs(trigger, trigger_source, namespaces, recipient):
+                    catalog_effect = catalog_by_id.get(ref['fx'])
                     if not catalog_effect:
-                        unresolved_effects[effect_id] += 1
+                        unresolved_effects[ref['fx']] += 1
                         continue
                     effect_id = catalog_effect['id']
-                    if ref.get('bolt'):
-                        bolt = resolve_bolt_value(ref.get('bolt'), objects)
+                    recipient = 'target' if victim else ref['recipient']
+                    bolt = ref['bolt']
+                    if bolt:
                         if not bolt['resolved']:
                             unresolved_bolts[str(bolt.get('raw'))] += 1
                     else:
-                        bolt = default_bolt()
-                        default_bolt_entries += 1
-                    bolt2 = resolve_bolt_value(ref.get('bolt2'), objects) if ref.get('bolt2') else None
+                        bolt = default_bolt() if recipient == 'caster' else default_target_bolt()
+                        if recipient == 'caster':
+                            default_bolt_entries += 1
+                    bolt2 = ref['bolt2']
+                    entry_time = trigger_time if ref['timing'] == 'trigger' else None
                     entry = {
-                        'ps': ps_name,
-                        'actor': actor,
-                        'node': node_name,
-                        'animEnum': enum,
-                        'clip': clip,
-                        'time': trigger_time,
-                        'persistent': trigger_time is not None and trigger_time < 0,
-                        'kind': ref.get('kind'),
-                        'trigger': trigger['refname'],
-                        'effectCharacter': catalog_effect.get('character'),
-                        'bolt': bolt.get('raw'),
-                        'bone': bolt.get('bone'),
-                        'boneCandidates': bolt.get('candidates'),
-                        'anchor': bolt.get('anchor'),
-                        'boltResolved': bolt.get('resolved'),
+                        'ps': ps_name, 'actor': actor, 'node': node_name,
+                        'animEnum': enum, 'clip': clip, 'time': entry_time,
+                        'sourceTime': trigger_time,
+                        'persistent': entry_time is not None and entry_time < 0,
+                        'kind': ref['kind'], 'timing': ref['timing'], 'recipient': recipient,
+                        'trigger': trigger['refname'], 'effectCharacter': catalog_effect.get('character'),
+                        'bolt': bolt['raw'], 'bone': bolt['bone'],
+                        'boneCandidates': bolt['candidates'], 'anchor': bolt['anchor'],
+                        'boltResolved': bolt['resolved'],
+                        'sourcePath': source['sourcePath'], 'sourceSha256': source['sourceSha256'],
+                        'effectSourcePath': ref['sourcePath'], 'effectSourceSha256': ref['sourceSha256'],
+                        'effectObject': ref['object'], 'effectField': ref['field'],
                     }
                     if bolt2:
-                        entry['bolt2'] = bolt2.get('raw')
-                        entry['bone2'] = bolt2.get('bone')
-                        entry['bone2Candidates'] = bolt2.get('candidates')
+                        entry.update(bolt2=bolt2['raw'], bone2=bolt2['bone'], bone2Candidates=bolt2['candidates'])
                     if ref.get('how'):
                         entry['how'] = ref['how']
-                    dedupe_key = (
-                        ps_name, node_name, enum, effect_id, trigger_time,
-                        entry['kind'], entry['trigger'], entry['bolt'], entry.get('bolt2'),
-                    )
+                    dedupe_key = (effect_id, json.dumps(entry, sort_keys=True))
                     if dedupe_key in seen:
                         continue
                     seen.add(dedupe_key)
@@ -609,11 +749,11 @@ def build_action_map(
                     effect_count += 1
                     total_entries += 1
 
-        powerstyles[ps_name] = {
-            'actor': actor,
-            'nodes': node_count,
-            'effects': effect_count,
-            'sha256': sha256_file(path),
+        source_key = ps_name if ps_name not in powerstyles else source['sourcePath']
+        powerstyles[source_key] = {
+            'actor': actor, 'nodes': node_count, 'effects': effect_count,
+            'sha256': source['sourceSha256'], 'sourcePath': source['sourcePath'],
+            'sourceSha256': source['sourceSha256'],
         }
 
     # Deterministic ordering inside each effect.
@@ -640,11 +780,19 @@ def build_action_map(
         'format': 'mua2_vfx_action_map_v1',
         'provenance': {
             'generator': 'mua2-viewer/tools/vfx_actions.py',
-            'powerstyleSource': 'data.bin -> powerstyles/*.muc (Alchemy IGZ XML)',
+            'powerstyleSource': 'data.bin: powerstyles/, fusion/, fightstyles/ (recursive Alchemy IGZ XML)',
             'powerstyleCount': len(powerstyles),
+            'sources': [{
+                'sourcePath': source['sourcePath'], 'sourceSha256': source['sourceSha256'],
+            } for source in sources],
             'catalog': 'assets/vfx/effects.json',
             'animations': 'assets/animations/index.json + exported HKX clips',
-            'note': 'Every field is read from the game powerstyles; missing clips stay null.',
+            'note': 'Explicit references only; missing actors, clips and event times stay null.',
+            'limitations': [
+                'Cross-file entity spawn/bundle edges are not followed.',
+                'Standalone entityEffects are not combat action bindings.',
+                'Hit and entity-event times require runtime events; sourceTime is the initiating trigger time.',
+            ],
         },
         'aliases': {
             'powerstyles': PS_ALIASES,
@@ -653,10 +801,12 @@ def build_action_map(
         'powerstyles': powerstyles,
         'characters': character_info,
         'effects': dict(sorted(effects.items())),
+        'entityEffects': dict(sorted(entity_effects.items())),
         'actors': dict(sorted(actors.items())),
         'stats': {
             'effectsWithActions': len(effects),
             'totalActionEntries': total_entries,
+            'standaloneEntityEffects': len(entity_effects),
             'unresolvedEffectRefs': sum(unresolved_effects.values()),
             'uniqueUnresolvedEffectRefs': len(unresolved_effects),
             'unresolvedEffectNames': dict(sorted(unresolved_effects.items())),
@@ -672,7 +822,7 @@ def build_action_map(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--muc-dir', help='directory containing powerstyles/*.muc')
+    parser.add_argument('--muc-dir', help='directory containing powerstyles/*.muc (legacy) or full data extraction')
     parser.add_argument('--data-bin', default=DEFAULT_DATA_BIN)
     parser.add_argument('--mua2bin', default=DEFAULT_MUA2BIN)
     parser.add_argument('--catalog', default=DEFAULT_CATALOG)
@@ -686,10 +836,10 @@ def main() -> int:
     temporary: tempfile.TemporaryDirectory[str] | None = None
     muc_dir = args.muc_dir
     if not muc_dir:
-        temporary = tempfile.TemporaryDirectory(prefix='mua2-powerstyles-')
+        temporary = tempfile.TemporaryDirectory(prefix='mua2-data-')
         muc_dir = extract_powerstyles(args.data_bin, args.mua2bin, temporary.name)
     if not os.path.isdir(muc_dir):
-        raise SystemExit(f'powerstyles directory not found: {muc_dir}')
+        raise SystemExit(f'data directory not found: {muc_dir}')
 
     catalog = load_json(args.catalog)['effects']
     models = load_json(args.models)['models']
@@ -714,6 +864,7 @@ def main() -> int:
     print(f"action map: {args.out}")
     print(f"  effects with actions: {stats['effectsWithActions']}")
     print(f"  action entries:       {stats['totalActionEntries']}")
+    print(f"  entity effects:       {stats['standaloneEntityEffects']}")
     print(f"  characters:           {len(action_map['characters'])}")
     print(f"  unresolved effects:   {stats['uniqueUnresolvedEffectRefs']} unique / {stats['unresolvedEffectRefs']} refs")
     print(f"  unresolved bolts:     {stats['unresolvedBolts']}")
@@ -721,7 +872,7 @@ def main() -> int:
 
     if temporary is not None:
         if args.keep_extracted:
-            print(f"  extracted powerstyles kept at: {muc_dir}")
+            print(f"  extracted data kept at: {muc_dir}")
         else:
             temporary.cleanup()
     return 0

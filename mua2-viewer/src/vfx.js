@@ -340,6 +340,7 @@ export function planEffectBinding(effect, {
     hasAction: false,
     scenery: false,
     clipAvailable: null,
+    recipient: 'caster',
   };
   if (!effect) return base;
 
@@ -419,16 +420,21 @@ export function planEffectBinding(effect, {
   const requiresModelLoad = !scenery && explicitOwner && !compatible && Boolean(targetModel);
   const suspended = !scenery && explicitOwner && !compatible && !targetModel;
 
+  const recipient = entry?.recipient || 'caster';
+  const isNonCaster = recipient !== 'caster';
+
   let anchorMode = 'origin';
-  if (compatible) {
-    anchorMode = entry?.anchor === 'bone' && (entry?.bone || entry?.boneCandidates?.length) ? 'bone' : 'model';
+  if (compatible && !isNonCaster) {
+    anchorMode = entry?.anchor === 'bone' && (entry?.bone || entry?.boneCandidates?.length)
+      ? 'bone'
+      : (entry?.anchor === 'origin' ? 'origin' : 'model');
   }
 
-  const bolt = entry?.bolt || null;
-  const bone = entry?.bone || null;
-  const boneCandidates = Array.isArray(entry?.boneCandidates) && entry.boneCandidates.length
+  const bolt = !isNonCaster ? (entry?.bolt || null) : null;
+  const bone = !isNonCaster ? (entry?.bone || null) : null;
+  const boneCandidates = !isNonCaster && Array.isArray(entry?.boneCandidates) && entry.boneCandidates.length
     ? entry.boneCandidates.slice()
-    : resolveBoltCandidates(bolt || bone);
+    : (!isNonCaster ? resolveBoltCandidates(bolt || bone) : []);
 
   return {
     ...base,
@@ -444,7 +450,8 @@ export function planEffectBinding(effect, {
     bolt,
     bone,
     boneCandidates,
-    anchor: entry?.anchor || null,
+    anchor: isNonCaster ? 'origin' : (entry?.anchor || null),
+    recipient,
     loadedCharacter,
     targetCharacter,
     targetModel,
@@ -1495,9 +1502,9 @@ export class VfxRuntime {
     this.attachmentSlot = binding?.hasAction
       ? (binding.anchorMode === 'bone' ? 'Osso da ação' : binding.anchorMode === 'model' ? 'Modelo' : 'Origem')
       : target.slot;
-    this.attachmentBoneName = binding?.bone || target.boneName;
-    this.attachmentBoneCandidates = binding?.boneCandidates?.length
-      ? binding.boneCandidates.slice()
+    this.attachmentBoneName = binding?.hasAction ? binding.bone : (binding?.bone || target.boneName);
+    this.attachmentBoneCandidates = binding?.hasAction
+      ? (binding.boneCandidates || []).slice()
       : (target.candidates || []);
     this.isGroundTarget = binding ? binding.anchorMode === 'origin' : !!target.isGround;
     this.anchorMode = binding?.anchorMode || (this.isGroundTarget ? 'origin' : 'bone');
@@ -2460,7 +2467,14 @@ export class VfxCatalogController {
       const bone = this.runtime?.attachmentBoneName || plan.bone || '';
       rows.push(`<div class="vfx-action-row"><span class="vfx-action-label">Osso</span><strong class="vfx-action-value">${escapeHtml(bone)}</strong>${plan.bolt ? `<span class="vfx-action-enum">${escapeHtml(plan.bolt)}</span>` : ''}</div>`);
     } else if (plan.anchorMode === 'origin') {
-      rows.push('<div class="vfx-action-row"><span class="vfx-action-label">Ancoragem</span><strong class="vfx-action-value">Origem do cenário</strong></div>');
+      const originLabel = plan.recipient === 'projectile'
+        ? 'Projétil (origem)'
+        : plan.recipient === 'target'
+          ? 'Alvo (origem)'
+          : plan.recipient === 'world'
+            ? 'Cenário (origem)'
+            : 'Origem do cenário';
+      rows.push(`<div class="vfx-action-row"><span class="vfx-action-label">Ancoragem</span><strong class="vfx-action-value">${originLabel}</strong></div>`);
     } else if (plan.anchorMode === 'model') {
       rows.push('<div class="vfx-action-row"><span class="vfx-action-label">Ancoragem</span><strong class="vfx-action-value">Raiz do modelo</strong></div>');
     }
@@ -2476,7 +2490,7 @@ export class VfxCatalogController {
       notes.push(`Executado por ${plan.actor}, um dos atores autênticos deste efeito.`);
     } else if (!plan.hasAction && plan.anchorMode === 'origin') {
       notes.push('Efeito sem vínculo autêntico com o modelo carregado; exibido na origem.');
-    } else if (!plan.compatible && plan.hasAction && plan.anchorMode === 'origin' && !plan.scenery) {
+    } else if (!plan.compatible && plan.hasAction && plan.anchorMode === 'origin' && !plan.scenery && plan.recipient === 'caster') {
       notes.push('O modelo carregado não executa esta ação; efeito exibido na origem.');
     }
     if (!plan.suspended && plan.hasAction) {
@@ -3303,6 +3317,29 @@ export function selfCheckVfxCatalog() {
 
   const sceneryPlan = planFor('map/newyork/fire', 'spiderman');
   check(sceneryPlan.scenery && sceneryPlan.anchorMode === 'origin', 'Scenery effects must anchor at the origin, never on the character');
+
+  const nonCasterPlan = planEffectBinding(
+    { id: 'char/spiderman/spiderman_web_impact', category: 'char', character: 'spiderman', modelIds: ['spiderman'] },
+    {
+      actionMap: {
+        characters: actionMap.characters,
+        effects: {
+          'char/spiderman/spiderman_web_impact': [{
+            actor: 'spiderman',
+            clip: 'attack1',
+            recipient: 'target',
+            anchor: 'bone',
+            bone: 'Bip01 Head',
+          }],
+        },
+        actors: { 'char/spiderman/spiderman_web_impact': ['spiderman'] },
+      },
+      loadedModel: bindingModels.find((model) => model.id === 'spiderman'),
+      models: bindingModels,
+      isProp: () => false,
+    },
+  );
+  check(nonCasterPlan.compatible && nonCasterPlan.anchorMode === 'origin' && nonCasterPlan.bone === null, 'Target/projectile recipients must stay at origin rather than attaching to caster bone');
 
   // effects.json ownership fallback when the powerstyle map is unavailable
   const fallbackEffect = { id: 'char/spiderman/fallback_fx', category: 'char', character: 'spiderman', modelIds: ['spiderman'] };

@@ -5,6 +5,7 @@ import os
 import re
 import struct
 import sys
+import tempfile
 import wave
 import numpy as np
 from PIL import Image
@@ -30,6 +31,15 @@ from vfx_scan import (
     CHAR_CANONICAL,
 )
 from vfx_assets import parse_fsb5_block
+from vfx_actions import (
+    resolve_object,
+    powerup_recipient,
+    default_bolt,
+    default_target_bolt,
+    collect_effect_refs,
+    build_action_map,
+    DEFAULT_DATA_BIN,
+)
 
 WORK_DIR = os.path.abspath('_work')
 EFFECTS_DIR = os.path.join(WORK_DIR, 'igz_effects')
@@ -431,6 +441,185 @@ def test_vfx_asset_maps() -> None:
           f'{len(sound_paths)} WAV files + {len(mp3_files)} raw FSB files; MPEG layer bits={sorted(layers)}', file=sys.stderr)
 
 
+def test_vfx_actions_authentic_bindings() -> None:
+    """Verify authentic VFX action bindings: namespaces, recipient classification, projectile attachments, and victim defaults."""
+    # 1. Namespaces, cross-namespace resolution, aliases, and cycles
+    s1 = {
+        'sourcePath': 'powerstyles/s1.muc',
+        'namespace': 'ns1',
+        'aliases': {
+            'ns1.alias_to_ns2': 'ns2.target_obj',
+            'ns1.cycle_a': 'ns1.cycle_b',
+            'ns1.cycle_b': 'ns1.cycle_a',
+            'ns1.self_cycle': 'ns1.self_cycle',
+        },
+        'objects': {
+            'obj1': {'refname': 'obj1', 'type': 'CTest', 'vars': {}, 'items': []},
+        },
+    }
+    s2 = {
+        'sourcePath': 'powerstyles/s2.muc',
+        'namespace': 'ns2',
+        'aliases': {},
+        'objects': {
+            'target_obj': {'refname': 'target_obj', 'type': 'CTest', 'vars': {}, 'items': []},
+        },
+    }
+    namespaces = {'ns1': s1, 'ns2': s2}
+
+    assert resolve_object('obj1', s1, namespaces) == (s1['objects']['obj1'], s1)
+    assert resolve_object('ns1.obj1', s1, namespaces) == (s1['objects']['obj1'], s1)
+    assert resolve_object('ns2.target_obj', s1, namespaces) == (s2['objects']['target_obj'], s2)
+    assert resolve_object('ns1.alias_to_ns2', s1, namespaces) == (s2['objects']['target_obj'], s2)
+    assert resolve_object('ns1.cycle_a', s1, namespaces) is None
+    assert resolve_object('ns1.self_cycle', s1, namespaces) is None
+    assert resolve_object('unknown_ref', s1, namespaces) is None
+    assert resolve_object(None, s1, namespaces) is None
+
+    # 2. Powerup recipient classification: probability, owner-only, targets, mixed
+    assert powerup_recipient({'mApplyChance': '100'}, 'caster') == 'caster'
+    assert powerup_recipient({'mApplyOwnerOnly': 'True'}, 'caster') == 'caster'
+    assert powerup_recipient({'mApplyCombatTarget': 'eCTS_Self', 'mApplySelf': 'false'}, 'caster') == 'caster'
+    assert powerup_recipient({'mApplyCombatTarget': 'eCTS_None'}, 'caster') == 'caster'
+    assert powerup_recipient({'mApplyCombatTarget': 'eCTS_TargetControl'}, 'caster') == 'target'
+    assert powerup_recipient({'mApplyHeld': 'True'}, 'caster') == 'target'
+    assert powerup_recipient({'mApplyAllies': 'True'}, 'caster') == 'target'
+    assert powerup_recipient({'mApplyAlly': 'EAPPLY_ALL'}, 'caster') == 'target'
+    assert powerup_recipient({'mApplyAlly': 'EAPPLY_NONE'}, 'caster') == 'caster'
+    assert powerup_recipient({'mApplySelf': 'true', 'mApplyCombatTarget': 'eCTS_First'}, 'caster') == 'unknown'
+    assert powerup_recipient({'mApplyOwnerOnly': 'True', 'mApplyAllies': 'True'}, 'caster') == 'unknown'
+    assert powerup_recipient({'mApplySelf': 'false'}, 'caster') == 'unknown'
+    assert powerup_recipient({}, 'caster') == 'caster'
+    assert powerup_recipient({}, 'target') == 'target'
+
+    # 3. Default bolts and projectile spawn attachments
+    db = default_bolt()
+    assert db['raw'] is None and db['bone'] == 'Bip01' and db['anchor'] == 'bone' and not db['resolved']
+    dtb = default_target_bolt()
+    assert dtb['raw'] is None and dtb['bone'] is None and dtb['anchor'] is None and not dtb['resolved']
+
+    proj_source = {
+        'sourcePath': 'powerstyles/proj_test.muc',
+        'sourceSha256': 'sha_test',
+        'namespace': 'proj_test',
+        'aliases': {},
+        'objects': {
+            'trig': {
+                'refname': 'trig', 'type': 'CCEAtkSpawnProjectile',
+                'vars': {
+                    'mActorBolt': '@proj_test.actor_bolt',
+                    'mSpawnData': '@proj_test.spawndata',
+                },
+                'items': [],
+            },
+            'actor_bolt': {
+                'refname': 'actor_bolt', 'type': 'CAttackBone',
+                'vars': {'_bolt': 'Bip01 L Hand'}, 'items': [],
+            },
+            'spawndata': {
+                'refname': 'spawndata', 'type': 'CProjSpawnDataVal',
+                'vars': {
+                    'mSpawnEffectName': 'char/test/muzzle_flash',
+                    'mEntityDef': '@proj_test.ent_def',
+                },
+                'items': [],
+            },
+            'ent_def': {
+                'refname': 'ent_def', 'type': 'CEntityDef',
+                'vars': {'mEntity': '@proj_test.bullet_ent'}, 'items': [],
+            },
+            'bullet_ent': {
+                'refname': 'bullet_ent', 'type': 'CProjectileEntity',
+                'vars': {
+                    '_loopFx': 'char/test/bullet_trail',
+                    '_spawnFx': 'char/test/bullet_spark',
+                },
+                'items': [],
+            },
+            'trig_override': {
+                'refname': 'trig_override', 'type': 'CCEAtkSpawnProjectile',
+                'vars': {
+                    'mActorBolt': '@proj_test.actor_bolt',
+                    'mSpawnData': '@proj_test.spawndata_override',
+                },
+                'items': [],
+            },
+            'spawndata_override': {
+                'refname': 'spawndata_override', 'type': 'CProjSpawnDataVal',
+                'vars': {
+                    'mBolt': 'Bip01 R Hand',
+                    'mSpawnEffectName': 'char/test/muzzle_flash2',
+                },
+                'items': [],
+            },
+        },
+    }
+    proj_namespaces = {'proj_test': proj_source}
+    refs = collect_effect_refs(proj_source['objects']['trig'], proj_source, proj_namespaces)
+    spawn_ref = next(r for r in refs if r['kind'] == 'projectile_spawn')
+    loop_ref = next(r for r in refs if r['kind'] == 'entity_loop')
+    spark_ref = next(r for r in refs if r['kind'] == 'entity_spawn')
+    assert spawn_ref['bolt'] is not None and spawn_ref['bolt']['bone'] == 'Bip01 L Hand'
+    assert loop_ref['bolt'] is None
+    assert spark_ref['bolt'] is None
+
+    refs_override = collect_effect_refs(proj_source['objects']['trig_override'], proj_source, proj_namespaces)
+    spawn_override = next(r for r in refs_override if r['kind'] == 'projectile_spawn')
+    assert spawn_override['bolt'] is not None and spawn_override['bolt']['bone'] == 'Bip01 R Hand'
+
+    # 4. Target attachment defaults and victim fightstyle non-inference
+    assert 'all_data_bin' not in DEFAULT_DATA_BIN
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fightstyles = os.path.join(tmpdir, 'fightstyles')
+        os.makedirs(fightstyles)
+        muc_content = """
+<igx name="victim_test">
+  <object refname="combat_node" type="CCombatNode">
+    <var name="_animEnum" value="EA_ATTACK1" />
+    <var name="_triggers" value="@victim_test.triggers" />
+  </object>
+  <object refname="triggers" type="CCombatTriggers">
+    <listitem ref="@victim_test.trig1" />
+    <listitem ref="@victim_test.trig2" />
+  </object>
+  <object refname="trig1" type="CCEEffectFile">
+    <var name="_time" value="0.25" />
+    <var name="mEffectName" value="char/test/victim_fx" />
+  </object>
+  <object refname="trig2" type="CCEEffectFile">
+    <var name="_time" value="0.5" />
+    <var name="mEffectName" value="char/test/victim_explicit_bolt" />
+    <var name="mBolt" value="Bip01 Head" />
+  </object>
+</igx>
+"""
+        with open(os.path.join(fightstyles, 'interact_wolverine_victim.muc'), 'w', encoding='latin1') as f:
+            f.write(muc_content)
+
+        catalog = [
+            {'id': 'char/test/victim_fx', 'character': 'wolverine'},
+            {'id': 'char/test/victim_explicit_bolt', 'character': 'wolverine'},
+        ]
+        models = [{'id': 'wolverine', 'category': 'characters'}]
+        action_map = build_action_map(tmpdir, catalog, models, {}, tmpdir)
+
+        ps_info = action_map['powerstyles']['interact_wolverine_victim']
+        assert ps_info['actor'] is None, f"Expected actor=None for victim, got {ps_info['actor']}"
+
+        entries1 = action_map['effects']['char/test/victim_fx']
+        assert len(entries1) == 1
+        assert entries1[0]['actor'] is None
+        assert entries1[0]['recipient'] == 'target'
+        assert entries1[0]['bone'] is None
+        assert entries1[0]['boneCandidates'] == []
+
+        entries2 = action_map['effects']['char/test/victim_explicit_bolt']
+        assert len(entries2) == 1
+        assert entries2[0]['actor'] is None
+        assert entries2[0]['recipient'] == 'target'
+        assert entries2[0]['bone'] == 'Bip01 Head'
+
+
 def run_all_tests():
     """Execute all regression tests and report elapsed time."""
     print("Running MUA2 VFX regression test suite...", file=sys.stderr)
@@ -446,6 +635,7 @@ def run_all_tests():
         test_vfx_texture_map_and_runtime_conformance,
         test_fsb5_boundaries,
         test_vfx_asset_maps,
+        test_vfx_actions_authentic_bindings,
     ]
     for t in tests:
         t()
