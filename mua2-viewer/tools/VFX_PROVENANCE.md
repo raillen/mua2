@@ -172,6 +172,40 @@ When non-zero variance coefficients (`varA`, `varB`, `varC`) are present, each s
 | +48 (`0x30`) | 32 | `_rqAlpha` | Opacity / alpha curve over lifespan |
 | +80 (`0x50`) | 32 | `_rqLength` | Particle / ribbon elongation curve over lifespan |
 
+#### Runtime unit normalization (`vfx.js`)
+
+`_rqSize` and `_rqLength` are authored in the rig's local units; the decoded
+GLBs bake the unit conversion into a scaled root node (measured examples:
+`spiderman` 0.02830, `spiderman_alt` 0.02829, `juggernaut_alt_2` 0.02107,
+`a_bomb_anti_1` 0.01875, `hulk` 0.01950). The runtime samples the world scale
+of the first `SkinnedMesh` (falling back to a `Bone`) and multiplies every
+curve by it, so a `_rqSize` of 40 renders as 40 × 0.0283 ≈ 1.13 m on
+Spider-Man. `WORLD_UNIT_METERS = 0.0254` is used only when there is no
+measurable rig (scenery effects, no model loaded), and
+`DEFAULT_PRIMITIVE_SIZE_IN = 12` remains the last-resort size for primitives
+whose `_rqSize` and `_radius` are both zero (2.8% of the catalog, mostly
+`CAMERA_SHAKE` and 280 cylinders). `_radius` is authored in metres, so it is
+converted back to local units before the rig scale is applied.
+
+Effects whose template `loopTime` is shorter than the primitive `_life` (the
+common trail case: `loopTime` 0.3 s, `_life` 1 s) keep the trail ribbon across
+loop cycles. Wiping the point history on every wrap would leave the strip at
+one or two samples and make it invisible; `VfxPrimitiveRunner.resetCycle()`
+therefore preserves the trail history while resetting every other primitive.
+
+The template `loopTime` is the emitter cycle, not the effect duration: 4,219 of
+5,235 effects (80.6%) contain at least one primitive whose `_delay + _life`
+exceeds it. `VfxRuntime.playDuration` is therefore `max(loopTime,
+max(delay + life))` and every timeline boundary (sync wrap, free-run wrap,
+one-shot finish, play restart, loop restart) uses it, so a rigid body spawned
+1.008 s into a 1 s ram attack is no longer truncated before it appears.
+
+`FXPRIM_TYPE_MODEL` / `HAVOKMODEL` are the exception to the unit rule: their
+`_rqSize` is a dimensionless multiplier of the exported GLB's native size
+(1,747 of 2,380 primitives author exactly `1.0`), so the runtime applies the
+raw curve value instead of multiplying it by the rig scale. Applying the rig
+scale there would shrink a full character or prop to roughly 1/50 of its size.
+
 #### Continuous Float Parameter Block (Offset +752 to +812)
 
 | Offset (dec) | Type | Field Name | Description |

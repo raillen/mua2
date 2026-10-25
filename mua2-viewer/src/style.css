@@ -2184,6 +2184,43 @@ html, body {
   color: #ffab40;
 }
 
+.vfx-action-box {
+  gap: 6px;
+}
+
+.vfx-action-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.vfx-action-label {
+  min-width: 68px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.vfx-action-value {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.vfx-action-enum {
+  padding: 1px 5px;
+  border: 1px solid rgba(255, 171, 64, 0.25);
+  border-radius: 3px;
+  background: rgba(255, 171, 64, 0.12);
+  color: #ffab40;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 9px;
+}
+
 .vfx-char-btn {
   display: flex;
   align-items: center;

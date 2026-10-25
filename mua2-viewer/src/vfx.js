@@ -1,6 +1,10 @@
 const PAGE_SIZE = 100;
 const PLAYBACK_NOTICE = 'Reprodução indisponível: emissor ainda não decodificado';
 const STATUS_LABELS = { decoded: 'Decodificado', partial: 'Parcial', 'metadata-only': 'Metadados', error: 'Erro' };
+// World units are inches. The ribbon keeps half a second of anchor history,
+// resampled at 30 Hz so the trail length is frame-rate independent.
+const TRAIL_HISTORY_SECONDS = 0.5;
+const TRAIL_SAMPLE_INTERVAL = 1 / 30;
 
 export function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
@@ -88,9 +92,10 @@ export function evaluateColorRamp(colors, t) {
     b = lerp(mid.b, end.b, u);
     a = lerp(mid.a, end.a, u);
   }
-  // Soft sinusoidal envelope across lifetime to prevent sudden pop-in / pop-out
-  const envelope = Math.sin(clamped * Math.PI);
-  return { r, g, b, a: Math.min(1.0, Math.max(0.0, a * envelope)) };
+  // Alpha is authored by the primitive's rqAlpha curve; the colour ramp only
+  // supplies the channel fallback. No synthetic envelope: the decoded curve
+  // already contains the authentic fade in/out (a second envelope double-fades).
+  return { r, g, b, a: Math.min(1.0, Math.max(0.0, a)) };
 }
 
 export function evaluateQuadratic(curve, t, fallback = 0) {
@@ -166,17 +171,295 @@ export function resolveAttachmentTarget(effectId, textures = []) {
 
 export function findBoneInModel(model, boneName) {
   if (!model || !boneName) return null;
-  let found = null;
-  const targetLower = boneName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const target = boneName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (!target) return null;
+  let exact = null;
+  let partial = null;
   model.traverse((obj) => {
-    if (found || !obj.isBone) return;
-    const nameLower = (obj.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (nameLower === targetLower || nameLower.includes(targetLower)) {
-      found = obj;
+    if (exact || !obj.isBone) return;
+    const name = (obj.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!name) return;
+    if (name === target) {
+      exact = obj;
+      return;
     }
+    // Attach bones share a prefix with their parent ("Bip01 R Hand" vs
+    // "Bip01 R HandAttach"); only accept a prefix match when no exact bone
+    // exists in the rig.
+    if (!partial && name.includes(target)) partial = obj;
   });
-  return found;
+  return exact || partial;
 }
+
+// ========================================================
+// AUTHENTIC ACTION BINDING (powerstyles/*.muc -> data.bin)
+// ========================================================
+
+// The Alchemy rqSize curves are authored in the rig's local units, and the
+// decoded GLBs usually bake the unit conversion into a scaled root node
+// (spiderman 0.0283, hulk 0.0195, ...). The runtime therefore measures that
+// world scale and multiplies every curve by it; 0.0254 m/in is only the
+// fallback used for scenery or a rig without a measurable scale.
+export const WORLD_UNIT_METERS = 0.0254;
+export const METERS_TO_INCHES = 1 / WORLD_UNIT_METERS;
+export const DEFAULT_PRIMITIVE_SIZE_IN = 12;
+export const SCENERY_CATEGORIES = new Set(['map', 'common', 'flares', 'menu', 'renderfx']);
+
+// EBOLT_* -> ordered bone candidates. Mirrors vfx_actions.py, which resolves
+// the enums from the .muc files; kept in JS so runtime fallbacks are explicit.
+export const BOLT_CANDIDATES = {
+  EBOLT_LHAND: ['Bip01 L Hand'],
+  EBOLT_RHAND: ['Bip01 R Hand'],
+  EBOLT_LHANDATTACH: ['Bip01 L HandAttach', 'Bip01 L Hand'],
+  EBOLT_RHANDATTACH: ['Bip01 R HandAttach', 'Bip01 R Hand'],
+  EBOLT_TORSO: ['Bip01 Spine2', 'Bip01 Spine1', 'Bip01 Spine'],
+  EBOLT_LOWER_TORSO: ['Bip01 Spine', 'Bip01 Spine1', 'Bip01 Pelvis'],
+  EBOLT_PELVIS: ['Bip01 Pelvis'],
+  EBOLT_ROOT: ['Bip01'],
+  EBOLT_HEAD: ['Bip01 Head'],
+  EBOLT_NECK: ['Bip01 Neck'],
+  EBOLT_LFOOT: ['Bip01 L Foot'],
+  EBOLT_RFOOT: ['Bip01 R Foot'],
+  EBOLT_LFOOTATTACH01: ['Bip01 L FootAttach01', 'Bip01 L Foot'],
+  EBOLT_RFOOTATTACH01: ['Bip01 R FootAttach01', 'Bip01 R Foot'],
+  EBOLT_LFOREARM: ['Bip01 L Forearm'],
+  EBOLT_RFOREARM: ['Bip01 R Forearm'],
+  EBOLT_LFOREARMATTACH01: ['Bip01 L ForearmAttach01', 'Bip01 L Forearm'],
+  EBOLT_LFOREARMATTACH02: ['Bip01 L ForearmAttach02', 'Bip01 L ForearmAttach01', 'Bip01 L Forearm'],
+  EBOLT_RFOREARMATTACH: ['Bip01 R ForearmAttach', 'Bip01 R Forearm'],
+  EBOLT_RFOREARMATTACH01: ['Bip01 R ForearmAttach01', 'Bip01 R Forearm'],
+  EBOLT_LUPPERARM: ['Bip01 L UpperArm'],
+  EBOLT_RUPPERARM: ['Bip01 R UpperArm'],
+  EBOLT_LCLAVICLE: ['Bip01 L Clavicle'],
+  EBOLT_RCLAVICLE: ['Bip01 R Clavicle'],
+  EBOLT_LTHIGH: ['Bip01 L Thigh'],
+  EBOLT_RTHIGH: ['Bip01 R Thigh'],
+  EBOLT_LCALF: ['Bip01 L Calf'],
+  EBOLT_RCALF: ['Bip01 R Calf'],
+  EBOLT_LANKLE: ['Bip01 L Foot', 'Bip01 L Calf'],
+  EBOLT_RANKLE: ['Bip01 R Foot', 'Bip01 R Calf'],
+  EBOLT_LHIPATTACH: ['Bip01 L HipAttach', 'Bip01 Pelvis'],
+  EBOLT_RHIPATTACH: ['Bip01 R HipAttach', 'Bip01 Pelvis'],
+  EBOLT_LSHOULDERATTACH: ['Bip01 L ShoulderAttach', 'Bip01 L UpperArm'],
+  EBOLT_RSHOULDERATTACH: ['Bip01 R ShoulderAttach', 'Bip01 R UpperArm'],
+  EBOLT_CARRYATTACH: ['Bip01 CarryAttach', 'Bip01 R Hand'],
+  EBOLT_OBJECT_TRANSFORM: [],
+  EBOLT_ORIGIN: [],
+  EBOLT_NONE: [],
+  EBOLT_BOLTBASE: [],
+  EBOLT_BOLTEND: [],
+  EBOLT_SPECIAL1: ['Bip01 Spine2', 'Bip01 Spine'],
+  EBOLTON_WEAPON: ['Bip01 R HandAttach', 'Bip01 R Hand'],
+  EBOLTON_ALT_WEAPON: ['Bip01 R HandAttach', 'Bip01 R Hand'],
+  EBOLTON_ALT_WEAPON2: ['Bip01 R HandAttach', 'Bip01 R Hand'],
+  EBOLTON_ALT_WEAPON3: ['Bip01 R HandAttach', 'Bip01 R Hand'],
+  EBOLTON_ALT_WEAPON4: ['Bip01 R HandAttach', 'Bip01 R Hand'],
+  EBOLTON_ALT_WEAPON5: ['Bip01 R HandAttach', 'Bip01 R Hand'],
+  EBOLTON_CLAW_LEFT: ['Bip01 L HandAttach', 'Bip01 L Hand'],
+  EBOLTON_CLAW_RIGHT: ['Bip01 R HandAttach', 'Bip01 R Hand'],
+  EBOLTON_CAPE: ['Bip01 Spine2', 'Bip01 Spine'],
+  EBOLTON_HAIR: ['Bip01 Head'],
+  EBOLTON_TAIL: ['Bip01 Pelvis'],
+  EBOLTON_WINGS: ['Bip01 Spine2', 'Bip01 Spine'],
+  EBOLTON_NONE: [],
+  EBOLTON_MAX: [],
+};
+for (let index = 1; index <= 7; index += 1) {
+  BOLT_CANDIDATES[`EBOLT_FX${String(index).padStart(2, '0')}`] = [`fx${String(index).padStart(2, '0')}`, 'Bip01 Spine2', 'Bip01 Spine'];
+}
+for (let index = 1; index <= 5; index += 1) {
+  BOLT_CANDIDATES[`EBOLT_BOLT${String(index).padStart(2, '0')}`] = [`Bolt_${String(index).padStart(2, '0')}`, 'Bip01 Spine2', 'Bip01 Spine'];
+}
+export function resolveBoltCandidates(label) {
+  if (typeof label !== 'string' || !label.trim()) return [];
+  const raw = label.trim();
+  const upper = raw.toUpperCase();
+  if (Object.hasOwn(BOLT_CANDIDATES, upper)) return [...BOLT_CANDIDATES[upper]];
+  if (upper.startsWith('EBOLT_FX')) {
+    const index = Number(upper.split('FX').pop()) || 1;
+    return [`fx${String(index).padStart(2, '0')}`, 'Bip01 Spine2', 'Bip01 Spine'];
+  }
+  if (upper.startsWith('EBOLT_BOLT')) {
+    const index = Number(upper.split('BOLT').pop()) || 1;
+    return [`Bolt_${String(index).padStart(2, '0')}`, 'Bip01 Spine2', 'Bip01 Spine'];
+  }
+  if (upper.startsWith('EBOLT_FLOAT')) return ['Bip01 Spine2', 'Bip01 Spine'];
+  if (upper.startsWith('EBOLT_')) return ['Bip01 Spine2', 'Bip01 Spine', 'Bip01 Pelvis'];
+  if (raw.toLowerCase() === 'bip01') return ['Bip01'];
+  if (raw.toLowerCase() === 'motion') return ['Motion', 'Bip01'];
+  if (/^fx0?\d+$/i.test(raw)) {
+    const index = Number(raw.replace(/\D/g, '')) || 1;
+    return [`fx${String(index).padStart(2, '0')}`, 'Bip01 Spine2', 'Bip01 Spine'];
+  }
+  return [raw];
+}
+
+/**
+ * Plan how an effect may be anchored/played for the currently loaded model.
+ *
+ * Sources of truth (in order):
+ *  1. assets/vfx/action_map.json (powerstyles/*.muc) -> actor, clip, trigger, bone.
+ *  2. effects.json `character`/`modelIds` -> ownership.
+ *  3. The effect category -> scenery effects never anchor on a character.
+ *
+ * Returns a serialisable plan; `suspended` means the effect belongs to another
+ * character and no representative model exists to load, so it must not render.
+ */
+export function planEffectBinding(effect, {
+  actionMap = null,
+  loadedModel = null,
+  models = [],
+  isProp = () => false,
+  modelCharacter = null,
+} = {}) {
+  const base = {
+    effectId: effect?.id || null,
+    effectCharacter: effect?.character || null,
+    actors: [],
+    actor: null,
+    entry: null,
+    clip: null,
+    animEnum: null,
+    time: null,
+    triggerTime: 0,
+    persistent: false,
+    kind: null,
+    bolt: null,
+    bone: null,
+    boneCandidates: [],
+    anchor: null,
+    loadedCharacter: null,
+    targetCharacter: null,
+    targetModel: null,
+    targetModelId: null,
+    compatible: false,
+    ownerModelMatch: false,
+    requiresModelLoad: false,
+    suspended: false,
+    anchorMode: 'origin',
+    hasAction: false,
+    scenery: false,
+    clipAvailable: null,
+  };
+  if (!effect) return base;
+
+  const characters = actionMap?.characters || {};
+  const entries = Array.isArray(actionMap?.effects?.[effect.id]) ? actionMap.effects[effect.id] : [];
+  const actors = Array.isArray(actionMap?.actors?.[effect.id]) ? actionMap.actors[effect.id].slice() : [];
+  const effectModels = Array.isArray(effect.modelIds) ? effect.modelIds : [];
+  const loadedId = loadedModel?.id || null;
+
+  const characterFor = (model) => {
+    if (!model) return null;
+    if (typeof modelCharacter === 'function') {
+      const resolved = modelCharacter(model);
+      if (resolved) return resolved;
+    }
+    const id = model.id;
+    for (const [name, info] of Object.entries(characters)) {
+      if (info?.representativeModel === id || (info?.modelIds || []).includes(id)) return name;
+    }
+    return null;
+  };
+
+  const loadedCharacter = characterFor(loadedModel);
+  const propMatch = Boolean(loadedId && loadedModel && isProp(loadedModel) && effectModels.includes(loadedId));
+  const explicitOwner = Boolean(effect.character) || effectModels.length > 0;
+  const scenery = !propMatch && SCENERY_CATEGORIES.has(effect.category);
+
+  let actor = null;
+  if (loadedCharacter && actors.includes(loadedCharacter)) actor = loadedCharacter;
+  else if (effect.character && actors.includes(effect.character)) actor = effect.character;
+  else if (actors.length) actor = actors[0];
+  else if (effect.character) actor = effect.character;
+
+  const score = (entry) => {
+    let value = 0;
+    if (entry?.kind === 'fx_core') value += 4;
+    if (entry?.anchor === 'bone' && entry?.bone) value += 3;
+    else if (entry?.anchor === 'bone') value += 1;
+    if (entry?.clip) value += 2;
+    if (Number.isFinite(entry?.time) && entry.time >= 0) value += 1;
+    if (entry?.boltResolved) value += 0.5;
+    return value;
+  };
+  const actorEntries = entries.filter((entry) => entry.actor === actor);
+  const pool = actorEntries.length ? actorEntries : entries;
+  const entry = pool.slice().sort((a, b) => score(b) - score(a))[0] || null;
+
+  let targetCharacter = null;
+  if (!scenery && explicitOwner) targetCharacter = effect.character || actor || null;
+
+  // Candidate models for the owning character. `action_map.characters` is the
+  // primary source; `effects.json modelIds` is the fallback when the powerstyle
+  // map has no entry (or failed to load).
+  let targetModel = null;
+  if (!scenery && explicitOwner) {
+    const info = characters[targetCharacter];
+    const candidateIds = [];
+    if (info?.representativeModel) candidateIds.push(info.representativeModel);
+    if (!targetCharacter || effect.character === targetCharacter) {
+      for (const id of effectModels) if (!candidateIds.includes(id)) candidateIds.push(id);
+    }
+    for (const id of (info?.modelIds || [])) if (!candidateIds.includes(id)) candidateIds.push(id);
+    for (const id of candidateIds) {
+      const found = models.find((model) => model.id === id);
+      if (found) {
+        targetModel = found;
+        break;
+      }
+    }
+  }
+
+  const ownerMatch = Boolean(loadedCharacter && targetCharacter && loadedCharacter === targetCharacter);
+  const actorMatch = Boolean(loadedCharacter && actors.includes(loadedCharacter));
+  const ownerModelMatch = Boolean(loadedId && effectModels.includes(loadedId));
+  const compatible = Boolean(loadedModel) && !scenery && (propMatch || ownerModelMatch || ownerMatch || actorMatch);
+
+  const requiresModelLoad = !scenery && explicitOwner && !compatible && Boolean(targetModel);
+  const suspended = !scenery && explicitOwner && !compatible && !targetModel;
+
+  let anchorMode = 'origin';
+  if (compatible) {
+    anchorMode = entry?.anchor === 'bone' && (entry?.bone || entry?.boneCandidates?.length) ? 'bone' : 'model';
+  }
+
+  const bolt = entry?.bolt || null;
+  const bone = entry?.bone || null;
+  const boneCandidates = Array.isArray(entry?.boneCandidates) && entry.boneCandidates.length
+    ? entry.boneCandidates.slice()
+    : resolveBoltCandidates(bolt || bone);
+
+  return {
+    ...base,
+    actors,
+    actor,
+    entry,
+    clip: entry?.clip || null,
+    animEnum: entry?.animEnum || null,
+    time: Number.isFinite(entry?.time) ? entry.time : null,
+    triggerTime: Number.isFinite(entry?.time) && entry.time > 0 ? entry.time : 0,
+    persistent: Boolean(entry?.persistent) || (Number.isFinite(entry?.time) && entry.time < 0),
+    kind: entry?.kind || null,
+    bolt,
+    bone,
+    boneCandidates,
+    anchor: entry?.anchor || null,
+    loadedCharacter,
+    targetCharacter,
+    targetModel,
+    targetModelId: targetModel?.id || null,
+    compatible,
+    ownerModelMatch,
+    requiresModelLoad,
+    suspended,
+    anchorMode,
+    hasAction: Boolean(entry),
+    scenery,
+    clipAvailable: null,
+  };
+}
+
 
 function createFallbackGlowTexture(THREE) {
   if (typeof document === 'undefined' || !THREE) return null;
@@ -217,6 +500,9 @@ class VfxPrimitiveRunner {
     this.disposed = false;
     this.ownedGeometries = [];
     this.ownedMaterials = [];
+    this.trail = null;
+    this.isScreenFlash = false;
+    this.screenSpace = false;
 
     if (!this.THREE) return;
 
@@ -237,14 +523,14 @@ class VfxPrimitiveRunner {
   _createMesh() {
     const THREE = this.THREE;
     const p = this.primitive;
-    const r = p.radius > 0 ? p.radius : 0.4;
-    const r2 = p.radius2 > 0 ? p.radius2 : r;
-    const h = p.height > 0 ? p.height : (r + r2);
+    const baseSize = this._fallbackSize();
 
     switch (p.typeName) {
       case 'FXPRIM_TYPE_SPRITE':
       case 'FXPRIM_TYPE_FLARE':
-      case 'FXPRIM_TYPE_SCREEN_SPRITE': {
+      case 'FXPRIM_TYPE_SCREEN_SPRITE':
+      case 'FXPRIM_TYPE_HAVOK_SPRITE':
+      case 'FXPRIM_TYPE_ENTITY': {
         const mat = new THREE.SpriteMaterial({
           map: this.texture,
           transparent: true,
@@ -253,12 +539,87 @@ class VfxPrimitiveRunner {
         });
         this.ownedMaterials.push(mat);
         this.mesh = new THREE.Sprite(mat);
-        this.mesh.scale.set(r * 2, r * 2, 1);
+        this.mesh.scale.set(baseSize, baseSize, 1);
+        break;
+      }
+
+      case 'FXPRIM_TYPE_TRAIL': {
+        // Ribbons are built from the anchor's world-space history so they
+        // follow the animation instead of staying glued to the bone. The
+        // buffer covers one second at the 30 Hz sample rate; the history
+        // window comes from the authentic primitive life (clamped so a 12 s
+        // web strand does not turn into a two-second motion smear).
+        const count = 64;
+        const geom = new THREE.BufferGeometry();
+        const positions = new Float32Array(count * 2 * 3);
+        const uvs = new Float32Array(count * 2 * 2);
+        const indices = [];
+        for (let i = 0; i < count; i += 1) {
+          const v = i / (count - 1);
+          uvs[i * 4] = 0;
+          uvs[i * 4 + 1] = v;
+          uvs[i * 4 + 2] = 1;
+          uvs[i * 4 + 3] = v;
+          if (i < count - 1) {
+            const a = i * 2;
+            indices.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
+          }
+        }
+        geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geom.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+        geom.setIndex(indices);
+        const mat = new THREE.MeshBasicMaterial({
+          map: this.texture,
+          transparent: true,
+          blending: this.blendMode,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+          fog: false,
+        });
+        this.ownedGeometries.push(geom);
+        this.ownedMaterials.push(mat);
+        this.mesh = new THREE.Mesh(geom, mat);
+        this.mesh.frustumCulled = false;
+        this.mesh.renderOrder = 10;
+        this.screenSpace = true;
+        this.trail = {
+          points: [],
+          maxPoints: count,
+          width: baseSize,
+          history: Math.max(0.15, Math.min(1, Number(p.life) || TRAIL_HISTORY_SECONDS)),
+          clock: 0,
+          anchor: new THREE.Vector3(),
+          tangent: new THREE.Vector3(),
+          side: new THREE.Vector3(),
+          toCamera: new THREE.Vector3(),
+        };
+        break;
+      }
+
+      case 'FXPRIM_TYPE_SCREENFLASH': {
+        const geom = new THREE.PlaneGeometry(1, 1);
+        const mat = new THREE.MeshBasicMaterial({
+          map: this.texture,
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          depthTest: false,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+          fog: false,
+          toneMapped: false,
+        });
+        this.ownedGeometries.push(geom);
+        this.ownedMaterials.push(mat);
+        this.mesh = new THREE.Mesh(geom, mat);
+        this.mesh.frustumCulled = false;
+        this.mesh.renderOrder = 9999;
+        this.screenSpace = true;
+        this.isScreenFlash = true;
         break;
       }
 
       case 'FXPRIM_TYPE_ORIENTED_SPRITE': {
-        const geom = new THREE.PlaneGeometry(r * 2, h);
+        const geom = new THREE.PlaneGeometry(1, 1);
         const mat = new THREE.MeshBasicMaterial({
           map: this.texture,
           transparent: true,
@@ -273,7 +634,7 @@ class VfxPrimitiveRunner {
       }
 
       case 'FXPRIM_TYPE_CYLINDER': {
-        const geom = new THREE.CylinderGeometry(r, r2, h, 24, 1, true);
+        const geom = new THREE.CylinderGeometry(0.5, 0.5, 1, 24, 1, true);
         const mat = new THREE.MeshBasicMaterial({
           map: this.texture,
           transparent: true,
@@ -300,12 +661,12 @@ class VfxPrimitiveRunner {
         for (let i = 0; i < count; i++) {
           const theta = Math.random() * Math.PI * 2;
           const phi = (Math.random() - 0.5) * Math.PI;
-          const dist = Math.random() * r;
+          const dist = Math.random() * (baseSize * 0.5);
           const px = Math.cos(phi) * Math.cos(theta) * dist;
           const py = Math.sin(phi) * dist;
           const pz = Math.cos(phi) * Math.sin(theta) * dist;
 
-          const speed = (0.5 + Math.random()) * Math.max(0.5, r * 2.0);
+          const speed = (0.5 + Math.random()) * Math.max(0.5, baseSize * 0.4);
           this.particles.push({
             pos: new THREE.Vector3(px, py, pz),
             basePos: new THREE.Vector3(px, py, pz),
@@ -325,7 +686,7 @@ class VfxPrimitiveRunner {
         geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
         const mat = new THREE.PointsMaterial({
-          size: Math.max(0.08, r * 0.4),
+          size: Math.max(this.runtime.worldScale * 0.3, baseSize * 0.18),
           map: this.texture,
           vertexColors: true,
           transparent: true,
@@ -345,12 +706,11 @@ class VfxPrimitiveRunner {
         const segCount = 10;
         const geom = new THREE.BufferGeometry();
         const positions = new Float32Array(segCount * 3);
-        const len = h > 0 ? h : Math.max(1.5, r * 3);
 
         for (let i = 0; i < segCount; i++) {
           positions[i * 3] = 0;
           positions[i * 3 + 1] = 0;
-          positions[i * 3 + 2] = (i / (segCount - 1)) * len;
+          positions[i * 3 + 2] = i / (segCount - 1);
         }
         geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
@@ -371,7 +731,7 @@ class VfxPrimitiveRunner {
         const light = new THREE.PointLight(
           new THREE.Color(color.r, color.g, color.b),
           1.5,
-          Math.max(2.5, r * 5)
+          Math.max(this.runtime.worldScale * 24, baseSize * 5)
         );
         this.mesh = light;
         break;
@@ -422,8 +782,28 @@ class VfxPrimitiveRunner {
 
     if (this.mesh) {
       this.mesh.visible = false;
-      this.runtime.root.add(this.mesh);
+      const parent = this.screenSpace && this.runtime.scene ? this.runtime.scene : this.runtime.root;
+      parent.add(this.mesh);
     }
+  }
+
+  _fallbackSize() {
+    // rqSize is authoritative. Radius is only a last-resort authored fallback
+    // and is stored in metres by Alchemy, hence the conversion to local units
+    // before the measured rig scale turns it back into metres.
+    const radius = Number(this.primitive.radius) || 0;
+    const local = radius > 0 ? radius * METERS_TO_INCHES : DEFAULT_PRIMITIVE_SIZE_IN;
+    return local * this.runtime.worldScale;
+  }
+
+  _curveSize(progress) {
+    const curve = evaluateQuadratic(this.primitive.rqSize, progress, null);
+    return curve === null ? null : Math.abs(curve) * this.runtime.worldScale;
+  }
+
+  _lengthFactor(progress) {
+    const curve = evaluateQuadratic(this.primitive.rqLength, progress, null);
+    return curve !== null && curve > 0 ? curve : 1;
   }
 
   update(cycleTime, delta) {
@@ -457,8 +837,6 @@ class VfxPrimitiveRunner {
     // Authentic quadratic curve evaluation for size, length, and alpha
     const curAlphaVal = evaluateQuadratic(p.rqAlpha, progress, color.a);
     const curAlpha = this.isDistortion ? Math.min(curAlphaVal, 0.25) : Math.max(0, Math.min(1, curAlphaVal));
-    const curSize = evaluateQuadratic(p.rqSize, progress, null);
-    const curLen = evaluateQuadratic(p.rqLength, progress, null);
 
     // Texture UV scrolling
     if (this.ownedTexture?.offset && (scroll[0] !== 0 || scroll[1] !== 0)) {
@@ -466,25 +844,36 @@ class VfxPrimitiveRunner {
       this.ownedTexture.offset.y = (this.ownedTexture.offset.y + scroll[1] * delta) % 1.0;
     }
 
-    const r = p.radius > 0 ? p.radius : 0.4;
-    const r2 = p.radius2 > 0 ? p.radius2 : r * 1.5;
-    const h = p.height > 0 ? p.height : (r + r2);
+    const baseSize = this._fallbackSize();
+    const sizeCurve = this._curveSize(progress);
+    const size = sizeCurve !== null ? Math.max(0.001, sizeCurve) : baseSize;
+    const lengthFactor = this._lengthFactor(progress);
+    const height = Math.max(0.001, size * lengthFactor);
 
     switch (p.typeName) {
       case 'FXPRIM_TYPE_SPRITE':
       case 'FXPRIM_TYPE_FLARE':
-      case 'FXPRIM_TYPE_SCREEN_SPRITE': {
-        const curR = (curSize !== null && curSize > 0) ? curSize : lerp(r, r2, progress);
-        this.mesh.scale.set(curR * 2, curR * 2, 1);
+      case 'FXPRIM_TYPE_SCREEN_SPRITE':
+      case 'FXPRIM_TYPE_HAVOK_SPRITE':
+      case 'FXPRIM_TYPE_ENTITY': {
+        this.mesh.scale.set(size, size, 1);
         this.mesh.material.color.setRGB(color.r, color.g, color.b);
         this.mesh.material.opacity = curAlpha;
         break;
       }
 
+      case 'FXPRIM_TYPE_TRAIL': {
+        this._updateTrail(size, curAlpha, color, delta);
+        break;
+      }
+
+      case 'FXPRIM_TYPE_SCREENFLASH': {
+        this._updateScreenFlash(curAlpha, color);
+        break;
+      }
+
       case 'FXPRIM_TYPE_ORIENTED_SPRITE': {
-        const curR = (curSize !== null && curSize > 0) ? curSize : lerp(r, r2, progress);
-        const curH = (curLen !== null && curLen > 0) ? curLen : (p.height > 0 ? p.height : curR * 2);
-        this.mesh.scale.set(curR * 2, curH, 1);
+        this.mesh.scale.set(size, height, 1);
         this.mesh.material.color.setRGB(color.r, color.g, color.b);
         this.mesh.material.opacity = curAlpha;
         if (scroll[2]) this.mesh.rotation.z += scroll[2] * delta;
@@ -492,9 +881,7 @@ class VfxPrimitiveRunner {
       }
 
       case 'FXPRIM_TYPE_CYLINDER': {
-        const radiusScale = (curSize !== null && r > 0) ? (curSize / r) : (1.0 + progress * 0.2);
-        const heightScale = (curLen !== null && h > 0) ? (curLen / h) : 1.0;
-        this.mesh.scale.set(radiusScale, heightScale, radiusScale);
+        this.mesh.scale.set(size, height, size);
         this.mesh.material.color.setRGB(color.r, color.g, color.b);
         this.mesh.material.opacity = curAlpha;
         break;
@@ -504,6 +891,10 @@ class VfxPrimitiveRunner {
       case 'FXPRIM_TYPE_SPARK':
       case 'FXPRIM_TYPE_WEATHERFX': {
         if (!this.particles) break;
+        this.mesh.scale.setScalar(Math.max(0.001, size / Math.max(0.001, baseSize)));
+        if (this.mesh.material) {
+          this.mesh.material.size = Math.max(this.runtime.worldScale * 0.3, size * 0.18);
+        }
         const geom = this.mesh.geometry;
         const posAttr = geom.attributes.position;
         const colAttr = geom.attributes.color;
@@ -540,14 +931,16 @@ class VfxPrimitiveRunner {
         const positions = posAttr.array;
         const segCount = positions.length / 3;
         const isLightning = p.typeName === 'FXPRIM_TYPE_LIGHTNING';
+        const length = size * (lengthFactor > 1 ? lengthFactor : 3);
 
         for (let i = 1; i < segCount - 1; i++) {
           if (isLightning) {
-            positions[i * 3] = (Math.random() - 0.5) * 0.2 * r;
-            positions[i * 3 + 1] = (Math.random() - 0.5) * 0.2 * r;
+            positions[i * 3] = (Math.random() - 0.5) * 0.05 * size;
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 0.05 * size;
           }
         }
         posAttr.needsUpdate = true;
+        this.mesh.scale.set(1, 1, length);
         this.mesh.material.color.setRGB(color.r, color.g, color.b);
         this.mesh.material.opacity = curAlpha;
         break;
@@ -556,12 +949,17 @@ class VfxPrimitiveRunner {
       case 'FXPRIM_TYPE_LIGHT': {
         this.mesh.color.setRGB(color.r, color.g, color.b);
         this.mesh.intensity = curAlpha * 2.0;
+        this.mesh.distance = Math.max(this.runtime.worldScale * 24, size * 5);
         break;
       }
 
       case 'FXPRIM_TYPE_HAVOKMODEL':
       case 'FXPRIM_TYPE_MODEL': {
-        const curScale = (curSize !== null && curSize > 0) ? curSize : (1.0 + progress * 0.5);
+        // A model's rqSize is a dimensionless multiplier of its exported
+        // native size (1747 of 2380 primitives author exactly 1.0 = as-is).
+        // Applying the rig world scale here would shrink every prop to 1/50.
+        const rawSize = evaluateQuadratic(p.rqSize, progress, null);
+        const curScale = rawSize !== null && Math.abs(rawSize) > 1e-6 ? Math.abs(rawSize) : 1.0;
         this.mesh.scale.set(curScale, curScale, curScale);
         this.mesh.traverse((obj) => {
           if (obj.isMesh && obj.material) {
@@ -575,10 +973,8 @@ class VfxPrimitiveRunner {
         break;
       }
 
-      case 'FXPRIM_TYPE_ENTITY':
-      case 'FXPRIM_TYPE_SCREENFLASH':
       default: {
-        const curScale = (curSize !== null && curSize > 0) ? curSize : (1.0 + progress * 2.5);
+        const curScale = sizeCurve !== null && sizeCurve > 0 ? sizeCurve : size;
         this.mesh.scale.set(curScale, curScale, curScale);
         if (this.mesh.material) {
           this.mesh.material.color.setRGB(color.r, color.g, color.b);
@@ -589,11 +985,136 @@ class VfxPrimitiveRunner {
     }
   }
 
+  _updateTrail(size, alpha, color, delta) {
+    const trail = this.trail;
+    if (!trail || !this.mesh) return;
+    trail.clock += delta;
+
+    const root = this.runtime.root;
+    if (root && typeof root.getWorldPosition === 'function') {
+      root.getWorldPosition(trail.anchor);
+    } else {
+      trail.anchor.set(0, 0, 0);
+    }
+
+    const points = trail.points;
+    const last = points[points.length - 1];
+    // Sample at a fixed cadence so the ribbon length does not depend on the
+    // frame rate, and skip stationary frames so an idle anchor collapses
+    // instead of stacking points on top of each other.
+    const due = !last || trail.clock - last.t >= TRAIL_SAMPLE_INTERVAL;
+    const moved = !last || last.pos.distanceToSquared(trail.anchor) > 1e-4;
+    if (due && moved) {
+      points.push({ pos: trail.anchor.clone(), t: trail.clock });
+    }
+    const history = Number(trail.history) > 0 ? trail.history : TRAIL_HISTORY_SECONDS;
+    while (points.length && trail.clock - points[0].t > history) {
+      points.shift();
+    }
+    while (points.length > trail.maxPoints) points.shift();
+
+    const count = points.length;
+    const geom = this.mesh.geometry;
+    if (count < 2) {
+      this.mesh.visible = false;
+      if (typeof geom.setDrawRange === 'function') geom.setDrawRange(0, 0);
+      return;
+    }
+
+    const posAttr = geom.attributes.position;
+    const uvAttr = geom.attributes.uv;
+    const positions = posAttr.array;
+    const uvs = uvAttr?.array || null;
+    const camera = this.runtime.camera;
+    const side = trail.side;
+    const tangent = trail.tangent;
+    const toCamera = trail.toCamera;
+    // Half a metre is the floor in local units, scaled like every other size.
+    const halfWidth = Math.max(this.runtime.worldScale * 0.5, size * 0.5);
+
+    for (let i = 0; i < count; i += 1) {
+      const point = points[i].pos;
+      const prev = points[Math.max(0, i - 1)].pos;
+      const next = points[Math.min(count - 1, i + 1)].pos;
+      tangent.copy(next).sub(prev);
+      if (tangent.lengthSq() < 1e-8) tangent.set(0, 1, 0);
+      if (camera?.position) toCamera.copy(camera.position).sub(point);
+      else toCamera.set(0, 0, 1);
+      // Billboard the ribbon: the width axis is perpendicular to both the
+      // path and the view ray, so the trail stays visible from any angle.
+      side.copy(tangent).cross(toCamera);
+      if (side.lengthSq() < 1e-8) side.set(0, 0, 1).cross(tangent);
+      side.normalize();
+
+      const taper = 0.15 + 0.85 * (i / (count - 1));
+      const w = halfWidth * taper;
+      const base = i * 6;
+      positions[base] = point.x + side.x * w;
+      positions[base + 1] = point.y + side.y * w;
+      positions[base + 2] = point.z + side.z * w;
+      positions[base + 3] = point.x - side.x * w;
+      positions[base + 4] = point.y - side.y * w;
+      positions[base + 5] = point.z - side.z * w;
+
+      if (uvs) {
+        const v = i / (count - 1);
+        uvs[i * 4] = 0;
+        uvs[i * 4 + 1] = v;
+        uvs[i * 4 + 2] = 1;
+        uvs[i * 4 + 3] = v;
+      }
+    }
+
+    posAttr.needsUpdate = true;
+    if (uvAttr) uvAttr.needsUpdate = true;
+    if (typeof geom.setDrawRange === 'function') geom.setDrawRange(0, (count - 1) * 6);
+    this.mesh.material.color.setRGB(color.r, color.g, color.b);
+    this.mesh.material.opacity = alpha;
+    this.mesh.visible = alpha > 0.001;
+  }
+
+  _updateScreenFlash(alpha, color) {
+    if (!this.mesh) return;
+    this.mesh.material.color.setRGB(color.r, color.g, color.b);
+    this.mesh.material.opacity = alpha;
+    const camera = this.runtime.camera;
+    if (!camera?.position) {
+      this.mesh.position.set(0, 0, 0);
+      this.mesh.quaternion.identity();
+      this.mesh.scale.set(100, 100, 1);
+      return;
+    }
+
+    const THREE = this.THREE;
+    const direction = this._flashDirection || (this._flashDirection = new THREE.Vector3());
+    if (typeof camera.getWorldDirection === 'function') camera.getWorldDirection(direction);
+    else direction.set(0, 0, -1);
+
+    // Sit just in front of the camera and match the view frustum at that
+    // distance, so the flash covers the screen without being clipped.
+    const distance = 10;
+    this.mesh.position.copy(camera.position).addScaledVector(direction, distance);
+    this.mesh.quaternion.copy(camera.quaternion);
+    const fov = Number.isFinite(camera.fov) ? camera.fov : 50;
+    const height = 2 * Math.tan((fov * Math.PI) / 360) * distance;
+    const aspect = Number.isFinite(camera.aspect) && camera.aspect > 0 ? camera.aspect : 1;
+    this.mesh.scale.set(height * aspect * 1.08, height * 1.08, 1);
+    this.mesh.visible = alpha > 0.001;
+  }
+
   reset() {
     this.soundPlayed = false;
     this.shakeTriggered = false;
     if (this.ownedTexture?.offset) {
       this.ownedTexture.offset.set(0, 0);
+    }
+    if (this.trail) {
+      this.trail.points.length = 0;
+      this.trail.clock = 0;
+      if (this.mesh?.geometry && typeof this.mesh.geometry.setDrawRange === 'function') {
+        this.mesh.geometry.setDrawRange(0, 0);
+      }
+      if (this.mesh) this.mesh.visible = false;
     }
     if (!this.particles) return;
     const geom = this.mesh?.geometry;
@@ -612,6 +1133,22 @@ class VfxPrimitiveRunner {
       positions[i * 3 + 2] = pt.pos.z;
     }
     posAttr.needsUpdate = true;
+  }
+
+  // Loop restart. A trail keeps its ribbon across cycles: the trail's own life
+  // (often 1 s) outlives the template's loopTime (0.3 s), so clearing the
+  // points on every wrap would leave the strip permanently at one or two
+  // samples. Everything else restarts from scratch like a normal reset.
+  resetCycle() {
+    if (!this.trail) {
+      this.reset();
+      return;
+    }
+    this.soundPlayed = false;
+    this.shakeTriggered = false;
+    if (this.ownedTexture?.offset) {
+      this.ownedTexture.offset.set(0, 0);
+    }
   }
 
   dispose() {
@@ -633,6 +1170,7 @@ class VfxPrimitiveRunner {
     }
     this.mesh = null;
     this.particles = null;
+    this.trail = null;
   }
 }
 
@@ -650,6 +1188,7 @@ export class VfxRuntime {
     getMixer = () => null,
     getCurrentAction = () => null,
     getAnimPlaying = () => false,
+    getAnimClips = () => null,
     applyAnimation = () => {},
     getModel = () => null,
     THREE = null,
@@ -662,6 +1201,7 @@ export class VfxRuntime {
     this.getMixer = getMixer;
     this.getCurrentAction = getCurrentAction;
     this.getAnimPlaying = getAnimPlaying;
+    this.getAnimClips = getAnimClips;
     this.applyAnimation = applyAnimation;
     this.getModel = getModel;
     this.THREE = THREE || (typeof window !== 'undefined' && window.THREE ? window.THREE : null);
@@ -681,6 +1221,11 @@ export class VfxRuntime {
     this.speed = 1.0;
     this.elapsed = 0.0;
     this.loopTime = 1.0;
+    // Longest primitive end (delay + life). A template's loopTime is often
+    // much shorter than its own primitives (a ram attack triggers a rigid
+    // body 1 s in and keeps it for 16 s), so the timeline must not truncate
+    // at loopTime or that primitive never renders.
+    this.duration = 0.0;
 
     // Animation sync
     this.syncAnimation = true;
@@ -707,8 +1252,23 @@ export class VfxRuntime {
 
     this.attachmentSlot = 'Origem';
     this.attachmentBoneName = null;
+    // Alchemy effect sizes are authored in rig-local units. The decoded GLBs
+    // bake the unit conversion into a scaled root node, so the runtime
+    // measures that world scale per model and feeds it to every primitive.
+    this.worldScale = WORLD_UNIT_METERS;
+    this.worldScaleSource = null;
     this.isGroundTarget = false;
     this.attachmentBone = null;
+    this.attachmentBoneCandidates = [];
+    this.anchorMode = 'bone';
+    this.boneMissing = null;
+    this.binding = null;
+    this.triggerTime = 0;
+    this.persistent = false;
+    this.waitingForTrigger = false;
+    this.waitingForClip = false;
+    this.lastSyncLocal = null;
+    this.suspensionReason = null;
 
     this.textureLoader = (this.THREE && typeof this.THREE.TextureLoader === 'function') ? new this.THREE.TextureLoader() : null;
     this.textureCache = new Map();
@@ -717,6 +1277,7 @@ export class VfxRuntime {
 
     this._tempPos = (this.THREE && typeof this.THREE.Vector3 === 'function') ? new this.THREE.Vector3() : null;
     this._tempQuat = (this.THREE && typeof this.THREE.Quaternion === 'function') ? new this.THREE.Quaternion() : null;
+    this._tempScale = (this.THREE && typeof this.THREE.Vector3 === 'function') ? new this.THREE.Vector3() : null;
 
     this._loadTextureMap();
     this._loadModelMap();
@@ -759,6 +1320,7 @@ export class VfxRuntime {
   resolveModelPath(modelRef) {
     if (!modelRef || typeof modelRef !== 'string') return null;
     const clean = modelRef.replace(/\\/g, '/').replace(/^\/+/, '');
+    if (clean.startsWith('assets/')) return clean;
     if (this.modelMap) {
       if (this.modelMap[clean]) return this.modelMap[clean];
       const lower = clean.toLowerCase();
@@ -768,9 +1330,10 @@ export class VfxRuntime {
       const noExt = base.replace(/\.[^.]+$/, '');
       if (this.modelMap[noExt]) return this.modelMap[noExt];
     }
-    if (clean.endsWith('.glb')) return clean;
-    const asGlb = clean.replace(/\.(?:igb|igz)$/i, '.glb');
-    return `assets/vfx/models/${asGlb}`;
+    // Only the exported GLBs in model_map exist on disk; the game's source
+    // .igb paths (982 of 1184 refs) were never decoded, so guessing a path
+    // here would only produce a 404 per missing model.
+    return null;
   }
 
   loadVfxModel(modelRef, onLoad) {
@@ -894,10 +1457,22 @@ export class VfxRuntime {
     return tex;
   }
 
-  setEffect(effect) {
+  // Timeline length actually played: the template cycle, extended to cover
+  // primitives that outlive it (80.6% of the catalog) so nothing is cut off.
+  get playDuration() {
+    return Math.max(this.loopTime, this.duration);
+  }
+
+  setEffect(effect, { binding = null } = {}) {
     this.stop();
     this.activeEffect = effect;
-    if (!effect || !effect.definition) return;
+    this.binding = binding || null;
+    this.suspensionReason = binding?.suspended ? (binding.suspensionReason || 'modelo incompatível') : null;
+    if (!effect || !effect.definition) {
+      this.primitives = [];
+      this.duration = 0.0;
+      return;
+    }
 
     const tmpl = effect.definition.templates?.[0];
     const prims = Array.isArray(effect.definition.primitives) ? effect.definition.primitives : [];
@@ -908,13 +1483,29 @@ export class VfxRuntime {
       loopTime = prims.reduce((max, p) => Math.max(max, (p.delay || 0) + (p.life || 1.0)), 1.0);
     }
     this.loopTime = Math.max(0.2, loopTime);
+    this.duration = prims.reduce(
+      (max, p) => Math.max(max, (p.delay || 0) + (p.life > 0 ? p.life : this.loopTime)),
+      0,
+    );
     this.isLooping = tmpl ? tmpl.persistLoop !== 0 : true;
 
-    // Resolve attachment target
+    // Authentic bindings win over the name/texture heuristic. The heuristic is
+    // only consulted for effects with no powerstyle entry at all.
     const target = resolveAttachmentTarget(effect.id, effect.textures);
-    this.attachmentSlot = target.slot;
-    this.attachmentBoneName = target.boneName;
-    this.isGroundTarget = !!target.isGround;
+    this.attachmentSlot = binding?.hasAction
+      ? (binding.anchorMode === 'bone' ? 'Osso da ação' : binding.anchorMode === 'model' ? 'Modelo' : 'Origem')
+      : target.slot;
+    this.attachmentBoneName = binding?.bone || target.boneName;
+    this.attachmentBoneCandidates = binding?.boneCandidates?.length
+      ? binding.boneCandidates.slice()
+      : (target.candidates || []);
+    this.isGroundTarget = binding ? binding.anchorMode === 'origin' : !!target.isGround;
+    this.anchorMode = binding?.anchorMode || (this.isGroundTarget ? 'origin' : 'bone');
+    this.triggerTime = Math.max(0, Number(binding?.triggerTime) || 0);
+    this.persistent = Boolean(binding?.persistent);
+    this.waitingForTrigger = false;
+    this.waitingForClip = false;
+    this.lastSyncLocal = null;
     this.rebindAttachment();
 
     // Instantiate primitive runners
@@ -929,17 +1520,103 @@ export class VfxRuntime {
     this.isPlaying = prims.length > 0;
   }
 
+  measureWorldScale() {
+    // The rig's root node carries the unit conversion, e.g. spiderman_root
+    // 0.0283, hulk_root 0.0195. Sampling a skinned mesh (rather than the GLTF
+    // scene) captures that scale without depending on the node's name.
+    const model = this.getModel();
+    const THREE = this.THREE;
+    const reset = () => {
+      this.worldScale = WORLD_UNIT_METERS;
+      this.worldScaleSource = null;
+      return this.worldScale;
+    };
+    if (!model || !THREE || typeof model.traverse !== 'function') return reset();
+    if (typeof model.updateWorldMatrix === 'function') model.updateWorldMatrix(true, true);
+
+    let skinned = null;
+    let bone = null;
+    model.traverse((node) => {
+      if (!skinned && node.isSkinnedMesh) skinned = node;
+      if (!bone && node.isBone) bone = node;
+    });
+    const sample = skinned || bone;
+    if (!sample || typeof sample.getWorldScale !== 'function' || !this._tempScale) return reset();
+
+    const scale = sample.getWorldScale(this._tempScale);
+    const magnitude = Math.max(Math.abs(scale.x), Math.abs(scale.y), Math.abs(scale.z));
+    if (!Number.isFinite(magnitude) || magnitude <= 0) return reset();
+
+    this.worldScale = magnitude;
+    this.worldScaleSource = sample.name || sample.type || null;
+    return this.worldScale;
+  }
+
   rebindAttachment() {
+    this.measureWorldScale();
     this.attachmentBone = null;
+    this.boneMissing = null;
     const model = this.getModel();
     if (!model) return;
 
-    if (this.attachmentBoneName) {
-      this.attachmentBone = findBoneInModel(model, this.attachmentBoneName);
+    const mode = this.anchorMode || (this.isGroundTarget ? 'origin' : 'bone');
+    if (mode === 'origin' || mode === 'model') return;
+
+    const names = [];
+    if (this.attachmentBoneName) names.push(this.attachmentBoneName);
+    for (const name of this.attachmentBoneCandidates || []) {
+      if (name && !names.includes(name)) names.push(name);
     }
-    if (!this.attachmentBone && !this.isGroundTarget) {
-      this.attachmentBone = findBoneInModel(model, 'Bip01 Spine') || findBoneInModel(model, 'Bip01 Pelvis');
+    for (const name of names) {
+      const bone = findBoneInModel(model, name);
+      if (bone) {
+        this.attachmentBone = bone;
+        this.attachmentBoneName = name;
+        return;
+      }
     }
+
+    // The bone is absent from this rig (e.g. HipAttach on the Spider-Man GLB).
+    // Fall back to the nearest authentic spine bone and report the miss.
+    this.boneMissing = names[0] || this.attachmentBoneName || null;
+    for (const fallback of ['Bip01 Spine2', 'Bip01 Spine', 'Bip01 Pelvis', 'Bip01']) {
+      const bone = findBoneInModel(model, fallback);
+      if (bone) {
+        this.attachmentBone = bone;
+        this.attachmentBoneName = fallback;
+        return;
+      }
+    }
+  }
+
+  _hideRunners() {
+    for (const runner of this.runners) {
+      if (runner.mesh) runner.mesh.visible = false;
+      // A hidden trail must not bridge the gap to where the anchor resumes.
+      if (runner.trail) {
+        runner.trail.points.length = 0;
+        runner.trail.clock = 0;
+        if (typeof runner.mesh?.geometry?.setDrawRange === 'function') {
+          runner.mesh.geometry.setDrawRange(0, 0);
+        }
+      }
+    }
+  }
+
+  _finishOneShot() {
+    this.elapsed = this.playDuration;
+    this.isPlaying = false;
+    this.waitingForTrigger = false;
+    this.lastSyncTime = null;
+    this.lastSyncLocal = null;
+    this.restoreCamera();
+    this.shakeDuration = 0;
+    if (this.shakeOffset) this.shakeOffset.set(0, 0, 0);
+    for (const audio of this.activeAudio) {
+      try { audio.pause(); } catch {}
+    }
+    this.activeAudio = [];
+    this._hideRunners();
   }
 
   onModelChange(newModel) {
@@ -959,79 +1636,100 @@ export class VfxRuntime {
       this.attachmentBone.getWorldQuaternion(this._tempQuat);
       this.root.position.copy(this._tempPos);
       this.root.quaternion.copy(this._tempQuat);
-    } else if (model) {
-      model.getWorldPosition(this._tempPos);
-      if (this.isGroundTarget) {
-        this.root.position.set(this._tempPos.x, 0.02, this._tempPos.z);
-      } else {
-        this.root.position.set(this._tempPos.x, this._tempPos.y + 1.0, this._tempPos.z);
-      }
+    } else if (this.anchorMode === 'origin' || !model) {
+      // Scenery/base effects with no authentic link stay at the world origin.
+      this.root.position.set(0, this.isGroundTarget ? 0.02 : 0, 0);
       this.root.quaternion.identity();
     } else {
-      this.root.position.set(0, this.isGroundTarget ? 0.02 : 1.0, 0);
+      // Model roots already sit at the character's feet (world unit = inch).
+      model.getWorldPosition(this._tempPos);
+      this.root.position.copy(this._tempPos);
       this.root.quaternion.identity();
     }
 
-    // Step cycle: check animation synchronization
+    // Step cycle: authentic clip + trigger time (_time from the powerstyle).
+    // A binding is authoritative only for the authentic actor/owner; effects
+    // without one keep the legacy "sync to the current clip" behaviour, and
+    // effects whose clip is absent from this rig free-run instead of hiding.
     let action = null;
     if (this.syncAnimation && typeof this.getCurrentAction === 'function') {
       action = this.getCurrentAction();
     }
-    const isAnimActive = action && typeof this.getAnimPlaying === 'function' && this.getAnimPlaying() && action.getClip();
+    const clip = action && typeof action.getClip === 'function' ? action.getClip() : null;
+    const hasBinding = Boolean(this.binding);
+    const authenticClip = hasBinding && this.binding.compatible ? (this.binding.clip || null) : null;
+    const clips = typeof this.getAnimClips === 'function' ? this.getAnimClips() : null;
+    const clipsKnown = clips !== null && clips !== undefined;
+    const clipAvailable = !authenticClip || !clipsKnown || Object.hasOwn(clips, authenticClip);
+    const expectedClip = clipAvailable ? authenticClip : null;
+    const clipMatches = !expectedClip || Boolean(clip && clip.name === expectedClip);
+    const animPlaying = typeof this.getAnimPlaying === 'function' ? this.getAnimPlaying() : true;
+
+    this.waitingForClip = Boolean(this.syncAnimation && expectedClip && !clipMatches);
+    if (this.waitingForClip) {
+      this._hideRunners();
+      return;
+    }
+
+    // Authentic effects sync to their own clip and trigger; legacy effects
+    // (no powerstyle binding) sync to whatever action is currently playing.
+    const syncedToClip = Boolean(expectedClip && clipMatches);
+    const legacySync = this.syncAnimation && !hasBinding;
+    const isAnimActive = Boolean(action && clip && animPlaying && (syncedToClip || legacySync));
+    const triggerTime = expectedClip ? this.triggerTime : 0;
 
     if (isAnimActive) {
       const actTime = action.time >= 0 ? action.time : 0.0;
+      const local = actTime - triggerTime;
+      if (local < 0) {
+        // The animation has not reached the authentic trigger yet.
+        this.waitingForTrigger = true;
+        this.elapsed = 0.0;
+        this.lastSyncLocal = local;
+        this.lastSyncTime = actTime;
+        this._hideRunners();
+        return;
+      }
+      if (this.waitingForTrigger) {
+        this.waitingForTrigger = false;
+        for (const runner of this.runners) runner.reset();
+      }
+      // An action restart can be detected either from the trigger-relative
+      // clock or from the absolute mixer clock; keep both because a caller may
+      // seek the action between frames.
+      const loopedBack = (this.lastSyncLocal !== null && local < this.lastSyncLocal)
+        || (this.lastSyncTime !== null && actTime < this.lastSyncTime);
       if (this.isLooping) {
-        const nextElapsed = actTime % this.loopTime;
-        if (this.lastSyncTime !== null && (actTime < this.lastSyncTime || nextElapsed < this.elapsed)) {
+        const nextElapsed = local % this.playDuration;
+        if (loopedBack || nextElapsed < this.elapsed) {
           for (const runner of this.runners) {
-            runner.reset();
+            runner.resetCycle();
           }
         }
+        this.lastSyncLocal = local;
         this.lastSyncTime = actTime;
         this.elapsed = nextElapsed;
       } else {
-        if (actTime >= this.loopTime || (this.lastSyncTime !== null && actTime < this.lastSyncTime)) {
-          this.elapsed = this.loopTime;
-          this.isPlaying = false;
-          this.lastSyncTime = null;
-          this.restoreCamera();
-          this.shakeDuration = 0;
-          if (this.shakeOffset) this.shakeOffset.set(0, 0, 0);
-          for (const audio of this.activeAudio) {
-            try { audio.pause(); } catch {}
-          }
-          this.activeAudio = [];
-          for (const runner of this.runners) {
-            if (runner.mesh) runner.mesh.visible = false;
-          }
+        if (local >= this.playDuration || loopedBack) {
+          this._finishOneShot();
           return;
         }
+        this.lastSyncLocal = local;
         this.lastSyncTime = actTime;
-        this.elapsed = actTime;
+        this.elapsed = local;
       }
     } else {
       this.lastSyncTime = null;
+      this.lastSyncLocal = null;
       this.elapsed += delta * this.speed;
-      if (this.elapsed >= this.loopTime) {
+      if (this.elapsed >= this.playDuration) {
         if (this.isLooping) {
-          this.elapsed = this.elapsed % this.loopTime;
+          this.elapsed = this.elapsed % this.playDuration;
           for (const runner of this.runners) {
-            runner.reset();
+            runner.resetCycle();
           }
         } else {
-          this.elapsed = this.loopTime;
-          this.isPlaying = false;
-          this.restoreCamera();
-          this.shakeDuration = 0;
-          if (this.shakeOffset) this.shakeOffset.set(0, 0, 0);
-          for (const audio of this.activeAudio) {
-            try { audio.pause(); } catch {}
-          }
-          this.activeAudio = [];
-          for (const runner of this.runners) {
-            if (runner.mesh) runner.mesh.visible = false;
-          }
+          this._finishOneShot();
           return;
         }
       }
@@ -1071,7 +1769,7 @@ export class VfxRuntime {
   play() {
     if (this.runners.length > 0) {
       this.isPlaying = true;
-      if (this.elapsed >= this.loopTime) {
+      if (this.elapsed >= this.playDuration) {
         this.elapsed = 0.0;
         for (const runner of this.runners) runner.reset();
       }
@@ -1105,6 +1803,8 @@ export class VfxRuntime {
     this.activeAudio = [];
     this.elapsed = 0.0;
     this.lastSyncTime = null;
+    this.lastSyncLocal = null;
+    this.waitingForTrigger = false;
     this.isPlaying = true;
     for (const runner of this.runners) {
       runner.reset();
@@ -1115,6 +1815,8 @@ export class VfxRuntime {
     this.isPlaying = false;
     this.elapsed = 0.0;
     this.lastSyncTime = null;
+    this.lastSyncLocal = null;
+    this.waitingForTrigger = false;
     this.restoreCamera();
     if (this.shakeOffset) this.shakeOffset.set(0, 0, 0);
     this.shakeDuration = 0;
@@ -1139,6 +1841,12 @@ export class VfxRuntime {
 
   setLoop(loop) {
     this.isLooping = Boolean(loop);
+    // A one-shot has already hidden its meshes by the time the user turns the
+    // loop on, so restart it instead of leaving the toggle showing a dark
+    // scene until the user also presses replay.
+    if (this.isLooping && !this.isPlaying && this.elapsed >= this.playDuration) {
+      this.replay();
+    }
   }
 }
 
@@ -1161,6 +1869,8 @@ export class VfxCatalogController {
     getMixer = () => null,
     getCurrentAction = () => null,
     getAnimPlaying = () => false,
+    setAnimPlaying = () => {},
+    getAnimClips = () => ({}),
     applyAnimation = () => {},
     getModel = () => null,
     THREE = null,
@@ -1174,6 +1884,23 @@ export class VfxCatalogController {
     this.surfaces = {};
     this.loadedModel = null;
     this.loadingModel = false;
+    this.getAnimClips = getAnimClips;
+    this.setAnimPlaying = setAnimPlaying;
+    this.applyAnimation = applyAnimation;
+    this.getCurrentAction = getCurrentAction;
+    this.getAnimPlaying = getAnimPlaying;
+
+    // Authentic effect -> action/clip/trigger/bone map (powerstyles/*.muc)
+    this.actionMap = null;
+    this.actionMapLoading = null;
+    this.modelToCharacter = new Map();
+    this.binding = null;
+    this.pendingBinding = null;
+    this.animClips = {};
+    this.animationsReady = false;
+    this.lastLoadedModelKey = null;
+    this.activeClip = null;
+    this.selectionToken = 0;
 
     this.runtime = new VfxRuntime({
       scene,
@@ -1184,6 +1911,9 @@ export class VfxCatalogController {
       getMixer,
       getCurrentAction,
       getAnimPlaying,
+      // `null` means "animations still loading"; the runtime then waits for
+      // the authentic clip instead of prematurely free-running the effect.
+      getAnimClips: () => (this.animationsReady ? (this.getAnimClips?.() || this.animClips || {}) : null),
       applyAnimation,
       getModel,
       THREE,
@@ -1240,7 +1970,70 @@ export class VfxCatalogController {
     get('vfx-reload-btn').addEventListener('click', () => this.loadCatalog());
     get('vfx-open-gallery').addEventListener('click', () => this.openGalleryModal());
     get('vfx-close').addEventListener('click', () => this.closeModal(this.modal));
+    this.loadActionMap();
     this.loadCatalog();
+  }
+
+  loadActionMap() {
+    if (this.actionMap) return Promise.resolve(this.actionMap);
+    if (this.actionMapLoading) return this.actionMapLoading;
+    this.actionMapLoading = fetch(`assets/vfx/action_map.json?v=${Date.now()}`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!data || data.format !== 'mua2_vfx_action_map_v1') return null;
+        this.actionMap = data;
+        this.buildCharacterIndex();
+        return data;
+      })
+      .catch((error) => {
+        console.warn('[VFX] Mapa autêntico de ações indisponível:', error);
+        return null;
+      })
+      .finally(() => { this.actionMapLoading = null; });
+    return this.actionMapLoading;
+  }
+
+  buildCharacterIndex() {
+    this.modelToCharacter = new Map();
+    if (!this.actionMap) return;
+    const characters = Object.entries(this.actionMap.characters || {});
+    // Representatives win over secondary modelIds so a model that belongs to
+    // two characters still resolves to the one it represents.
+    for (const [character, info] of characters) {
+      if (info?.representativeModel) this.modelToCharacter.set(info.representativeModel, character);
+    }
+    for (const [character, info] of characters) {
+      for (const id of (info?.modelIds || [])) {
+        if (id && !this.modelToCharacter.has(id)) this.modelToCharacter.set(id, character);
+      }
+    }
+  }
+
+  characterForModel(model) {
+    if (!model) return null;
+    const id = model.id || model.userData?.id;
+    return (id && this.modelToCharacter.get(id)) || model.userData?.character || null;
+  }
+
+  planFor(effect) {
+    return planEffectBinding(effect, {
+      actionMap: this.actionMap,
+      loadedModel: this.loadedModel,
+      models: this.models,
+      isProp: (model) => this.isProp(model),
+      modelCharacter: (model) => this.characterForModel(model),
+    });
+  }
+
+  decoratePlan(plan) {
+    if (!plan) return plan;
+    if (!plan.clip) {
+      plan.clipAvailable = true;
+      return plan;
+    }
+    const clips = this.getAnimClips?.() || this.animClips || {};
+    plan.clipAvailable = this.animationsReady ? Boolean(clips[plan.clip]) : null;
+    return plan;
   }
 
   captureState(name) {
@@ -1269,8 +2062,7 @@ export class VfxCatalogController {
     // Returning to the catalog keeps the current effect and its loaded model.
     const effect = this.effects.find((candidate) => candidate.id === state.selectedId);
     if (state.showDetail && effect && effect.id !== this.selectedEffect?.id) {
-      this.selectedEffect = effect;
-      this.runtime.setEffect(effect);
+      this.selectEffect(effect);
     }
     this.render('sidebar');
     this.render('modal');
@@ -1440,6 +2232,10 @@ export class VfxCatalogController {
         this.render('sidebar');
         this.render('modal');
         this.renderDetails();
+        if (this.selectedEffect) {
+          const token = ++this.selectionToken;
+          this.resolveSelection(this.selectedEffect, { token, autoLoad: false });
+        }
         return;
       } catch (error) {
         console.warn(`[VFX] Catálogo ${source} indisponível:`, error);
@@ -1528,6 +2324,17 @@ export class VfxCatalogController {
     if (name) this.remember(name);
     this.selectedEffect = effect;
     if (name) this.surfaces[name].showDetail = true;
+    this.applySelectionHighlight(effect);
+    const token = ++this.selectionToken;
+    this.resolveSelection(effect, { token, autoLoad: true }).then(() => {
+      if (name) {
+        this.renderNavigation(name);
+        this.focusSurface(name);
+      }
+    });
+  }
+
+  applySelectionHighlight(effect) {
     for (const surface of Object.values(this.surfaces)) {
       for (const button of surface.list.querySelectorAll('button[data-id]')) {
         const active = button.dataset.id === effect?.id;
@@ -1535,12 +2342,158 @@ export class VfxCatalogController {
         button.setAttribute('aria-pressed', String(active));
       }
     }
-    this.runtime.setEffect(effect);
-    this.renderDetails();
-    if (name) {
-      this.renderNavigation(name);
-      this.focusSurface(name);
+  }
+
+  async resolveSelection(effect, { token = this.selectionToken, autoLoad = false } = {}) {
+    if (!effect) {
+      this.binding = null;
+      this.pendingBinding = null;
+      this.runtime.setEffect(null);
+      this.renderDetails();
+      return;
     }
+
+    await this.loadActionMap();
+    if (token !== this.selectionToken) return;
+
+    let plan = this.decoratePlan(this.planFor(effect));
+    if (autoLoad && plan.requiresModelLoad && plan.targetModel) {
+      this.loadingModel = true;
+      try {
+        await this.loadModel(plan.targetModel);
+      } catch (error) {
+        console.error('[VFX] Falha ao carregar o personagem vinculado ao efeito:', error);
+      } finally {
+        this.loadingModel = false;
+      }
+      if (token !== this.selectionToken) return;
+      if (!this.loadedModel) this.loadedModel = plan.targetModel;
+      plan = this.decoratePlan(this.planFor(effect));
+    }
+
+    this.binding = plan;
+    this.pendingBinding = { effect, plan };
+    // A plan that still needs its owning model is not rendered on the wrong
+    // character, even if the automatic load failed.
+    const playable = Boolean(effect.definition?.primitives?.length)
+      && !plan.suspended
+      && !plan.requiresModelLoad;
+    this.runtime.setEffect(playable ? effect : null, { binding: plan });
+    if (plan.suspended) this.runtime.suspensionReason = this.suspensionText(plan);
+    if (playable && plan.compatible && plan.clip) this.applyBindingAnimation(plan);
+    this.renderDetails();
+  }
+
+  suspensionText(plan) {
+    const owner = plan.effectCharacter || plan.actor || 'outro personagem';
+    return `Efeito pertence a ${owner} e não há modelo representativo disponível para carregá-lo.`;
+  }
+
+  applyBindingAnimation(plan) {
+    if (!plan?.compatible || !plan.clip) return false;
+    const clips = this.getAnimClips?.() || this.animClips || {};
+    if (!clips[plan.clip]) return false;
+    if (typeof this.getAnimPlaying === 'function' && !this.getAnimPlaying()) {
+      this.setAnimPlaying?.(true);
+    }
+    const applied = this.applyAnimation(plan.clip);
+    if (!applied) return false;
+    const action = this.getCurrentAction?.();
+    if (action) {
+      // Seek just before the authentic trigger so the effect is reviewable
+      // immediately while the clip still supplies the correct wind-up.
+      const lead = plan.triggerTime > 0 ? Math.min(0.25, plan.triggerTime) : 0;
+      const target = Math.max(0, plan.triggerTime - lead);
+      try {
+        action.time = Math.min(target, Math.max(0, action.getClip().duration - 0.01));
+        action.paused = false;
+      } catch {
+        // Mock/partial actions in self-check have no writable time.
+      }
+    }
+    if (this.runtime) {
+      this.runtime.lastSyncLocal = null;
+      this.runtime.lastSyncTime = null;
+      this.runtime.waitingForTrigger = plan.triggerTime > 0;
+    }
+    this.activeClip = plan.clip;
+    return true;
+  }
+
+  onAnimationsChange(clips) {
+    this.animClips = clips || {};
+    this.animationsReady = true;
+    const pending = this.pendingBinding;
+    if (!pending || pending.effect?.id !== this.selectedEffect?.id) {
+      this.renderDetails();
+      return;
+    }
+    const plan = this.decoratePlan(pending.plan);
+    if (!plan.suspended && !plan.requiresModelLoad && plan.compatible && plan.clip && plan.clipAvailable) {
+      this.applyBindingAnimation(plan);
+    }
+    this.renderDetails();
+  }
+
+  renderBindingMarkup(effect) {
+    const plan = this.binding;
+    if (!plan || plan.effectId !== effect.id) return '';
+    if (!effect.definition?.primitives?.length) return '';
+    const rows = [];
+    if (plan.clip) {
+      rows.push(`<div class="vfx-action-row"><span class="vfx-action-label">Animação</span><strong class="vfx-action-value">${escapeHtml(plan.clip)}</strong>${plan.animEnum ? `<span class="vfx-action-enum">${escapeHtml(plan.animEnum)}</span>` : ''}</div>`);
+    }
+    if (plan.time !== null) {
+      rows.push(`<div class="vfx-action-row"><span class="vfx-action-label">Gatilho</span><strong class="vfx-action-value">${plan.time < 0 ? 'contínuo (persistente)' : `${plan.time.toFixed(3)}s`}</strong></div>`);
+    }
+    if (plan.actor) {
+      const actorLoaded = plan.loadedCharacter && plan.loadedCharacter === plan.actor
+        ? '<span class="vfx-linked-status-badge">✓ Ator carregado</span>' : '';
+      rows.push(`<div class="vfx-action-row"><span class="vfx-action-label">Ator</span><strong class="vfx-action-value">${escapeHtml(plan.actor)}</strong>${actorLoaded}</div>`);
+    }
+    if (plan.targetCharacter && plan.targetCharacter !== plan.actor) {
+      const ownerLoaded = plan.compatible && plan.loadedCharacter === plan.targetCharacter
+        ? '<span class="vfx-linked-status-badge">✓ Carregado</span>' : '';
+      rows.push(`<div class="vfx-action-row"><span class="vfx-action-label">Personagem</span><strong class="vfx-action-value">${escapeHtml(plan.targetCharacter)}</strong>${ownerLoaded}</div>`);
+    }
+    if (plan.anchorMode === 'bone') {
+      const bone = this.runtime?.attachmentBoneName || plan.bone || '';
+      rows.push(`<div class="vfx-action-row"><span class="vfx-action-label">Osso</span><strong class="vfx-action-value">${escapeHtml(bone)}</strong>${plan.bolt ? `<span class="vfx-action-enum">${escapeHtml(plan.bolt)}</span>` : ''}</div>`);
+    } else if (plan.anchorMode === 'origin') {
+      rows.push('<div class="vfx-action-row"><span class="vfx-action-label">Ancoragem</span><strong class="vfx-action-value">Origem do cenário</strong></div>');
+    } else if (plan.anchorMode === 'model') {
+      rows.push('<div class="vfx-action-row"><span class="vfx-action-label">Ancoragem</span><strong class="vfx-action-value">Raiz do modelo</strong></div>');
+    }
+
+    const notes = [];
+    if (this.runtime?.boneMissing) {
+      notes.push(`O osso ${this.runtime.boneMissing} não existe neste rig; usando ${this.runtime.attachmentBoneName}.`);
+    }
+    if (plan.suspended) notes.push(this.suspensionText(plan));
+    else if (plan.requiresModelLoad && plan.targetCharacter) {
+      notes.push(`Efeito vinculado a ${plan.targetCharacter}; carregue o modelo correspondente para reproduzi-lo.`);
+    } else if (plan.hasAction && plan.actor && plan.targetCharacter && plan.actor !== plan.targetCharacter) {
+      notes.push(`Executado por ${plan.actor}, um dos atores autênticos deste efeito.`);
+    } else if (!plan.hasAction && plan.anchorMode === 'origin') {
+      notes.push('Efeito sem vínculo autêntico com o modelo carregado; exibido na origem.');
+    } else if (!plan.compatible && plan.hasAction && plan.anchorMode === 'origin' && !plan.scenery) {
+      notes.push('O modelo carregado não executa esta ação; efeito exibido na origem.');
+    }
+    if (!plan.suspended && plan.hasAction) {
+      if (!plan.clip) notes.push('A ação autêntica não possui clipe de animação disponível.');
+      else if (plan.clipAvailable === false) {
+        notes.push(`O clipe ${plan.clip} não existe neste modelo; o efeito é reproduzido em linha do tempo própria.`);
+      }
+    }
+    if (!rows.length && !notes.length) return '';
+
+    return `
+      <div class="vfx-char-action-box vfx-action-box">
+        <h4 class="vfx-char-action-title"><i data-lucide="clapperboard"></i><span>Ação Autêntica</span></h4>
+        ${rows.join('')}
+        ${notes.map((note) => `<p class="vfx-char-note">${escapeHtml(note)}</p>`).join('')}
+      </div>
+    `;
   }
 
   closeDetail(name) {
@@ -1564,7 +2517,7 @@ export class VfxCatalogController {
       const prims = effect.definition?.primitives || [];
       const hasPrimitives = prims.length > 0;
       const tmpl = effect.definition?.templates?.[0];
-      const dur = this.runtime.loopTime || tmpl?.loopTime || 1.0;
+      const dur = this.runtime.playDuration || tmpl?.loopTime || 1.0;
 
       let statusMarkup = '';
       if (hasPrimitives) {
@@ -1625,6 +2578,7 @@ export class VfxCatalogController {
           ${hasPrimitives ? `<span class="vfx-meta-tag">${prims.length} prims</span>` : ''}
         </div>
         ${statusMarkup}
+        ${this.renderBindingMarkup(effect)}
       `;
 
       // Back button listener in detail view
@@ -1660,6 +2614,12 @@ export class VfxCatalogController {
         loopBtn?.addEventListener('click', () => {
           this.runtime.setLoop(!this.runtime.isLooping);
           loopBtn.classList.toggle('active', this.runtime.isLooping);
+          loopBtn.setAttribute('aria-pressed', String(this.runtime.isLooping));
+          if (this.runtime.isPlaying) {
+            playBtn?.classList.add('active');
+            if (playBtn) playBtn.innerHTML = '<i data-lucide="pause"></i><span>Pausar</span>';
+            this.refreshIcons();
+          }
         });
 
         syncBtn?.addEventListener('click', () => {
@@ -1735,9 +2695,9 @@ export class VfxCatalogController {
             try {
               await this.loadModel(model);
               this.loadedModel = model;
-              this.runtime.onModelChange(this.runtime.getModel());
+              const token = ++this.selectionToken;
+              await this.resolveSelection(effect, { token, autoLoad: false });
               this.populateModelFilters();
-              this.renderDetails();
               this.render('sidebar');
               this.render('modal');
             } catch (err) {
@@ -1852,14 +2812,19 @@ export class VfxCatalogController {
   }
 
   onModelChange(model) {
+    const modelKey = model?.uuid || null;
+    if (modelKey !== this.lastLoadedModelKey) {
+      // A new GLTF is loading: its animation set is not available yet, so the
+      // runtime must wait for the authentic clip instead of free-running. A
+      // rig without a mixer has no clips at all, which is also a known state.
+      this.lastLoadedModelKey = modelKey;
+      this.animationsReady = model ? !this.getMixer?.() : false;
+      this.animClips = {};
+    }
     this.runtime.onModelChange(model);
     const entry = model?.userData?.catalogEntry || model?.userData?.entry
       || this.models.find((m) => m.id === model?.userData?.id || m.id === model?.name);
-    if (entry) {
-      this.loadedModel = entry;
-    } else if (!model) {
-      this.loadedModel = null;
-    }
+    this.loadedModel = entry || null;
     this.populateModelFilters();
     for (const surface of Object.values(this.surfaces)) {
       if (surface?.model?.value === 'loaded') {
@@ -1868,7 +2833,14 @@ export class VfxCatalogController {
         this.render('modal');
       }
     }
-    this.renderDetails();
+    // Auto-loads triggered by resolveSelection must not re-enter; the awaiting
+    // call recomputes the plan with the freshly loaded model.
+    if (this.selectedEffect && !this.loadingModel) {
+      const token = ++this.selectionToken;
+      this.resolveSelection(this.selectedEffect, { token, autoLoad: false });
+    } else {
+      this.renderDetails();
+    }
   }
 }
 
@@ -1906,6 +2878,10 @@ export function selfCheckVfxCatalog() {
 
   const rampMid = evaluateColorRamp({ start1: '0x00ff0000', mid1: '0x0000ff00', end1: '0x000000ff' }, 0.5);
   check(rampMid.r < 0.1 && rampMid.g > 0.9 && rampMid.a > 0.9, 'Color ramp midpoint must evaluate to mid color');
+  const rampEnd = evaluateColorRamp({ start1: '0x00ffffff', mid1: '0x00ffffff', end1: '0x00ffffff' }, 1.0);
+  check(rampEnd.a > 0.99, 'Colour ramp must not fade the authored alpha at the end of life');
+  check(resolveBoltCandidates('EBOLT_RHANDATTACH')[0] === 'Bip01 R HandAttach', 'EBOLT_RHANDATTACH must prefer the attach bone');
+  check(resolveBoltCandidates('EBOLT_ORIGIN').length === 0, 'EBOLT_ORIGIN must resolve to no bone');
 
   // 3. Bone attachment resolution
   const leftHandTarget = resolveAttachmentTarget('char/bphero/bphero_melee_lhand', ['clawl']);
@@ -1928,6 +2904,85 @@ export function selfCheckVfxCatalog() {
     },
   });
   check(runtime.loopTime === 2.0 && runtime.isLooping === true, 'Runtime loopTime must be 2.0 and loop true');
+  check(runtime.playDuration === 2.0, 'playDuration must equal loopTime when primitives are shorter');
+
+  // 4a. The template cycle must never truncate a primitive that outlives it
+  // (the common case: a rigid body triggered 1 s into a 1 s ram attack that
+  // stays for 16 s). 80.6% of the catalog is in this shape.
+  const longRuntime = new VfxRuntime();
+  longRuntime.setEffect({
+    id: 'test_long_fx',
+    definition: {
+      templates: [{ loopTime: 1.0, persistLoop: 0 }],
+      primitives: [
+        { type: 3, typeName: 'FXPRIM_TYPE_SPRITE', delay: 0.0, life: 0.5 },
+        { type: 12, typeName: 'FXPRIM_TYPE_MODEL', delay: 1.008, life: 16 },
+      ],
+    },
+  });
+  check(longRuntime.loopTime === 1.0, 'Template loopTime must be preserved');
+  check(Math.abs(longRuntime.duration - 17.008) < 1e-9, 'duration must use the longest primitive delay + life');
+  check(Math.abs(longRuntime.playDuration - 17.008) < 1e-9, 'playDuration must extend past loopTime');
+  longRuntime.setEffect(null);
+  check(longRuntime.duration === 0 && longRuntime.playDuration === longRuntime.loopTime, 'Clearing the effect must clear duration');
+
+  // 4b. World-scale normalization: rqSize is authored in rig-local units, so
+  // it must be multiplied by the GLB's measured scale instead of being used
+  // as metres directly.
+  check(runtime.worldScale === WORLD_UNIT_METERS, 'Runtime must default to the inch->metre scale without a model');
+  const scaleModel = {
+    traverse(cb) {
+      cb({ isSkinnedMesh: true, name: 'rig_mesh', getWorldScale(v) { return v.set(0.0283, 0.0283, 0.0283); } });
+    },
+  };
+  const scaleThree = { Vector3: class { constructor(x = 0, y = 0, z = 0) { this.x = x; this.y = y; this.z = z; } set(x, y, z) { this.x = x; this.y = y; this.z = z; return this; } } };
+  const scaleRuntime = new VfxRuntime({ THREE: scaleThree, getModel: () => scaleModel });
+  check(Math.abs(scaleRuntime.measureWorldScale() - 0.0283) < 1e-9, 'Runtime must measure the rig world scale');
+  const scaleProbe = Object.create(VfxPrimitiveRunner.prototype);
+  scaleProbe.runtime = scaleRuntime;
+  scaleProbe.primitive = { rqSize: [0, 0, 40, -10000, 10000] };
+  check(Math.abs(scaleProbe._curveSize(0.5) - 40 * 0.0283) < 1e-9, 'rqSize must be scaled by the measured rig scale');
+  scaleProbe.primitive = {};
+  check(Math.abs(scaleProbe._fallbackSize() - DEFAULT_PRIMITIVE_SIZE_IN * 0.0283) < 1e-9, 'Fallback size must be scaled by the measured rig scale');
+
+  // A MODEL's rqSize is a dimensionless multiplier of the exported GLB size,
+  // not a rig-local measurement, so it must not be multiplied by worldScale.
+  const modelProbe = Object.create(VfxPrimitiveRunner.prototype);
+  modelProbe.runtime = scaleRuntime;
+  modelProbe.primitive = {
+    typeName: 'FXPRIM_TYPE_MODEL',
+    rqSize: [0, 0, 1, -1000, 1000],
+    rqAlpha: [0, 0, 1, -10000, 10000],
+    colors: {},
+  };
+  modelProbe.delay = 0;
+  modelProbe.life = 1;
+  modelProbe.mesh = {
+    scale: { set(x, y, z) { this.x = x; this.y = y; this.z = z; } },
+    traverse() {},
+  };
+  modelProbe.update(0.5, 0.016);
+  check(Math.abs(modelProbe.mesh.scale.x - 1) < 1e-9, 'MODEL rqSize must stay a dimensionless multiplier');
+  check(Math.abs(new VfxRuntime({ THREE: scaleThree }).measureWorldScale() - WORLD_UNIT_METERS) < 1e-12, 'Missing model must restore the default scale');
+  let loopResets = 0;
+  const loopRuntime = new VfxRuntime({ THREE: scaleThree });
+  loopRuntime.runners = [{ reset() { loopResets += 1; } }];
+  loopRuntime.loopTime = 1;
+  loopRuntime.elapsed = 1;
+  loopRuntime.isPlaying = false;
+  loopRuntime.setLoop(true);
+  check(loopRuntime.isPlaying === true && loopRuntime.elapsed === 0 && loopResets === 1, 'Enabling loop on a finished one-shot must restart it');
+  loopRuntime.setLoop(false);
+  check(loopRuntime.isLooping === false, 'Loop must be disableable');
+
+  // 4c. Loop wraps must not wipe a trail's ribbon: its 1 s life outlives the
+  // 0.3 s loopTime, so resetting the points each cycle keeps it invisible.
+  const trailCycle = { trail: { points: [1, 2, 3] }, calls: 0, reset() { this.calls += 1; } };
+  VfxPrimitiveRunner.prototype.resetCycle.call(trailCycle);
+  check(trailCycle.calls === 0 && trailCycle.trail.points.length === 3, 'resetCycle() must preserve trail points');
+  const plainCycle = { trail: null, calls: 0, reset() { this.calls += 1; } };
+  VfxPrimitiveRunner.prototype.resetCycle.call(plainCycle);
+  check(plainCycle.calls === 1, 'resetCycle() must reset non-trail primitives');
 
   // Quadratic curve evaluation checks
   check(evaluateQuadratic([0, 0, 0, 0, 1], 0.5, 99) === 99, 'Zero-coefficient curve must return fallback');
@@ -1995,11 +3050,10 @@ export function selfCheckVfxCatalog() {
     traverse(cb) { cb(mockMultiMatObj); },
   };
   modelRunner.update(0.2, 0.016);
-  const expectedOpacity = Math.sin(0.2 * Math.PI);
   check(
-    Math.abs(mockMultiMatObj.material[0].opacity - expectedOpacity) < 0.01 &&
-    Math.abs(mockMultiMatObj.material[1].opacity - expectedOpacity) < 0.01,
-    'Multi-material meshes must update opacity across array using sinusoidal envelope'
+    Math.abs(mockMultiMatObj.material[0].opacity - 1.0) < 0.01 &&
+    Math.abs(mockMultiMatObj.material[1].opacity - 1.0) < 0.01,
+    'Multi-material meshes must use the authored alpha without a synthetic envelope'
   );
   modelRunner.update(1.0, 0.016);
   check(modelRunner.mesh.visible === false, 'Primitive must hide mesh when localTime reaches or exceeds life');
@@ -2053,6 +3107,43 @@ export function selfCheckVfxCatalog() {
   syncRuntime.update(0.016);
   check(syncRuntime.isPlaying === false && syncRuntime.elapsed === 1.5, 'One-shot sync must terminate when action loops back');
   check(syncRunnerMesh.visible === false, 'One-shot sync loop back must hide runner meshes');
+
+  // Authentic action binding: wait for the owning clip, then sync from _time
+  let authenticClipName = 'idle';
+  let authenticActionTime = 0.2;
+  const authenticClips = { power_1: {} };
+  const authenticRuntime = new VfxRuntime({
+    scene: new mockThreeRuntime.Group(),
+    getCurrentAction: () => ({ time: authenticActionTime, getClip: () => ({ name: authenticClipName, duration: 2.0 }) }),
+    getAnimPlaying: () => true,
+    getAnimClips: () => authenticClips,
+    THREE: mockThreeRuntime,
+  });
+  authenticRuntime.loopTime = 1.5;
+  authenticRuntime.isPlaying = true;
+  const authenticMesh = { visible: true };
+  authenticRuntime.runners = [{ mesh: authenticMesh, update() { authenticMesh.visible = true; }, reset() {} }];
+  authenticRuntime.binding = { compatible: true, clip: 'power_1' };
+  authenticRuntime.triggerTime = 0.5;
+  authenticRuntime.update(0.016);
+  check(authenticRuntime.waitingForClip === true && authenticMesh.visible === false, 'Authentic binding must hide until its own clip is playing');
+  authenticClipName = 'power_1';
+  authenticActionTime = 0.2;
+  authenticRuntime.update(0.016);
+  check(authenticRuntime.waitingForClip === false && authenticRuntime.waitingForTrigger === true, 'Authentic binding must wait for the powerstyle trigger time');
+  authenticActionTime = 0.9;
+  authenticRuntime.update(0.016);
+  check(authenticRuntime.waitingForTrigger === false && Math.abs(authenticRuntime.elapsed - 0.4) < 0.001, 'Authentic binding must sync elapsed to action time minus trigger');
+  check(authenticMesh.visible === true, 'Authentic binding must show runners after the trigger');
+  authenticRuntime.binding = { compatible: true, clip: 'missing_clip' };
+  authenticRuntime.elapsed = 0.0;
+  authenticActionTime = 1.0;
+  authenticRuntime.update(0.1);
+  check(authenticRuntime.waitingForClip === false && Math.abs(authenticRuntime.elapsed - 0.1) < 0.001, 'Missing authentic clip must free-run instead of hiding the effect');
+  authenticRuntime.binding = { compatible: false, clip: 'power_1' };
+  authenticRuntime.elapsed = 0.0;
+  authenticRuntime.update(0.1);
+  check(Math.abs(authenticRuntime.elapsed - 0.1) < 0.001, 'Incompatible binding must never sync to the loaded model animation');
 
   // Non-sync one-shot lifecycle and cleanup
   const oneShotCam = { position: { x: 0, y: 1, z: 5, add(v) { this.x += v.x; this.y += v.y; this.z += v.z; }, sub(v) { this.x -= v.x; this.y -= v.y; this.z -= v.z; } } };
@@ -2135,6 +3226,7 @@ export function selfCheckVfxCatalog() {
   });
   let scene1 = null;
   let scene2 = null;
+  glbRuntime.modelMap = { 'test_model.glb': 'assets/vfx/models/test_model.glb' };
   glbRuntime.loadVfxModel('test_model.glb', (s) => { scene1 = s; });
   check(gltfLoadCount === 1 && scene1?.isClone === true, 'First load must query gltfLoader');
   glbRuntime.loadVfxModel('test_model.glb', (s) => { scene2 = s; });
@@ -2143,7 +3235,104 @@ export function selfCheckVfxCatalog() {
   // Engine extensions: Model resolution
   runtime.modelMap = { 'models/effects/shield.igb': 'assets/vfx/models/effects/shield.glb' };
   check(runtime.resolveModelPath('models/effects/shield.igb') === 'assets/vfx/models/effects/shield.glb', 'resolveModelPath must resolve mapped model');
-  check(runtime.resolveModelPath('effects/bubble.igb') === 'assets/vfx/models/effects/bubble.glb', 'resolveModelPath must format fallback .glb');
+  check(runtime.resolveModelPath('effects/bubble.igb') === null, 'resolveModelPath must not invent a path for an unexported model');
+
+  // Authentic effect -> action binding (powerstyles/*.muc contract)
+  const actionMap = {
+    format: 'mua2_vfx_action_map_v1',
+    characters: {
+      spiderman: { representativeModel: 'spiderman', modelIds: ['spiderman', 'spiderman_alt'], clipCount: 103 },
+      abomb: { representativeModel: 'a_bomb_anti_1', modelIds: ['a_bomb_anti_1'], clipCount: 21 },
+      juggernaut: { representativeModel: 'juggernaut_alt_2', modelIds: ['juggernaut_alt_2'], clipCount: 98 },
+      minion: { representativeModel: null, modelIds: [], clipCount: 0 },
+    },
+    actors: {
+      'char/spiderman/spiderman_blocking': ['spiderman'],
+      'char/juggernaut/juggernaut_trail': ['abomb', 'juggernaut'],
+      'char/minion/minion_shot': ['minion'],
+      'base/misc/trail_default': ['spiderman', 'captainamerica'],
+    },
+    effects: {
+      'char/spiderman/spiderman_blocking': [{ actor: 'spiderman', clip: 'blocking', animEnum: 'EA_BLOCKING', time: 0.0, kind: 'fx_core', bolt: 'Bip01 Spine2', bone: 'Bip01 Spine2', boneCandidates: ['Bip01 Spine2'], anchor: 'bone', boltResolved: true }],
+      'char/juggernaut/juggernaut_trail': [{ actor: 'juggernaut', clip: 'power_1', animEnum: 'EA_POWER1', time: 0.5283664, kind: 'fx_core', bolt: 'Bip01 L Hand', bone: 'Bip01 L Hand', boneCandidates: ['Bip01 L Hand'], anchor: 'bone', boltResolved: true }],
+      'char/minion/minion_shot': [{ actor: 'minion', clip: null, animEnum: 'EA_ATTACK', time: 0, kind: 'effect', bolt: 'Bip01 R Hand', bone: 'Bip01 R Hand', boneCandidates: ['Bip01 R Hand'], anchor: 'bone', boltResolved: true }],
+      'base/misc/trail_default': [{ actor: 'spiderman', clip: 'run', animEnum: 'EA_RUN', time: 0.0, kind: 'fx_core', bolt: 'Bip01 Pelvis', bone: 'Bip01 Pelvis', boneCandidates: ['Bip01 Pelvis'], anchor: 'bone', boltResolved: true }],
+      'map/newyork/fire': [{ actor: null, clip: null, time: null, kind: 'effect', bolt: null, bone: null, boneCandidates: [], anchor: 'origin', boltResolved: true }],
+    },
+  };
+  const bindingModels = [
+    { id: 'spiderman', name: 'Spider-Man', category: 'characters', source: 'actors/spiderman' },
+    { id: 'spiderman_alt', name: 'Spider-Man Alt', category: 'characters', source: 'actors/spiderman' },
+    { id: 'a_bomb_anti_1', name: 'A-Bomb', category: 'characters', source: 'actors/abomb' },
+    { id: 'juggernaut_alt_2', name: 'Juggernaut', category: 'characters', source: 'actors/juggernaut' },
+  ];
+  const planFor = (id, loadedId) => {
+    const segments = id.split('/');
+    const modelIds = id.startsWith('char/spiderman') ? ['spiderman']
+      : id.startsWith('char/juggernaut') ? ['juggernaut_alt_2'] : [];
+    return planEffectBinding(
+      { id, category: segments[0], character: segments[0] === 'char' ? segments[1] : null, modelIds },
+      {
+        actionMap,
+        loadedModel: bindingModels.find((model) => model.id === loadedId) || null,
+        models: bindingModels,
+        isProp: () => false,
+      },
+    );
+  };
+
+  const blockingPlan = planFor('char/spiderman/spiderman_blocking', 'spiderman');
+  check(blockingPlan.compatible && blockingPlan.anchorMode === 'bone' && blockingPlan.bone === 'Bip01 Spine2', 'Spider-Man blocking must bind to the authentic spine bone');
+  check(blockingPlan.clip === 'blocking' && blockingPlan.animEnum === 'EA_BLOCKING', 'Blocking binding must expose clip and enum');
+
+  const crossPlan = planFor('char/juggernaut/juggernaut_trail', 'a_bomb_anti_1');
+  check(crossPlan.compatible && crossPlan.actor === 'abomb', 'A-Bomb must keep the Juggernaut trail when it is an authentic actor');
+  check(Math.abs(crossPlan.triggerTime - 0.5283664) < 1e-6, 'Trigger time must come from the powerstyle entry');
+
+  const wrongModelPlan = planFor('char/juggernaut/juggernaut_trail', 'spiderman');
+  check(wrongModelPlan.requiresModelLoad && wrongModelPlan.targetModelId === 'juggernaut_alt_2', 'Incompatible model must request the authentic owner model');
+  check(!wrongModelPlan.compatible, 'Incompatible model must not anchor the effect');
+
+  const minionPlan = planFor('char/minion/minion_shot', 'spiderman');
+  check(minionPlan.suspended && !minionPlan.compatible, 'Effect without representative model must be suspended instead of anchored arbitrarily');
+
+  const basePlan = planFor('base/misc/trail_default', 'spiderman');
+  check(basePlan.compatible && basePlan.anchorMode === 'bone', 'Shared base effect must use the loaded actor when it references it');
+  const baseWrongPlan = planFor('base/misc/trail_default', 'juggernaut_alt_2');
+  check(!baseWrongPlan.compatible && baseWrongPlan.anchorMode === 'origin', 'Shared base effect must stay at the origin for a non-referencing actor');
+
+  const sceneryPlan = planFor('map/newyork/fire', 'spiderman');
+  check(sceneryPlan.scenery && sceneryPlan.anchorMode === 'origin', 'Scenery effects must anchor at the origin, never on the character');
+
+  // effects.json ownership fallback when the powerstyle map is unavailable
+  const fallbackEffect = { id: 'char/spiderman/fallback_fx', category: 'char', character: 'spiderman', modelIds: ['spiderman'] };
+  const noMapPlan = planEffectBinding(fallbackEffect, {
+    actionMap: null,
+    loadedModel: bindingModels[0],
+    models: bindingModels,
+    isProp: () => false,
+  });
+  check(noMapPlan.compatible && noMapPlan.ownerModelMatch && noMapPlan.anchorMode === 'model', 'effects.json modelIds must keep the owning model compatible without the action map');
+  const noMapWrongPlan = planEffectBinding(fallbackEffect, {
+    actionMap: null,
+    loadedModel: bindingModels[3],
+    models: bindingModels,
+    isProp: () => false,
+  });
+  check(noMapWrongPlan.requiresModelLoad && noMapWrongPlan.targetModelId === 'spiderman', 'effects.json modelIds must still load the authentic owner for the wrong model');
+
+  // Exact bone names must win over shared prefixes (Hand vs HandAttach)
+  const rig = {
+    traverse(cb) {
+      for (const name of ['Bip01 Spine', 'Bip01 Spine2', 'Bip01 R Hand', 'Bip01 R HandAttach']) {
+        cb({ isBone: true, name });
+      }
+    },
+  };
+  check(findBoneInModel(rig, 'Bip01 Spine')?.name === 'Bip01 Spine', 'Bone lookup must prefer the exact spine name over Spine2');
+  check(findBoneInModel(rig, 'Bip01 R Hand')?.name === 'Bip01 R Hand', 'Bone lookup must prefer Hand over HandAttach');
+  check(findBoneInModel(rig, 'R HandAttach')?.name === 'Bip01 R HandAttach', 'Bone lookup must accept a unique attach-bone match');
+  check(findBoneInModel(rig, 'Bip01 Tail') === null, 'Bone lookup must return null when no bone matches');
 
   // 5. Controller model linking, props classification and filtering
   const testModels = [

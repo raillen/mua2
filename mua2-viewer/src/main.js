@@ -513,19 +513,26 @@ function prepare(model, entry) {
     mixer = new THREE.AnimationMixer(model);
     window.__viewer.mixer = mixer;
     loadGameAnimations(entry.id, model).then((clips) => {
+      // A slow animation fetch for a previous model must not overwrite the
+      // clips of the model that is loaded now.
+      if (current !== model) return;
       animClips = clips || {};
       window.__viewer.animClips = animClips;
       updateAnimDropdown(animClips);
       applyAnimation(selectedAnim, 0.0);
+      if (vfxCatalog) vfxCatalog.onAnimationsChange(animClips);
     }).catch((err) => {
       console.warn('Authentic animation load error:', err);
+      if (current !== model) return;
       animClips = {};
       updateAnimDropdown({});
+      if (vfxCatalog) vfxCatalog.onAnimationsChange({});
     });
   } else {
     mixer = null;
     animClips = {};
     updateAnimDropdown({});
+    if (vfxCatalog) vfxCatalog.onAnimationsChange({});
   }
 
   // Camera framing
@@ -1224,7 +1231,7 @@ function applyAnimation(name, fadeDuration = 0.35) {
   selectedAnim = name;
   saveSetting('anim', name);
   if (animSelect) animSelect.value = name;
-  if (!mixer) return;
+  if (!mixer) return false;
 
   if (name === 'none') {
     if (currentAction) {
@@ -1239,20 +1246,21 @@ function applyAnimation(name, fadeDuration = 0.35) {
         }
       });
     }
-    return;
+    return true;
   }
 
   const clip = animClips[name];
-  if (!clip) return;
+  if (!clip) return false;
 
   const nextAction = mixer.clipAction(clip);
-  if (currentAction === nextAction) return;
+  if (currentAction === nextAction) return true;
 
   if (currentAction) {
     currentAction.fadeOut(fadeDuration);
   }
   nextAction.reset().fadeIn(fadeDuration).play();
   currentAction = nextAction;
+  return true;
 }
 
 if (animSelect) {
@@ -1420,6 +1428,12 @@ vfxCatalog = initVfxCatalog({
   getMixer: () => mixer,
   getCurrentAction: () => currentAction,
   getAnimPlaying: () => animPlaying,
+  setAnimPlaying: (playing) => {
+    animPlaying = Boolean(playing);
+    saveSetting('animPlaying', animPlaying);
+    updateAnimPlayButton();
+  },
+  getAnimClips: () => animClips,
   applyAnimation,
   getModel: () => current,
   THREE,
