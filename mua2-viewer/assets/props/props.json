@@ -1,0 +1,5272 @@
+{
+  "format": "mua2-props-v1",
+  "scope": {
+    "categories": [
+      "weapons",
+      "common",
+      "pickups",
+      "bolton"
+    ],
+    "source_root": "models",
+    "source_count": 76,
+    "excludes": "All other models categories / scene assets"
+  },
+  "export": {
+    "skeleton": false,
+    "normalize": true,
+    "max_texture": 0,
+    "use_spec": false,
+    "invert_green": true,
+    "unsupported_shader_effects": [
+      "Game shaders are not reproduced; GLB materials are a diffuse/normal PBR approximation.",
+      "Specular, cubemap/reflection, masks and additional texture units are not exported.",
+      "Shader parameters, material/vertex colors, blend states, emissive effects and procedural effects are not reproduced.",
+      "Transform sequences and animation are not exported; this is static geometry."
+    ]
+  },
+  "texture_index_sha256": "cfeea4dc137c1beb3bcc03b602665156852e661dc1f0aae0c65eae88d5401104",
+  "exporter_sha256": "2a6f0b25c440d1931ab82e8aa689d62e2042c518c81c425186f10aabcae67876",
+  "models": [
+    {
+      "id": "bolton/cosmeticboosts/clownhead",
+      "source": "models/bolton/cosmeticboosts/clownhead.igz",
+      "source_sha256": "fe20293297a95096be1df0a878143468ba97642e07a22c78e16ce0a3c5068ce9",
+      "source_bytes": 61404,
+      "name": "Clownhead",
+      "category": "bolton",
+      "costume": "Acessórios",
+      "accent": "#ae8cbb",
+      "file": "assets/props/bolton/cosmeticboosts/clownhead.glb",
+      "parts": 6,
+      "verts": 1606,
+      "tris": 2028,
+      "textures": 0,
+      "size": 81920,
+      "sha256": "2091b52759648d2ad1ea9e7878148ad54235f40c220075b8268b68013ccce0d2",
+      "source_bones": 0,
+      "source_geometry_objects": 6,
+      "source_attribute_types": [
+        "igBlendFunctionAttr",
+        "igBlendStateAttr",
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [],
+      "texture_sources": [],
+      "limitations": [
+        {
+          "code": "source_material_without_diffuse",
+          "parts": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "detail": "No diffuse binding supplied for these parts. Source geometry retained; material colors/effects are not reconstructed, not a missing-texture substitute."
+        }
+      ]
+    },
+    {
+      "id": "common/capekiller_heavy_pro_shield",
+      "source": "models/common/capekiller_heavy_pro_shield.igz",
+      "source_sha256": "cc01e2672eaae62e3e2d3b46be83b4c676364bf77e23ec907377cf127ffba426",
+      "source_bytes": 30396,
+      "name": "Capekiller Heavy Pro Shield",
+      "category": "common",
+      "costume": "Objetos comuns",
+      "accent": "#7ca6ba",
+      "file": "assets/props/common/capekiller_heavy_pro_shield.glb",
+      "parts": 1,
+      "verts": 368,
+      "tris": 385,
+      "textures": 2,
+      "size": 186296,
+      "sha256": "99b96f380e59a2aed7a7002970ea40e29e8f21a431186b39e3582ea75544edd5",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "8f71ce32b2ce6a7a",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/capekiller_heavy_pro_shield_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "8f71c432b2ce597c",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/capekiller_heavy_pro_shield_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "8f71b932b2ce46cb",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/capekiller_heavy_pro_shield_s.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "8f71cf32b2ce6c2d",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/capekiller_heavy_pro_shield_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/capekiller_heavy_pro_shield_d.igz",
+          "sha256": "505988508961ecd01acd39a16c3187b9335f89da4dfe67719d2664092e8d53b0",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/capekiller_heavy_pro_shield_n.igz",
+          "sha256": "90cdc32d07474b756925d20cc7f198a5799ed3d472a2070e1c22c28141d94e31",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "common/common_trash_paper_01",
+      "source": "models/common/common_trash_paper_01.igz",
+      "source_sha256": "ccd7d26d366c0b59b0a0154048176a20cf3465002c56007dbec0090ab5b3a9b5",
+      "source_bytes": 8980,
+      "name": "Common Trash Paper 01",
+      "category": "common",
+      "costume": "Objetos comuns",
+      "accent": "#7ca6ba",
+      "file": "assets/props/common/common_trash_paper_01.glb",
+      "parts": 1,
+      "verts": 59,
+      "tris": 23,
+      "textures": 1,
+      "size": 95272,
+      "sha256": "1418a8341ea2fb343daac7aa732383b9ef289697096b4706157d169dc6591804",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igGeometryAttr",
+        "igMaterialModeAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "ad397f5228db0faf",
+          "resolved": true,
+          "source": "igz_materials/levels/dc/dc_trainmap02_d.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "ad397e5228db0dfc",
+          "resolved": true,
+          "source": "igz_materials/levels/dc/dc_trainmap02_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/levels/dc/dc_trainmap02_d.igz",
+          "sha256": "7d03e142e29de39ac77d5ca13e5a4689873af1728196f46d9addccc1c4ba5c50",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "common/common_trash_paper_02",
+      "source": "models/common/common_trash_paper_02.igz",
+      "source_sha256": "14f39bdc76cf71b08251156be4cdbcc7593f5bfd8e0739771ee665cc7d3f7bfe",
+      "source_bytes": 8908,
+      "name": "Common Trash Paper 02",
+      "category": "common",
+      "costume": "Objetos comuns",
+      "accent": "#7ca6ba",
+      "file": "assets/props/common/common_trash_paper_02.glb",
+      "parts": 1,
+      "verts": 59,
+      "tris": 23,
+      "textures": 1,
+      "size": 62256,
+      "sha256": "52b38adb65298867c9d9100dd673fc808a8f3e49349c5a080a61ef64b20f8af7",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igGeometryAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "c765fc5237bc43d6",
+          "resolved": true,
+          "source": "igz_materials/levels/dc/dc_trainmap01_d.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "c765fd5237bc4589",
+          "resolved": true,
+          "source": "igz_materials/levels/dc/dc_trainmap01_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/levels/dc/dc_trainmap01_d.igz",
+          "sha256": "fce20173d05d9a4b0e191a7e43fb81e9708bb83c73dc0e4883b425b288cbeac1",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "common/common_trash_paper_03",
+      "source": "models/common/common_trash_paper_03.igz",
+      "source_sha256": "8fa88022c4e394d32596223aea57f43c8f0b73faf4cc1eeec29809ffa5728a72",
+      "source_bytes": 8692,
+      "name": "Common Trash Paper 03",
+      "category": "common",
+      "costume": "Objetos comuns",
+      "accent": "#7ca6ba",
+      "file": "assets/props/common/common_trash_paper_03.glb",
+      "parts": 1,
+      "verts": 59,
+      "tris": 23,
+      "textures": 1,
+      "size": 372596,
+      "sha256": "095304544a44d66c287be68c4eef137abc299685b8eaa288f4cac5a775035ff3",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igGeometryAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "c25dc0fe4029cabc",
+          "resolved": true,
+          "source": "igz_materials/levels/dc/dc_stationblock_cracked_d.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/levels/dc/dc_stationblock_cracked_d.igz",
+          "sha256": "4d228de9529b3d6a909e1c0530bea1aa55e63ea809c779e10bf598f0e1de9854",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "common/common_trash_paper_04",
+      "source": "models/common/common_trash_paper_04.igz",
+      "source_sha256": "439e858ab78e4f2c75cfd8fcaf4d4fd00f563363c3e47c40d4c1a5063054d7c9",
+      "source_bytes": 6436,
+      "name": "Common Trash Paper 04",
+      "category": "common",
+      "costume": "Objetos comuns",
+      "accent": "#7ca6ba",
+      "file": "assets/props/common/common_trash_paper_04.glb",
+      "parts": 1,
+      "verts": 18,
+      "tris": 16,
+      "textures": 1,
+      "size": 93876,
+      "sha256": "601f25d5a8ad5015ea86998e0f22de8cbf34b0826428ac4e1a4feffb67309b91",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "ad397f5228db0faf",
+          "resolved": true,
+          "source": "igz_materials/levels/dc/dc_trainmap02_d.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "ad397e5228db0dfc",
+          "resolved": true,
+          "source": "igz_materials/levels/dc/dc_trainmap02_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/levels/dc/dc_trainmap02_d.igz",
+          "sha256": "7d03e142e29de39ac77d5ca13e5a4689873af1728196f46d9addccc1c4ba5c50",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "common/common_trash_paper_05",
+      "source": "models/common/common_trash_paper_05.igz",
+      "source_sha256": "ea2da689d61f6e00f0bcd29010719ce81c33c30af4b3f100e55ce4bf05917528",
+      "source_bytes": 6564,
+      "name": "Common Trash Paper 05",
+      "category": "common",
+      "costume": "Objetos comuns",
+      "accent": "#7ca6ba",
+      "file": "assets/props/common/common_trash_paper_05.glb",
+      "parts": 1,
+      "verts": 20,
+      "tris": 20,
+      "textures": 1,
+      "size": 60936,
+      "sha256": "216846e2e6720e35e4f8282e82bcb08f5f22215575128a8b8c8cb834b62d30fe",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "c765fc5237bc43d6",
+          "resolved": true,
+          "source": "igz_materials/levels/dc/dc_trainmap01_d.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "c765fd5237bc4589",
+          "resolved": true,
+          "source": "igz_materials/levels/dc/dc_trainmap01_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/levels/dc/dc_trainmap01_d.igz",
+          "sha256": "fce20173d05d9a4b0e191a7e43fb81e9708bb83c73dc0e4883b425b288cbeac1",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "common/common_trash_paper_sheetheavy",
+      "source": "models/common/common_trash_paper_sheetheavy.igz",
+      "source_sha256": "1385bc161ce8f9c0a462d353270067a4112037345a76a1a5aa26a6fc4f432217",
+      "source_bytes": 6040,
+      "name": "Common Trash Paper Sheetheavy",
+      "category": "common",
+      "costume": "Objetos comuns",
+      "accent": "#7ca6ba",
+      "file": "assets/props/common/common_trash_paper_sheetheavy.glb",
+      "parts": 1,
+      "verts": 12,
+      "tris": 10,
+      "textures": 2,
+      "size": 18612,
+      "sha256": "0026ce1d6fd42f5755e2aad98addc1b530c91ab6a871b8b0842a1ac5bb7a5631",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "e32a7b6fdd3a37f1",
+          "resolved": true,
+          "source": "igz_materials/levels/dc/paper_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "e32a716fdd3a26f3",
+          "resolved": true,
+          "source": "igz_materials/levels/dc/paper_n.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/levels/dc/paper_d.igz",
+          "sha256": "c5064fc4b98d88bb88f413c4cc37ff8b012ac8fc491ad4b9933f544d088b22cf",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/levels/dc/paper_n.igz",
+          "sha256": "1d75ad2b7ce9b97d558260fb024f3cc205bb3f2aa0f1371073fb9b77a48adf0b",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "common/fistglow",
+      "source": "models/common/fistglow.igz",
+      "source_sha256": "bd41ec7b60e1e1a9fa28da761bb42fd82a40cd8c0a4f7b3289417b266e9bd194",
+      "source_bytes": 7100,
+      "name": "Fistglow",
+      "category": "common",
+      "costume": "Objetos comuns",
+      "accent": "#7ca6ba",
+      "file": "assets/props/common/fistglow.glb",
+      "parts": 1,
+      "verts": 33,
+      "tris": 24,
+      "textures": 1,
+      "size": 11836,
+      "sha256": "5a25115af24a31676d757af724920cf384133bb12ecd625f22b1f765b3b2f811",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "f076a7a723b0dfe8",
+          "resolved": true,
+          "source": "igz_materials/effects/glows/fxt_glowcloud02_d.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/effects/glows/fxt_glowcloud02_d.igz",
+          "sha256": "a2881995c2903871ea4019d1c18fa582e4f5c2572d84cdc876c27062ea4b7a20",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "common/int_mercs_medium_shield",
+      "source": "models/common/int_mercs_medium_shield.igz",
+      "source_sha256": "790c03bfaba538aecde56ee5140ad280d86ad415052e1c73da9d0a3bfe113238",
+      "source_bytes": 15924,
+      "name": "Int Mercs Medium Shield",
+      "category": "common",
+      "costume": "Objetos comuns",
+      "accent": "#7ca6ba",
+      "file": "assets/props/common/int_mercs_medium_shield.glb",
+      "parts": 1,
+      "verts": 162,
+      "tris": 124,
+      "textures": 2,
+      "size": 129368,
+      "sha256": "6c41b53b064f5439bcabad45bbf6b7cb90cf78047f546fd6934f2f0d0292f514",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "b8e00d340a0bd1ec",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "b8e017340a0be2ea",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "b8e01c340a0beb69",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_d.igz",
+          "sha256": "1ea6633a6293d62b476851941b76a9a4a03c47b0f546539064d188234c30f6c1",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_n.igz",
+          "sha256": "8d10f2767368f3c402d607c082987fccc7530e726960100dff251a3b5ef03ffd",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "common/invisiblehelperentity",
+      "source": "models/common/invisiblehelperentity.igz",
+      "source_sha256": "70893d8e726fac7a4c59270630dfa0be46113905403b61e97469171c483a3e9f",
+      "source_bytes": 4972,
+      "name": "Invisiblehelperentity",
+      "category": "common",
+      "costume": "Objetos comuns",
+      "accent": "#7ca6ba",
+      "file": "assets/props/common/invisiblehelperentity.glb",
+      "parts": 1,
+      "verts": 24,
+      "tris": 12,
+      "textures": 0,
+      "size": 2148,
+      "sha256": "b817020511ccf272840bf0dad88da134407600730cd4d3039ced077fb8bf6842",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igGeometryAttr",
+        "igGlobalColorStateAttr"
+      ],
+      "texture_bindings": [],
+      "texture_sources": [],
+      "limitations": [
+        {
+          "code": "source_material_without_diffuse",
+          "parts": [
+            0
+          ],
+          "detail": "No diffuse binding supplied for these parts. Source geometry retained; material colors/effects are not reconstructed, not a missing-texture substitute."
+        }
+      ]
+    },
+    {
+      "id": "common/robot_bomb",
+      "source": "models/common/robot_bomb.igz",
+      "source_sha256": "aa1341767c0d2c54125166fc8bcd9a93846669851825140d3b3e2adaa0f59b0a",
+      "source_bytes": 41160,
+      "name": "Robot Bomb",
+      "category": "common",
+      "costume": "Objetos comuns",
+      "accent": "#7ca6ba",
+      "file": "assets/props/common/robot_bomb.glb",
+      "parts": 4,
+      "verts": 501,
+      "tris": 312,
+      "textures": 7,
+      "size": 2032720,
+      "sha256": "0fc05ff2b9897c2d9f6a7bb331ad0b14de99e289007cd3d872b9371b7a0703ab",
+      "source_bones": 0,
+      "source_geometry_objects": 4,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "d2f0c2efb7671405",
+          "resolved": true,
+          "source": "igz_materials/levels/finalshowdown/hazardbombtimednanite01fsb_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "d2f0c8efb7671e37",
+          "resolved": true,
+          "source": "igz_materials/levels/finalshowdown/hazardbombtimednanite01fsb_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "d2f0cbefb7672350",
+          "resolved": true,
+          "source": "igz_materials/levels/finalshowdown/hazardbombtimednanite01fsb_s.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "d2f0c1efb7671252",
+          "resolved": true,
+          "source": "igz_materials/levels/finalshowdown/hazardbombtimednanite01fsb_e.igz"
+        },
+        {
+          "unit": 0,
+          "handle": "ef06b721b1a3f41e",
+          "resolved": true,
+          "source": "igz_materials/levels/finalshowdown/fsbasemetaltrim_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "ef06ad21b1a3e320",
+          "resolved": true,
+          "source": "igz_materials/levels/finalshowdown/fsbasemetaltrim_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "ef06ca21b1a41467",
+          "resolved": true,
+          "source": "igz_materials/levels/finalshowdown/fsbasemetaltrim_s.igz"
+        },
+        {
+          "unit": 0,
+          "handle": "a98a22523b16d056",
+          "resolved": true,
+          "source": "igz_materials/levels/finalshowdown/emissivered01_d.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "a98a23523b16d209",
+          "resolved": true,
+          "source": "igz_materials/levels/finalshowdown/emissivered01_e.igz"
+        },
+        {
+          "unit": 0,
+          "handle": "91c0e2685b47415a",
+          "resolved": true,
+          "source": "igz_materials/levels/finalshowdown/fsbasemetal_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "91c0d8685b47305c",
+          "resolved": true,
+          "source": "igz_materials/levels/finalshowdown/fsbasemetal_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "91c0cd685b471dab",
+          "resolved": true,
+          "source": "igz_materials/levels/finalshowdown/fsbasemetal_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/levels/finalshowdown/hazardbombtimednanite01fsb_d.igz",
+          "sha256": "116abca27e1868a35dd5fa01cde8b67563e3e4c31fc5b0be239f35be29ccdb3e",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/levels/finalshowdown/hazardbombtimednanite01fsb_n.igz",
+          "sha256": "1716cf26620368970f724980fd150b6a17006d0214ac39b96afcf587cd4e706d",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/levels/finalshowdown/fsbasemetaltrim_d.igz",
+          "sha256": "16c4ea84116c44001d07102d2c62e10c13e1bdd050e7782a313ccad023a0e088",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            1
+          ]
+        },
+        {
+          "source": "igz_materials/levels/finalshowdown/fsbasemetaltrim_n.igz",
+          "sha256": "4d3a63cd446dcf30cfd243fbafc8525a350173aefe37b39744cbd5145c990b0e",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            1
+          ]
+        },
+        {
+          "source": "igz_materials/levels/finalshowdown/emissivered01_d.igz",
+          "sha256": "15a5a8937e293010dafc28276d086578bb9051473c923e6b4af75d149c113592",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            2
+          ]
+        },
+        {
+          "source": "igz_materials/levels/finalshowdown/fsbasemetal_d.igz",
+          "sha256": "ffbb0b4fa8337f58c0925d6ab30952744a4a341d68aba2f04e07dcb5aeacd305",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            3
+          ]
+        },
+        {
+          "source": "igz_materials/levels/finalshowdown/fsbasemetal_n.igz",
+          "sha256": "8e3e4dbc5940e4bd6e4feaca0cc5f3f937b6d054b7a6df16da66406404d05dbe",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            3
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "common/whitestar_trooper_anti_shield",
+      "source": "models/common/whitestar_trooper_anti_shield.igz",
+      "source_sha256": "2de225e6d42d6b4d01f72a70603992e4ce09b3db08c82b432ad36bca22163deb",
+      "source_bytes": 38732,
+      "name": "Whitestar Trooper Anti Shield",
+      "category": "common",
+      "costume": "Objetos comuns",
+      "accent": "#7ca6ba",
+      "file": "assets/props/common/whitestar_trooper_anti_shield.glb",
+      "parts": 1,
+      "verts": 513,
+      "tris": 598,
+      "textures": 2,
+      "size": 184164,
+      "sha256": "43c6bca16abc76d357c2263c8abf366b7231d128e66b90ba7e027ce00cf59888",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "d43391ab1633eb2f",
+          "resolved": true,
+          "source": "igz_materials/actors/whitestar_trooper_anti_weapon_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "d4339bab1633fc2d",
+          "resolved": true,
+          "source": "igz_materials/actors/whitestar_trooper_anti_weapon_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "d4337eab1633cae6",
+          "resolved": true,
+          "source": "igz_materials/actors/whitestar_trooper_anti_weapon_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/whitestar_trooper_anti_weapon_d.igz",
+          "sha256": "ea3b71b2f92299d9418fce4e1a0ef5d32f398abfab0162fbdd62caa11794a342",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/actors/whitestar_trooper_anti_weapon_n.igz",
+          "sha256": "2008e6cfd8ddd43535e1e17b46cec48bae05358000de56a8e6de8558f81ba69f",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pickups/equip_belt_a",
+      "source": "models/pickups/equip_belt_a.igz",
+      "source_sha256": "1364070d21c4cc5ddf905b733daeaa2efcc4b5ada6b725a9c9fe8be7b1f5507e",
+      "source_bytes": 4432,
+      "name": "Equip Belt A",
+      "category": "pickups",
+      "costume": "Coletáveis",
+      "accent": "#c7b564",
+      "file": "assets/props/pickups/equip_belt_a.glb",
+      "parts": 1,
+      "verts": 4,
+      "tris": 2,
+      "textures": 0,
+      "size": 1340,
+      "sha256": "9a9d3fc55f2ea1d9d9ac3fbb63f8ceac5999e327c137293742454740767e0ae8",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igGeometryAttr",
+        "igGlobalColorStateAttr"
+      ],
+      "texture_bindings": [],
+      "texture_sources": [],
+      "limitations": [
+        {
+          "code": "source_material_without_diffuse",
+          "parts": [
+            0
+          ],
+          "detail": "No diffuse binding supplied for these parts. Source geometry retained; material colors/effects are not reconstructed, not a missing-texture substitute."
+        }
+      ]
+    },
+    {
+      "id": "pickups/tech_01",
+      "source": "models/pickups/tech_01.igz",
+      "source_sha256": "597ea1e37348662df75944dc1e31e52cdb923ed3bc2831d03f795f9407491b8e",
+      "source_bytes": 27328,
+      "name": "Tech 01",
+      "category": "pickups",
+      "costume": "Coletáveis",
+      "accent": "#c7b564",
+      "file": "assets/props/pickups/tech_01.glb",
+      "parts": 3,
+      "verts": 305,
+      "tris": 191,
+      "textures": 2,
+      "size": 18872,
+      "sha256": "99182bb0fabc3cb0e9b1b745f3db2b3e43a8b859ce61487fd0794eb1db85cdb2",
+      "source_bones": 0,
+      "source_geometry_objects": 3,
+      "source_attribute_types": [
+        "igBlendFunctionAttr",
+        "igBlendStateAttr",
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igShaderParametersAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "94e9ed3043f4306a",
+          "resolved": true,
+          "source": "igz_materials/models/pickups/color_rwb.igz"
+        },
+        {
+          "unit": 3,
+          "handle": "a8716fc200b04891",
+          "resolved": true,
+          "source": "igz_materials/models/pickups/color_rwb_nx.igz"
+        },
+        {
+          "unit": 3,
+          "handle": "a78f80651379ef91",
+          "resolved": true,
+          "source": "igz_materials/models/pickups/techbit_cubemap.igz"
+        },
+        {
+          "unit": 0,
+          "handle": "f81bfe142825256a",
+          "resolved": true,
+          "source": "igz_materials/models/pickups/techbit.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/pickups/color_rwb.igz",
+          "sha256": "09a69f5ea3a87cd491ea3fdd08aac1d5c048d3f99051d42aa21c29e2c91c1eca",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            1
+          ]
+        },
+        {
+          "source": "igz_materials/models/pickups/techbit.igz",
+          "sha256": "158f69492a6db8f85c610ed4b164f6bd0afdf29510a02386627cfdde523054fd",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            2
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "source_material_without_diffuse",
+          "parts": [
+            0
+          ],
+          "detail": "No diffuse binding supplied for these parts. Source geometry retained; material colors/effects are not reconstructed, not a missing-texture substitute."
+        },
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/bishop_gun",
+      "source": "models/weapons/bishop_gun.igz",
+      "source_sha256": "6ef298f7dcfedc313cc45e51125da3ef4976de583be6b4208103464753d75c84",
+      "source_bytes": 29368,
+      "name": "Bishop Gun",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/bishop_gun.glb",
+      "parts": 1,
+      "verts": 371,
+      "tris": 468,
+      "textures": 2,
+      "size": 173748,
+      "sha256": "f0be275a5a6d8a79014123408527190eaa9a9a33d259f8223360fdcd6aaa87fe",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "eda76e42759c9a02",
+          "resolved": true,
+          "source": "igz_materials/actors/bishop_pro_gun_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "eda77442759ca434",
+          "resolved": true,
+          "source": "igz_materials/actors/bishop_pro_gun_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "eda75942759c7653",
+          "resolved": true,
+          "source": "igz_materials/actors/bishop_pro_gun_s.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "eda76f42759c9bb5",
+          "resolved": true,
+          "source": "igz_materials/actors/bishop_pro_gun_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/bishop_pro_gun_d.igz",
+          "sha256": "6ef1b7d7c965a0a0b350f4bcfbcab2a61ce5e2a862e10004165432729506d041",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/actors/bishop_pro_gun_n.igz",
+          "sha256": "39004836e36a7e7cdb8be9940ee0f58cadd123ea7b94e3c1f3ba7bb821a8cb2f",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/blackpanther_energy_dagger",
+      "source": "models/weapons/blackpanther_energy_dagger.igz",
+      "source_sha256": "1ba9a1c02bc496fd802ef72d6265c7adbad84260d66d2794d7da3b6559170018",
+      "source_bytes": 12660,
+      "name": "Blackpanther Energy Dagger",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/blackpanther_energy_dagger.glb",
+      "parts": 1,
+      "verts": 309,
+      "tris": 116,
+      "textures": 0,
+      "size": 12564,
+      "sha256": "7916849372c6a439773357cb1aaf34ad6a507079876ed1f0bb131a983f702f79",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [],
+      "texture_sources": [],
+      "limitations": [
+        {
+          "code": "source_material_without_diffuse",
+          "parts": [
+            0
+          ],
+          "detail": "No diffuse binding supplied for these parts. Source geometry retained; material colors/effects are not reconstructed, not a missing-texture substitute."
+        }
+      ]
+    },
+    {
+      "id": "weapons/blackpanther_sword",
+      "source": "models/weapons/blackpanther_sword.igz",
+      "source_sha256": "1140c483d228a4367ea4c3a66a0634ee6b722c7b69e054396df08b5f60c584c8",
+      "source_bytes": 18796,
+      "name": "Blackpanther Sword",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/blackpanther_sword.glb",
+      "parts": 1,
+      "verts": 196,
+      "tris": 248,
+      "textures": 2,
+      "size": 476716,
+      "sha256": "2a04772b8d9748bae752ff13df3e11aef234df4c1d585e0156f981522b4c57dd",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igShaderParametersAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "af623402b8eec79b",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/blackpanther_sword_d.igz"
+        },
+        {
+          "unit": 3,
+          "handle": "dc9f35f4273a66ff",
+          "resolved": true,
+          "source": "igz_materials/levels/rebelhideout/cubemapdocks_nx.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "af622e02b8eebd69",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/blackpanther_sword_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "af622902b8eeb4ea",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/blackpanther_sword_s.igz"
+        },
+        {
+          "unit": 4,
+          "handle": "af622b02b8eeb850",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/blackpanther_sword_m.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/blackpanther_sword_d.igz",
+          "sha256": "5b8d6d6946e7ef53952a60497847837e620603dfc022c5f17a8e35151acb0ce1",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/blackpanther_sword_n.igz",
+          "sha256": "ffe1d3e03d20ac70b393da31449bd7d23f57c381e0fa7b11dbcfac6f03165fb7",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/blackwidow_gun",
+      "source": "models/weapons/blackwidow_gun.igz",
+      "source_sha256": "4b6ba896bb4b6275403c6b4c94b9b8a98acfb12ff294d6ac77f0e339b6106289",
+      "source_bytes": 40700,
+      "name": "Blackwidow Gun",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/blackwidow_gun.glb",
+      "parts": 1,
+      "verts": 563,
+      "tris": 600,
+      "textures": 2,
+      "size": 66400,
+      "sha256": "5213105d574512b36e7fa7c4284e0ddb29edeaf34959b2e8f7747eb9fbe44ddf",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "d5a538479f97d54e",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/blackwidow_gun_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "d5a52e479f97c450",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/blackwidow_gun_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "d5a52b479f97bf37",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/blackwidow_gun_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/blackwidow_gun_d.igz",
+          "sha256": "f4edcc237b2dc11ef250e16ded7b7fcee00d73fec662a40cd67fa882dffbcc2d",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/blackwidow_gun_n.igz",
+          "sha256": "1f1631fc0000f1136a9b5d5627ba9dce925ad8fb493c909c17f7144956dc2189",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/bullseye_knife",
+      "source": "models/weapons/bullseye_knife.igz",
+      "source_sha256": "ce272e11ded7ebd00448cb86db1f64aaee22d086627aaba006533a10fa362ba6",
+      "source_bytes": 13008,
+      "name": "Bullseye Knife",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/bullseye_knife.glb",
+      "parts": 2,
+      "verts": 121,
+      "tris": 164,
+      "textures": 1,
+      "size": 14204,
+      "sha256": "c1aa4a910532279ec595ce97c2449fee93cf8ab40b064ce736a07a6acde3ed59",
+      "source_bones": 0,
+      "source_geometry_objects": 2,
+      "source_attribute_types": [
+        "igBlendFunctionAttr",
+        "igBlendStateAttr",
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "c0596cc397cf8905",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/bullseye_knife_d.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/bullseye_knife_d.igz",
+          "sha256": "c0e8473f6de4dd37e9e58abe2d873f59b66b6df8cc47f20ce8accfd080a1ac28",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "source_material_without_diffuse",
+          "parts": [
+            1
+          ],
+          "detail": "No diffuse binding supplied for these parts. Source geometry retained; material colors/effects are not reconstructed, not a missing-texture substitute."
+        }
+      ]
+    },
+    {
+      "id": "weapons/bullseye_star",
+      "source": "models/weapons/bullseye_star.igz",
+      "source_sha256": "15c72460964838c5cb4b73943d315684d3536e763babbafa4e7f95fd0b792da3",
+      "source_bytes": 25856,
+      "name": "Bullseye Star",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/bullseye_star.glb",
+      "parts": 2,
+      "verts": 366,
+      "tris": 424,
+      "textures": 1,
+      "size": 23732,
+      "sha256": "6c5433322a3f9944c01c12f832ec3edf5977dc8ca793b6754ae65d8057307b93",
+      "source_bones": 0,
+      "source_geometry_objects": 2,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "940f9b27d7773966",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/bullseye_star_d.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/bullseye_star_d.igz",
+          "sha256": "e1a6738839d501f3023ddc0748607acee10750b806b4d08a211f93e9d887089b",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "source_material_without_diffuse",
+          "parts": [
+            1
+          ],
+          "detail": "No diffuse binding supplied for these parts. Source geometry retained; material colors/effects are not reconstructed, not a missing-texture substitute."
+        }
+      ]
+    },
+    {
+      "id": "weapons/cable_alt_gun",
+      "source": "models/weapons/cable_alt_gun.igz",
+      "source_sha256": "26fdbef179f828d63a785d1c26664289d36d4194504ee71908176721d8195ace",
+      "source_bytes": 60428,
+      "name": "Cable Alt Gun",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/cable_alt_gun.glb",
+      "parts": 1,
+      "verts": 893,
+      "tris": 807,
+      "textures": 2,
+      "size": 513624,
+      "sha256": "64dcec84d061c3f27ab32823a4003a4ea061b61c131af6825409fcfa077d5202",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "e7b9fbc18c799e92",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/cable_alt_gun_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "e7ba01c18c79a8c4",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/cable_alt_gun_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "e7ba06c18c79b143",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/cable_alt_gun_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/cable_alt_gun_d.igz",
+          "sha256": "fc8d4b0cf6f7ca595a4e13eb812a7b81af4dd273a78f26fb846e7a3c6f6701d4",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/cable_alt_gun_n.igz",
+          "sha256": "d61c35927e44a5b50ec0f5564559f88d0db7a256eadaf8639dd720072baf5f05",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/cable_canister",
+      "source": "models/weapons/cable_canister.igz",
+      "source_sha256": "be97ea151b43ddd38f2c1d41f69a93cf1fbdf2d3c89f62b3bd566415ddc53afa",
+      "source_bytes": 12500,
+      "name": "Cable Canister",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/cable_canister.glb",
+      "parts": 1,
+      "verts": 106,
+      "tris": 80,
+      "textures": 2,
+      "size": 11624,
+      "sha256": "034b330d8cf4fbfe905aa7c77ab3d11178df4b67012332cf0d968a001796f96d",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "f98a5751dc47e487",
+          "resolved": true,
+          "source": "igz_materials/models/effects/cable/cable_grenade_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "f98a5151dc47da55",
+          "resolved": true,
+          "source": "igz_materials/models/effects/cable/cable_grenade_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "f98a4451dc47c43e",
+          "resolved": true,
+          "source": "igz_materials/models/effects/cable/cable_grenade_s.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "f98a5651dc47e2d4",
+          "resolved": true,
+          "source": "igz_materials/models/effects/cable/cable_grenade_e.igz"
+        },
+        {
+          "unit": 4,
+          "handle": "f98a4e51dc47d53c",
+          "resolved": true,
+          "source": "igz_materials/models/effects/cable/cable_grenade_m.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/effects/cable/cable_grenade_d.igz",
+          "sha256": "41f435ca38beb8e6fb21469ad5e145da8dbdb2edb7694d9dbfc8dd169e8562ca",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/effects/cable/cable_grenade_n.igz",
+          "sha256": "3823085a856d5f9dea2e74a3366c043a483fa2f47189438aa8b98f027149ad05",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            4,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/cable_gun",
+      "source": "models/weapons/cable_gun.igz",
+      "source_sha256": "08b768a8e32ff451327d032833325979079f09416d57b0b54e836fb703f8a1b4",
+      "source_bytes": 48896,
+      "name": "Cable Gun",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/cable_gun.glb",
+      "parts": 1,
+      "verts": 685,
+      "tris": 790,
+      "textures": 2,
+      "size": 422480,
+      "sha256": "2721463ff98137d970d95195bef2d26cf3f85b23c4d6745931ac2cad3e86dbf7",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "aa7b4c1992602e45",
+          "resolved": true,
+          "source": "igz_materials/actors/cable_anti_gun_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "aa7b521992603877",
+          "resolved": true,
+          "source": "igz_materials/actors/cable_anti_gun_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "aa7b551992603d90",
+          "resolved": true,
+          "source": "igz_materials/actors/cable_anti_gun_s.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "aa7b4b1992602c92",
+          "resolved": true,
+          "source": "igz_materials/actors/cable_anti_gun_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/cable_anti_gun_d.igz",
+          "sha256": "39e5f6f37ce4a593515162d6500ae0241df3628443ff3127c17053bc37c124a6",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/actors/cable_anti_gun_n.igz",
+          "sha256": "bcb688d3f6c2415ee9b634edf653a7812ae868afca5df016d22de8271bdefa5c",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/capekiller_gun",
+      "source": "models/weapons/capekiller_gun.igz",
+      "source_sha256": "ac0d8cf6e1f5ea73416a86bb92eeddfe7f2706ed8e557ce7c5169495259051f5",
+      "source_bytes": 63544,
+      "name": "Capekiller Gun",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/capekiller_gun.glb",
+      "parts": 1,
+      "verts": 928,
+      "tris": 960,
+      "textures": 2,
+      "size": 223620,
+      "sha256": "7a9f2a4ec32326cd7b79298167bb3ffa72f9629e70a07c160e87d1333a863f8d",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "ddb55c6825b91243",
+          "resolved": true,
+          "source": "igz_materials/actors/capekiller_pro_rifle_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "ddb5666825b92341",
+          "resolved": true,
+          "source": "igz_materials/actors/capekiller_pro_rifle_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "ddb5516825b8ff92",
+          "resolved": true,
+          "source": "igz_materials/actors/capekiller_pro_rifle_s.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "ddb55b6825b91090",
+          "resolved": true,
+          "source": "igz_materials/actors/capekiller_pro_rifle_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/capekiller_pro_rifle_d.igz",
+          "sha256": "b8f8573e71df3f078e15821312b7d04715a029fdaac8794a808d8a62e70a6408",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/actors/capekiller_pro_rifle_n.igz",
+          "sha256": "6aaa62299f49a50b6e335b9d28ed3aba019c5adec8d398440796ed77a5df75bf",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/capekillerheavy_grenade_launcher",
+      "source": "models/weapons/capekillerheavy_grenade_launcher.igz",
+      "source_sha256": "c8162dc326b060e6be4669380d4006f819360d7a17c82db0db71c4ce050017e6",
+      "source_bytes": 46984,
+      "name": "Capekillerheavy Grenade Launcher",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/capekillerheavy_grenade_launcher.glb",
+      "parts": 1,
+      "verts": 658,
+      "tris": 750,
+      "textures": 2,
+      "size": 184488,
+      "sha256": "a844f37fb1cebd04cda0a3ca9d2986bfee971e00fad1daac1b6e6a711edca44e",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "a5fe2b1d6e4a659f",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/capekillerheavy_grenade_launcher_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "a5fe351d6e4a769d",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/capekillerheavy_grenade_launcher_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "a5fe381d6e4a7bb6",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/capekillerheavy_grenade_launcher_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/capekillerheavy_grenade_launcher_d.igz",
+          "sha256": "7034568b10146ad6039abc2cef4aa087e2239f0584b60ab13a4569af3a3d3ab3",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/capekillerheavy_grenade_launcher_n.igz",
+          "sha256": "1ac79ea3aeb12352adf3d3c5d2bc7545b547a10dbb85c6eed12840343ca4ef10",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/capekillerheavy_shield",
+      "source": "models/weapons/capekillerheavy_shield.igz",
+      "source_sha256": "57353a6379f284998506029ad181b776005c6d8df7e1265d97c65151893ba459",
+      "source_bytes": 28800,
+      "name": "Capekillerheavy Shield",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/capekillerheavy_shield.glb",
+      "parts": 1,
+      "verts": 368,
+      "tris": 385,
+      "textures": 2,
+      "size": 186284,
+      "sha256": "e79f977c2b8ce533e75f7f779cd4926c918f206c6eb044af6e4d83408c72bbd1",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "8f71ce32b2ce6a7a",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/capekiller_heavy_pro_shield_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "8f71c432b2ce597c",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/capekiller_heavy_pro_shield_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "8f71b932b2ce46cb",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/capekiller_heavy_pro_shield_s.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "8f71cf32b2ce6c2d",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/capekiller_heavy_pro_shield_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/capekiller_heavy_pro_shield_d.igz",
+          "sha256": "505988508961ecd01acd39a16c3187b9335f89da4dfe67719d2664092e8d53b0",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/capekiller_heavy_pro_shield_n.igz",
+          "sha256": "90cdc32d07474b756925d20cc7f198a5799ed3d472a2070e1c22c28141d94e31",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/captainamerica_alt_shield",
+      "source": "models/weapons/captainamerica_alt_shield.igz",
+      "source_sha256": "7cde5d97fae7b558358ea3c454d7a17ae7805142fa1ee3fcf0ac172f3d4b5785",
+      "source_bytes": 34404,
+      "name": "Captainamerica Alt Shield",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/captainamerica_alt_shield.glb",
+      "parts": 1,
+      "verts": 448,
+      "tris": 484,
+      "textures": 2,
+      "size": 359756,
+      "sha256": "c08d9b9f51a15dcde4c39e3f468fbb2d0d62b307b1e6b39d90c2d676892f448f",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "ea3c0666d939960c",
+          "resolved": true,
+          "source": "igz_materials/actors/captainamerica_alt_shield_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "ea3c1066d939a70a",
+          "resolved": true,
+          "source": "igz_materials/actors/captainamerica_alt_shield_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "ea3c1566d939af89",
+          "resolved": true,
+          "source": "igz_materials/actors/captainamerica_alt_shield_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/captainamerica_alt_shield_d.igz",
+          "sha256": "60dc08cc1b03be695ccb5ec289d32b381cbea3b88f21da70434ace909aed644b",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/actors/captainamerica_alt_shield_n.igz",
+          "sha256": "35eec80db5286922aa3b5d3f4de3c7f072dc7524f8cbe0038cfcf4b58547a19b",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/captainamerica_shield",
+      "source": "models/weapons/captainamerica_shield.igz",
+      "source_sha256": "f126c51895462b1d6b03420a69610671eb9f327f000a04d8d1b3850e6047f00e",
+      "source_bytes": 31796,
+      "name": "Captainamerica Shield",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/captainamerica_shield.glb",
+      "parts": 1,
+      "verts": 406,
+      "tris": 584,
+      "textures": 2,
+      "size": 457536,
+      "sha256": "f44feacd58dc8f1aefdc66c1db0f493f35d314bdc59215331c9ade3aeb8de516",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "a14a673076687c24",
+          "resolved": true,
+          "source": "igz_materials/actors/capshield_anti_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "a14a6130766871f2",
+          "resolved": true,
+          "source": "igz_materials/actors/capshield_anti_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "a14a7630766895a1",
+          "resolved": true,
+          "source": "igz_materials/actors/capshield_anti_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/capshield_anti_d.igz",
+          "sha256": "e6b3c068a5a57e0da09c844710a2f6e4581733d467252ed9c083645f3947695f",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/actors/capshield_anti_n.igz",
+          "sha256": "c8558b08d44d2738eb233e7ba9097237d353cb337b2decfca0cc213e4edddcfa",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/carnage_cletus",
+      "source": "models/weapons/carnage_cletus.igz",
+      "source_sha256": "52c6ba952be8899f7f7f262b4dea0b559883f2618a6dfda2782ca93e575c678f",
+      "source_bytes": 98916,
+      "name": "Carnage Cletus",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/carnage_cletus.glb",
+      "parts": 1,
+      "verts": 1381,
+      "tris": 2502,
+      "textures": 2,
+      "size": 636132,
+      "sha256": "e69290cc774dead2cb7341da9f66a94c11593e78da7acd753a9f8f42cdd7d140",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igAlphaFunctionAttr",
+        "igAlphaStateAttr",
+        "igBlendStateAttr",
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "8a54f5bfccfa0112",
+          "resolved": true,
+          "source": "igz_materials/effects/characters/carnage/cletuskassidy_head_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "8a54fbbfccfa0b44",
+          "resolved": true,
+          "source": "igz_materials/effects/characters/carnage/cletuskassidy_head_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "8a5500bfccfa13c3",
+          "resolved": true,
+          "source": "igz_materials/effects/characters/carnage/cletuskassidy_head_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/effects/characters/carnage/cletuskassidy_head_d.igz",
+          "sha256": "8997eda4d6677c11eb981de8d5afd01454ab1750848b5f056121b21e2dd77a6e",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/effects/characters/carnage/cletuskassidy_head_n.igz",
+          "sha256": "65ace5889289f0ba662f7d84f271933cf6f2339b5ea699fe427345d6a8a06978",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/daredevil_baton_mesh",
+      "source": "models/weapons/daredevil_baton_mesh.igz",
+      "source_sha256": "73c229f2a040bd09669be301eac286dcb8a79fd09fbf1751708a184ce253e3fd",
+      "source_bytes": 13444,
+      "name": "Daredevil Baton Mesh",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/daredevil_baton_mesh.glb",
+      "parts": 1,
+      "verts": 124,
+      "tris": 108,
+      "textures": 1,
+      "size": 8424,
+      "sha256": "8a03395a496799f55dc790fbff18f2e67c146090c92b22493ed697d2fc5fe75c",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "efe31e6849394259",
+          "resolved": true,
+          "source": "igz_materials/actors/daredevil_baton_d.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/daredevil_baton_d.igz",
+          "sha256": "c59cba499cbae8357df440bad36f1701180521a0c0f27cd623cf401a50899d20",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "weapons/deadpool_gun",
+      "source": "models/weapons/deadpool_gun.igz",
+      "source_sha256": "0fa091e223fe712f3950c6ba3ac8ba5fae3b6c560c599c40b267651ceeafa8f6",
+      "source_bytes": 25156,
+      "name": "Deadpool Gun",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/deadpool_gun.glb",
+      "parts": 1,
+      "verts": 300,
+      "tris": 332,
+      "textures": 2,
+      "size": 125580,
+      "sha256": "3a39624e3bbc45720689784faba1076fbc2fdac8726de3a9b6c3482be3f8f211",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "908ffc88bd4d130e",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/deadpool_pro_weapons_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "908ff288bd4d0210",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/deadpool_pro_weapons_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "908fef88bd4cfcf7",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/deadpool_pro_weapons_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/deadpool_pro_weapons_d.igz",
+          "sha256": "c45c404160bb60dac905bbe66a19364351946718f4fa09b660dcd6b3477c7c37",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/deadpool_pro_weapons_n.igz",
+          "sha256": "0038a1e09704d8c72c52b1e14975cd043710953b08d3ccd7c65dd9c809119ece",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/deadpool_sword",
+      "source": "models/weapons/deadpool_sword.igz",
+      "source_sha256": "dd9d81f96aa32a6e4f0fdc4becc353de9e970951495599015ce74b3ffd67f228",
+      "source_bytes": 11588,
+      "name": "Deadpool Sword",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/deadpool_sword.glb",
+      "parts": 1,
+      "verts": 84,
+      "tris": 89,
+      "textures": 2,
+      "size": 115768,
+      "sha256": "82fd8ce10c74dc0c2def3888755eddaa7d576446f8a4a13f3e3879780d60a46b",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "908ffc88bd4d130e",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/deadpool_pro_weapons_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "908ff288bd4d0210",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/deadpool_pro_weapons_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "908fef88bd4cfcf7",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/deadpool_pro_weapons_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/deadpool_pro_weapons_d.igz",
+          "sha256": "c45c404160bb60dac905bbe66a19364351946718f4fa09b660dcd6b3477c7c37",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/deadpool_pro_weapons_n.igz",
+          "sha256": "0038a1e09704d8c72c52b1e14975cd043710953b08d3ccd7c65dd9c809119ece",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/diamond",
+      "source": "models/weapons/diamond.igz",
+      "source_sha256": "283c3a1b6e40bf8ecb7f7c587b43b9373d587ad33c84278e2469fbbe793788f0",
+      "source_bytes": 8796,
+      "name": "Diamond",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/diamond.glb",
+      "parts": 1,
+      "verts": 60,
+      "tris": 20,
+      "textures": 1,
+      "size": 92504,
+      "sha256": "a0a0ddebc0b46417321ae8d01f64fdfaa535002fe98fd1fce55e776d399c02d0",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "9f4e38a1d9bba401",
+          "resolved": true,
+          "source": "igz_materials/models/effects/iceblock_d.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "9f4e37a1d9bba24e",
+          "resolved": true,
+          "source": "igz_materials/models/effects/iceblock_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/effects/iceblock_d.igz",
+          "sha256": "de7e23af5481277c3a9ad136a85777ceecd3d364baa2378b343061ceb33f88b5",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/firegrenade",
+      "source": "models/weapons/firegrenade.igz",
+      "source_sha256": "ff5aa77f6e7701541217b350953c92536298363701fe904eb36ab396830737d9",
+      "source_bytes": 22904,
+      "name": "Firegrenade",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/firegrenade.glb",
+      "parts": 2,
+      "verts": 255,
+      "tris": 208,
+      "textures": 3,
+      "size": 175868,
+      "sha256": "951d5014e86d2d3db17b9a9312f065690a5a2674b58948bce0a951559aabd8c6",
+      "source_bones": 0,
+      "source_geometry_objects": 2,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "e7fc14a2639cce31",
+          "resolved": true,
+          "source": "igz_materials/levels/chemicalplant/containerbase80feeta01_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "e7fc0aa2639cbd33",
+          "resolved": true,
+          "source": "igz_materials/levels/chemicalplant/containerbase80feeta01_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "e7fc25a2639ceb14",
+          "resolved": true,
+          "source": "igz_materials/levels/chemicalplant/containerbase80feeta01_s.igz"
+        },
+        {
+          "unit": 0,
+          "handle": "ef3a00c844fd0dcc",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/firegrenade_d.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "ef3a0fc844fd2749",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/firegrenade_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/levels/chemicalplant/containerbase80feeta01_d.igz",
+          "sha256": "fb714766da31e647d9b1338d15f379984178700b8ada98e60e69636410008bc1",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/levels/chemicalplant/containerbase80feeta01_n.igz",
+          "sha256": "150ed9f43c0d38bd9f9cc447d0a05dbf8fa649c60723ebea53558814194d1f4f",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/firegrenade_d.igz",
+          "sha256": "16e3f23478500488d8ff31ad87dae1a2b655ce3704f8abd6b07c2754027d533c",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            1
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/goblin_bomb",
+      "source": "models/weapons/goblin_bomb.igz",
+      "source_sha256": "9488adb1d1f2f4543052be8b02902e221f835aef7845abf0644be00c33117005",
+      "source_bytes": 46244,
+      "name": "Goblin Bomb",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/goblin_bomb.glb",
+      "parts": 1,
+      "verts": 664,
+      "tris": 580,
+      "textures": 2,
+      "size": 824624,
+      "sha256": "12bfe82e711eb76aaa3d782a8ce4e80fb0fe59de0405576af14657148c88e84b",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "d43ded4236b29a76",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/pumpkinbomb2_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "d43df34236b2a4a8",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/pumpkinbomb2_n.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "d43dee4236b29c29",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/pumpkinbomb2_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/pumpkinbomb2_d.igz",
+          "sha256": "e22b8a4afa8e91ce11cb5e8f6b7a357ba9eb4beafa0eb6a293713cb96fdf8e78",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/pumpkinbomb2_n.igz",
+          "sha256": "b0754c09430949807da161f32897db43e661e22b07a212b4bcd28877f1854fa1",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/goblin_glider",
+      "source": "models/weapons/goblin_glider.igz",
+      "source_sha256": "3fa030d68a23d893505de767e0de01cfd0913b48267870acbe703806bbf0cf16",
+      "source_bytes": 172256,
+      "name": "Goblin Glider",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/goblin_glider.glb",
+      "parts": 3,
+      "verts": 2491,
+      "tris": 3000,
+      "textures": 2,
+      "size": 752876,
+      "sha256": "ca8de28d132baad7947730e24c298061ed5d9cad0ea40ebe8260a1312148ea1d",
+      "source_bones": 0,
+      "source_geometry_objects": 3,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "ac92f73a1ad08e62",
+          "resolved": true,
+          "source": "igz_materials/actors/greengoblin_glider_pro_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "ac92fd3a1ad09894",
+          "resolved": true,
+          "source": "igz_materials/actors/greengoblin_glider_pro_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "ac92e23a1ad06ab3",
+          "resolved": true,
+          "source": "igz_materials/actors/greengoblin_glider_pro_s.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "ac92f83a1ad09015",
+          "resolved": true,
+          "source": "igz_materials/actors/greengoblin_glider_pro_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/greengoblin_glider_pro_d.igz",
+          "sha256": "a1f9feae13dbf3c5a734a69a390db82a5d65760a13d664e8f763e5904c355f89",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0,
+            1,
+            2
+          ]
+        },
+        {
+          "source": "igz_materials/actors/greengoblin_glider_pro_n.igz",
+          "sha256": "6c1f75c886e5b2f3b7f71bf0deb34a2945896ce8793e4dd47032c6244e66d51b",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0,
+            1,
+            2
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/grenade",
+      "source": "models/weapons/grenade.igz",
+      "source_sha256": "434d9b028496bc223a32f717533ac6a9f6f960a23e814d64598bfe4171a59cfb",
+      "source_bytes": 15108,
+      "name": "Grenade",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/grenade.glb",
+      "parts": 1,
+      "verts": 156,
+      "tris": 136,
+      "textures": 2,
+      "size": 16752,
+      "sha256": "2f0ff81db94d9396b9f5e4ee377291e4fdc5c4463548577eac8a25d6f98955be",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "ee8055106af34d90",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/grenade_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "ee805f106af35e8e",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/grenade_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "ee804c106af33e45",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/grenade_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/grenade_d.igz",
+          "sha256": "da5adf5e2c9c204d4a62ff997ea7c33b12bffda4ed23b01ac9347f1df9ff98b1",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/grenade_n.igz",
+          "sha256": "ec9a75c4b1c906c7600c2698b4c278e8e13f9e930117549b46f27ad9bf6b0ddf",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/int_merc_baton",
+      "source": "models/weapons/int_merc_baton.igz",
+      "source_sha256": "9cc52363f957692a44c3e3e7cad4a2c0df3513c13b372f16c168998a7a779aa7",
+      "source_bytes": 15772,
+      "name": "Int Merc Baton",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/int_merc_baton.glb",
+      "parts": 1,
+      "verts": 163,
+      "tris": 168,
+      "textures": 2,
+      "size": 129888,
+      "sha256": "be46a3a14edf745688870c183659e7c370b2a058dc5a132a11463f0df00733cf",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "b8e00d340a0bd1ec",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "b8e017340a0be2ea",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "b8e01c340a0beb69",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_d.igz",
+          "sha256": "1ea6633a6293d62b476851941b76a9a4a03c47b0f546539064d188234c30f6c1",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_n.igz",
+          "sha256": "8d10f2767368f3c402d607c082987fccc7530e726960100dff251a3b5ef03ffd",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/int_merc_grenade",
+      "source": "models/weapons/int_merc_grenade.igz",
+      "source_sha256": "6f5a9ed343f867f5b0a38ff6e43ae832f58c94f20f5734384dae394aed5b755e",
+      "source_bytes": 15448,
+      "name": "Int Merc Grenade",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/int_merc_grenade.glb",
+      "parts": 1,
+      "verts": 156,
+      "tris": 136,
+      "textures": 2,
+      "size": 16808,
+      "sha256": "bf88bb5f3e06f48d3f6e043d195d288fcc73578b71dad0faee6a31d44df4ee85",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "b50c9e8350850406",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_grenade_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "b50ca48350850e38",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_grenade_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "b50cb1835085244f",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_grenade_s.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "b50c9f83508505b9",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_grenade_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_grenade_d.igz",
+          "sha256": "99a69cccb899bcde3a30e3767ea48ba6560f243f14164db70857357b8e7f9af3",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_grenade_n.igz",
+          "sha256": "53240f9427698d3f3ae81951aba272439fc3454957bf615b14fb470209f9c9b2",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/int_merc_gun",
+      "source": "models/weapons/int_merc_gun.igz",
+      "source_sha256": "84d84338aa0d103954ae3aa193a853b4f520e3bd32819c4366d885f4745bb9e8",
+      "source_bytes": 71672,
+      "name": "Int Merc Gun",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/int_merc_gun.glb",
+      "parts": 1,
+      "verts": 1075,
+      "tris": 978,
+      "textures": 2,
+      "size": 187064,
+      "sha256": "510aab21a546d81518d474887ea124c16993d847de5c0c3ac74d189bc4759b36",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "821679ee91da381b",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercs_medium_gun_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "821673ee91da2de9",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercs_medium_gun_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "82166eee91da256a",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercs_medium_gun_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/int_mercs_medium_gun_d.igz",
+          "sha256": "f44d64f475fa80a3a15eb7195c4c78276376aaa75987d7d0851974f101aae711",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/int_mercs_medium_gun_n.igz",
+          "sha256": "dfe5c644ab194c382888819171bb52b0e7b3b80fb108d3302b803bc3c52898ea",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/int_merc_rocket_launcher",
+      "source": "models/weapons/int_merc_rocket_launcher.igz",
+      "source_sha256": "78ed235dfc391c465331eaa7fb2fc02f1a74082aadf9da3d2b0b4b3ae76d9e14",
+      "source_bytes": 71788,
+      "name": "Int Merc Rocket Launcher",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/int_merc_rocket_launcher.glb",
+      "parts": 1,
+      "verts": 1096,
+      "tris": 796,
+      "textures": 2,
+      "size": 163104,
+      "sha256": "f09ea7b37570cfdf5a8881de0cb0a8c13ed643632571db5c7e49a10a4492e9bf",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "e4af0b32b33a719c",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercs_medium_rocket_launcher_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "e4af1532b33a829a",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercs_medium_rocket_launcher_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "e4aefa32b33a54b9",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercs_medium_rocket_launcher_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/int_mercs_medium_rocket_launcher_d.igz",
+          "sha256": "2796740c205d3e2b8f03bf2908ce43e2a51522d80817eedc8d7fc19a74166c1e",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/int_mercs_medium_rocket_launcher_n.igz",
+          "sha256": "08368c29aca6a89455ca29b70002229ad5b1fcc0a7d9eb7aec17eff05791a44c",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/int_merc_shield",
+      "source": "models/weapons/int_merc_shield.igz",
+      "source_sha256": "1e87e7eba961589dc497e434057ad7d95562e15f09894ecac2b6ba514a3f6290",
+      "source_bytes": 15444,
+      "name": "Int Merc Shield",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/int_merc_shield.glb",
+      "parts": 1,
+      "verts": 162,
+      "tris": 124,
+      "textures": 2,
+      "size": 129344,
+      "sha256": "0c8ef66e32c33d4abbea5dadff2bfe5ddf9e13bc8c036aa8baf38acdd9d2bbbd",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "b8e00d340a0bd1ec",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "b8e017340a0be2ea",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "b8e01c340a0beb69",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_d.igz",
+          "sha256": "1ea6633a6293d62b476851941b76a9a4a03c47b0f546539064d188234c30f6c1",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/int_mercenary_medium_anti_billy_n.igz",
+          "sha256": "8d10f2767368f3c402d607c082987fccc7530e726960100dff251a3b5ef03ffd",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/lantern_bomb",
+      "source": "models/weapons/lantern_bomb.igz",
+      "source_sha256": "52ee049d82afd6308334d3900292e0eb33f6b1fa77d64da849c120fc8f152b0a",
+      "source_bytes": 13552,
+      "name": "Lantern Bomb",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/lantern_bomb.glb",
+      "parts": 1,
+      "verts": 109,
+      "tris": 192,
+      "textures": 2,
+      "size": 2164876,
+      "sha256": "c7c7e156bbe19142313c7840f4762cba2d53c258de9f061c73403ad4ba114433",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igShaderParametersAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "dbb596ed8fb47a8e",
+          "resolved": true,
+          "source": "igz_materials/actors/jackolantern_pro_1_d.igz"
+        },
+        {
+          "unit": 3,
+          "handle": "dc9f35f4273a66ff",
+          "resolved": true,
+          "source": "igz_materials/levels/rebelhideout/cubemapdocks_nx.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "dbb58ced8fb46990",
+          "resolved": true,
+          "source": "igz_materials/actors/jackolantern_pro_1_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "dbb589ed8fb46477",
+          "resolved": true,
+          "source": "igz_materials/actors/jackolantern_pro_1_s.igz"
+        },
+        {
+          "unit": 4,
+          "handle": "dbb58fed8fb46ea9",
+          "resolved": true,
+          "source": "igz_materials/actors/jackolantern_pro_1_m.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/jackolantern_pro_1_d.igz",
+          "sha256": "286102f6e633e13ddfe7141fb976663f15f0a9a59f86984e723a614bcf305107",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/actors/jackolantern_pro_1_n.igz",
+          "sha256": "2c1de2a0ead527e9822a11f29b427b1261bed290542c1a0b4d1cd04cbb3cfde7",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/lattrooper_club",
+      "source": "models/weapons/lattrooper_club.igz",
+      "source_sha256": "c06f971bf254a85386b62b9bd8a1c1ab3eeb5e1a63d7f18cfcd243c61e7b0efe",
+      "source_bytes": 26216,
+      "name": "Lattrooper Club",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/lattrooper_club.glb",
+      "parts": 1,
+      "verts": 329,
+      "tris": 324,
+      "textures": 2,
+      "size": 698700,
+      "sha256": "3767dfc7017a3cf445889527fb0f28b62572108d5337355b70f23e15482da04d",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "df0056c2f7f528da",
+          "resolved": true,
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "df004cc2f7f517dc",
+          "resolved": true,
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "df0041c2f7f5052b",
+          "resolved": true,
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_s.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "df0057c2f7f52a8d",
+          "resolved": true,
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_d.igz",
+          "sha256": "12ad383e1f5eb58f5d572d0b7342c053a533a616834eb8cee649d488eb8cf96a",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_n.igz",
+          "sha256": "94e5bf63d56b4bed7ddfa8ce9fe48f7f94ad2ff28e949a62f7e213be85a20ad8",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/lattrooper_med_club",
+      "source": "models/weapons/lattrooper_med_club.igz",
+      "source_sha256": "a81d35554f2a385c1972b8c9fefd786186d9d3f5cbc6b720e655105dd5a917a5",
+      "source_bytes": 26224,
+      "name": "Lattrooper Med Club",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/lattrooper_med_club.glb",
+      "parts": 1,
+      "verts": 329,
+      "tris": 324,
+      "textures": 2,
+      "size": 698696,
+      "sha256": "e1c293f27627d501c205707691255f48de0c063bab79e27f47f02089005020e1",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "df0056c2f7f528da",
+          "resolved": true,
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "df004cc2f7f517dc",
+          "resolved": true,
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "df0041c2f7f5052b",
+          "resolved": true,
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_s.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "df0057c2f7f52a8d",
+          "resolved": true,
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_d.igz",
+          "sha256": "12ad383e1f5eb58f5d572d0b7342c053a533a616834eb8cee649d488eb8cf96a",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_n.igz",
+          "sha256": "94e5bf63d56b4bed7ddfa8ce9fe48f7f94ad2ff28e949a62f7e213be85a20ad8",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/lattrooper_shield",
+      "source": "models/weapons/lattrooper_shield.igz",
+      "source_sha256": "06eb8d9d0a4ce0b17699f3f44fa0906a6e445e080a5b97eb870138fc8fa6e331",
+      "source_bytes": 24464,
+      "name": "Lattrooper Shield",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/lattrooper_shield.glb",
+      "parts": 1,
+      "verts": 302,
+      "tris": 284,
+      "textures": 2,
+      "size": 697360,
+      "sha256": "404a03b2091e78a31482d6ad4df144b4b51af5a430215304cf4f4ccf146daa1e",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "df0056c2f7f528da",
+          "resolved": true,
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "df004cc2f7f517dc",
+          "resolved": true,
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "df0041c2f7f5052b",
+          "resolved": true,
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_s.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "df0057c2f7f52a8d",
+          "resolved": true,
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_d.igz",
+          "sha256": "12ad383e1f5eb58f5d572d0b7342c053a533a616834eb8cee649d488eb8cf96a",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/actors/latveriansoldier_heavy_pro_armor_n.igz",
+          "sha256": "94e5bf63d56b4bed7ddfa8ce9fe48f7f94ad2ff28e949a62f7e213be85a20ad8",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/latverian_grenade",
+      "source": "models/weapons/latverian_grenade.igz",
+      "source_sha256": "f4da6290a01198cdc6367343f049aa61f619e92edd1f61d91aa5a9319d11f711",
+      "source_bytes": 15464,
+      "name": "Latverian Grenade",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/latverian_grenade.glb",
+      "parts": 1,
+      "verts": 156,
+      "tris": 136,
+      "textures": 2,
+      "size": 16784,
+      "sha256": "444e6b93b8a0cf02edecc28cab358b09e4dd147c9fe8e504822246eb36e2c804",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "b52699dfd989d18a",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/latveriansoldier_medium_anti_grenade_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "b5268fdfd989c08c",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/latveriansoldier_medium_anti_grenade_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "b526a4dfd989e43b",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/latveriansoldier_medium_anti_grenade_s.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "b5269adfd989d33d",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/latveriansoldier_medium_anti_grenade_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/latveriansoldier_medium_anti_grenade_d.igz",
+          "sha256": "2b1d2e1ddfbb199322333936e3f064ae508553781c7af3694e560e992a33c849",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/latveriansoldier_medium_anti_grenade_n.igz",
+          "sha256": "45c7e2edbaa4f49a65de4af85348432c361e75006095fe5296aaceec9d3f1bd0",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/latverian_rifle",
+      "source": "models/weapons/latverian_rifle.igz",
+      "source_sha256": "7523bcb459675961ec2212f425074d1974fe11d5e9366468175b7d9c179b4462",
+      "source_bytes": 55764,
+      "name": "Latverian Rifle",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/latverian_rifle.glb",
+      "parts": 1,
+      "verts": 793,
+      "tris": 960,
+      "textures": 2,
+      "size": 198112,
+      "sha256": "903f8c350a4f96dd1778c0356a90a87a54b2f0031809480a52857cef7e260dac",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "b55d80717d6301ad",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/latverian_medium_gun_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "b55d76717d62f0af",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/latverian_medium_gun_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "b55d69717d62da98",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/latverian_medium_gun_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/latverian_medium_gun_d.igz",
+          "sha256": "24f4a65f69e0460449328dcc89def226cb601ca89704c03a0ad9573a916b3342",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/latverian_medium_gun_n.igz",
+          "sha256": "c645e2f0c906d107d0baf77ef443d82ab020fa86475bbfec47f7e10f97f08062",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/nickfury_pistol",
+      "source": "models/weapons/nickfury_pistol.igz",
+      "source_sha256": "5a9c7ea0e96bdf645e43c1c721cd85cbe53d0295f9da84cfc768236ae1bc6e28",
+      "source_bytes": 40692,
+      "name": "Nickfury Pistol",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/nickfury_pistol.glb",
+      "parts": 1,
+      "verts": 563,
+      "tris": 600,
+      "textures": 2,
+      "size": 1752192,
+      "sha256": "9428fbc10d714d0a5481fdd4e5d5cfba3904f5085749d06475b529471abab71a",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "d8db1f26555375f0",
+          "resolved": true,
+          "source": "igz_materials/actors/nickfury_anti_1_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "d8db2926555386ee",
+          "resolved": true,
+          "source": "igz_materials/actors/nickfury_anti_1_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "d8db1626555366a5",
+          "resolved": true,
+          "source": "igz_materials/actors/nickfury_anti_1_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/nickfury_anti_1_d.igz",
+          "sha256": "c3f0b7d34c912236259d893b307fab20d716ce58feec45d3674b43c509556473",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/actors/nickfury_anti_1_n.igz",
+          "sha256": "af8edec1a59a78d24ebb47f2c129dcdecfbe4cde84f80c63bf4870375df9ee85",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/patriot_shield",
+      "source": "models/weapons/patriot_shield.igz",
+      "source_sha256": "95013192567b51c48c823e86dade51ee8339df51c0f742deca1d7f63cbe05e55",
+      "source_bytes": 19880,
+      "name": "Patriot Shield",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/patriot_shield.glb",
+      "parts": 1,
+      "verts": 224,
+      "tris": 252,
+      "textures": 2,
+      "size": 119084,
+      "sha256": "ebdb023a0136b22895c6a8dd425ea45d7110a4b3dde4d5aa729951901de8f021",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "a507b8f78b016fb5",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/patriot_shield_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "a507bef78b0179e7",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/patriot_shield_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "a507a1f78b0148a0",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/patriot_shield_s.igz"
+        },
+        {
+          "unit": 4,
+          "handle": "a507bff78b017b9a",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/patriot_shield_m.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/patriot_shield_d.igz",
+          "sha256": "359bb5b1bf5adc8c515d7ab04e2620aaf0fe49d267e76a9841544fb05f0ceffc",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/patriot_shield_n.igz",
+          "sha256": "a43aa311180fe86d8200091e6e10f6c5b65b192e88de80002b723f23c2c582a6",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/plasmball",
+      "source": "models/weapons/plasmball.igz",
+      "source_sha256": "6d1154e077e5d430bd0d993cb06c9d9003f6a58e251e794c735974f9edfdd8f1",
+      "source_bytes": 6192,
+      "name": "Plasmball",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/plasmball.glb",
+      "parts": 1,
+      "verts": 42,
+      "tris": 80,
+      "textures": 0,
+      "size": 3496,
+      "sha256": "039cb474b72efd66a2fb477442ea230349d1777cf6a07e026156c7adb8c8940f",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igBlendFunctionAttr",
+        "igBlendStateAttr",
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [],
+      "texture_sources": [],
+      "limitations": [
+        {
+          "code": "source_material_without_diffuse",
+          "parts": [
+            0
+          ],
+          "detail": "No diffuse binding supplied for these parts. Source geometry retained; material colors/effects are not reconstructed, not a missing-texture substitute."
+        }
+      ]
+    },
+    {
+      "id": "weapons/police_officer_pistol",
+      "source": "models/weapons/police_officer_pistol.igz",
+      "source_sha256": "6ba76e71c5b9824b07df4711b991c3008d7d697dd69b6547335f577d829c3fdc",
+      "source_bytes": 22816,
+      "name": "Police Officer Pistol",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/police_officer_pistol.glb",
+      "parts": 1,
+      "verts": 517,
+      "tris": 600,
+      "textures": 0,
+      "size": 25032,
+      "sha256": "aa77abde1928df95da72fb3d4a304844ff04d360ece40bf07f5b448cba57da3d",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [],
+      "texture_sources": [],
+      "limitations": [
+        {
+          "code": "source_material_without_diffuse",
+          "parts": [
+            0
+          ],
+          "detail": "No diffuse binding supplied for these parts. Source geometry retained; material colors/effects are not reconstructed, not a missing-texture substitute."
+        }
+      ]
+    },
+    {
+      "id": "weapons/robotlarge_gun",
+      "source": "models/weapons/robotlarge_gun.igz",
+      "source_sha256": "1d5e27e85d02ff33e69a3c105f7170bf8b45dec01f353687718973ed2200378c",
+      "source_bytes": 71568,
+      "name": "Robotlarge Gun",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/robotlarge_gun.glb",
+      "parts": 9,
+      "verts": 765,
+      "tris": 578,
+      "textures": 2,
+      "size": 146052,
+      "sha256": "ebbc9487f3393bf42b97dd013ec29536ebb23abd7898f605c8a38e768d9d6795",
+      "source_bones": 0,
+      "source_geometry_objects": 9,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "838341999208f97b",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/nhnpcturretgun_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "83833b999208ef49",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/nhnpcturretgun_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "838336999208e6ca",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/nhnpcturretgun_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/nhnpcturretgun_d.igz",
+          "sha256": "6c3061525abfcdf30007f31fadd8e48159d751d6097909e229e564ac58e10258",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/nhnpcturretgun_n.igz",
+          "sha256": "36fa26876b17bb6a9fea649bb7bd6cdfe63af22ff3f5e8fde73f006ebc89eb5f",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/rocket",
+      "source": "models/weapons/rocket.igz",
+      "source_sha256": "ef1ccbeeeef6d63384ab82797986741c0f0f7bf2b01ba32c2e105d6206f838e1",
+      "source_bytes": 22116,
+      "name": "Rocket",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/rocket.glb",
+      "parts": 3,
+      "verts": 234,
+      "tris": 144,
+      "textures": 2,
+      "size": 21176,
+      "sha256": "62803c839fe5fd9a88af0c085194137072952de867cabe852b34fd4b7f7034bd",
+      "source_bones": 0,
+      "source_geometry_objects": 3,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "ee8055106af34d90",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/grenade_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "ee805f106af35e8e",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/grenade_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "ee804c106af33e45",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/grenade_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/grenade_d.igz",
+          "sha256": "da5adf5e2c9c204d4a62ff997ea7c33b12bffda4ed23b01ac9347f1df9ff98b1",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            2
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/grenade_n.igz",
+          "sha256": "ec9a75c4b1c906c7600c2698b4c278e8e13f9e930117549b46f27ad9bf6b0ddf",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            2
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "source_material_without_diffuse",
+          "parts": [
+            0,
+            1
+          ],
+          "detail": "No diffuse binding supplied for these parts. Source geometry retained; material colors/effects are not reconstructed, not a missing-texture substitute."
+        },
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/scorcher_dome",
+      "source": "models/weapons/scorcher_dome.igz",
+      "source_sha256": "1013499ebb23ae01edfb9a6e72de18373ab18a5f21f061839fbaea6c17aca1d7",
+      "source_bytes": 11896,
+      "name": "Scorcher Dome",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/scorcher_dome.glb",
+      "parts": 1,
+      "verts": 90,
+      "tris": 144,
+      "textures": 1,
+      "size": 6112,
+      "sha256": "527622674a38ee0aee9541db2e9f4b154f50d8cdab80fa7d7e60b6d939f40fa2",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igBlendFunctionAttr",
+        "igBlendStateAttr",
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igShaderParametersAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "ec2bec922e62bbe8",
+          "resolved": true,
+          "source": "igz_materials/actors/scorcher_anti_dome_d.igz"
+        },
+        {
+          "unit": 3,
+          "handle": "dc9f35f4273a66ff",
+          "resolved": true,
+          "source": "igz_materials/levels/rebelhideout/cubemapdocks_nx.igz"
+        },
+        {
+          "unit": 4,
+          "handle": "ec2be5922e62b003",
+          "resolved": true,
+          "source": "igz_materials/actors/scorcher_anti_dome_m.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/scorcher_anti_dome_d.igz",
+          "sha256": "9514d1bd08101ce817ae368aedc4989b06beae92acab7e8a83d2818c358d4828",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT5",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            3,
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/shield_grenade",
+      "source": "models/weapons/shield_grenade.igz",
+      "source_sha256": "b2d29c08fd5cc72fdad9ccfbc1a01a92552c8d2d6e434dce7cc4d39ccb60a29e",
+      "source_bytes": 11908,
+      "name": "Shield Grenade",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/shield_grenade.glb",
+      "parts": 1,
+      "verts": 106,
+      "tris": 104,
+      "textures": 1,
+      "size": 9132,
+      "sha256": "dff64f63a20b4b297078201fa8255bf0569b51f4a50863171bb9338b294cb68c",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "e10b1063c5e1d84c",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/shield_grenade_d.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "e10b1163c5e1d9ff",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/shield_grenade_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/shield_grenade_d.igz",
+          "sha256": "1869de48bf526c382fe58ea645bd4a0de2df8ea896cf7beb01ede88950fc5143",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/shield_med_gun",
+      "source": "models/weapons/shield_med_gun.igz",
+      "source_sha256": "9372cac21e84e4bcbbe3dbe7864bf40f15bf6a6c9eba4557f672356b72800005",
+      "source_bytes": 77044,
+      "name": "Shield Med Gun",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/shield_med_gun.glb",
+      "parts": 1,
+      "verts": 1172,
+      "tris": 973,
+      "textures": 2,
+      "size": 154456,
+      "sha256": "4164a0bc1b060615fcc338e24e3623b4e1e1a48d1e284f625b9774b97a256e02",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "d9ea04e33ac96546",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/shield_medium_gun_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "d9ea0ae33ac96f78",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/shield_medium_gun_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "d9ea17e33ac9858f",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/shield_medium_gun_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/shield_medium_gun_d.igz",
+          "sha256": "9a6ff4802ea99dd35448f9f40edab27c98b7f18fc4e1ea1c62eeafda2100875f",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/shield_medium_gun_n.igz",
+          "sha256": "2b68db19c84768b227027b879f74f5908d8ed9d8a198fba08ea38ebf6ebd657a",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/shield_med_stun_baton",
+      "source": "models/weapons/shield_med_stun_baton.igz",
+      "source_sha256": "f75c95a2a8679c309b76b317c47243ad23637b9d9790a1321461f1329b345bc7",
+      "source_bytes": 70704,
+      "name": "Shield Med Stun Baton",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/shield_med_stun_baton.glb",
+      "parts": 1,
+      "verts": 1048,
+      "tris": 941,
+      "textures": 2,
+      "size": 170132,
+      "sha256": "4ec2e822d90e338cb877f468bad7e567dfd73c2556515166c2f5094b523bff53",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "ca687e77d554e3db",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/shield_medium_stun_baton_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "ca687877d554d9a9",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/shield_medium_stun_baton_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "ca687377d554d12a",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/shield_medium_stun_baton_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/shield_medium_stun_baton_d.igz",
+          "sha256": "aad7ba7facefb2b2765fd6a0e4e4a6249ec478aeeb22530c55a5593c6f0354df",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/shield_medium_stun_baton_n.igz",
+          "sha256": "8416d08f8e71e66609be0991ff1ee0f4bf17adcf7e10a3917271a5b69ab20ecc",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/shield_rpg",
+      "source": "models/weapons/shield_rpg.igz",
+      "source_sha256": "a4a19d5095ea280766079976e0215162a2856ec4834352776a54664dfb59f94b",
+      "source_bytes": 72648,
+      "name": "Shield Rpg",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/shield_rpg.glb",
+      "parts": 1,
+      "verts": 1086,
+      "tris": 1046,
+      "textures": 2,
+      "size": 143488,
+      "sha256": "c88417604df3e30c1da20a85dab9b7a39d581bb8a473f2f3a92a58485b41dcd1",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "84a09e6468af49ad",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/shield_rpg_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "84a0946468af38af",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/shield_rpg_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "84a0876468af2298",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/shield_rpg_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/shield_rpg_d.igz",
+          "sha256": "b0925c3daf7e9c9efa58d313dae70d8bcd08247513276c33b2def44e00ecb187",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/shield_rpg_n.igz",
+          "sha256": "5af1979c187c34d753b2e8b0d831100e15d91696bf446227f42dd03c16b5d95c",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/smokebomb",
+      "source": "models/weapons/smokebomb.igz",
+      "source_sha256": "7978e5e1c5f77620c7d6f101817405579745bf7c748ec8baae0ca543659f5bdd",
+      "source_bytes": 16092,
+      "name": "Smokebomb",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/smokebomb.glb",
+      "parts": 1,
+      "verts": 162,
+      "tris": 320,
+      "textures": 1,
+      "size": 12616,
+      "sha256": "25a30342f43460487dd28b194366bdcd7a2a65273623a48883731426881fd262",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "dda8fb58b2d184e2",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/smokegrenade.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/smokegrenade.igz",
+          "sha256": "3af946a4d087b5ca9b34f51d1e8a8a34da050c69894fda475ba01f6aab1187db",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": []
+    },
+    {
+      "id": "weapons/thor_hammer",
+      "source": "models/weapons/thor_hammer.igz",
+      "source_sha256": "e323656c93b942808469b79078cc3459c51343726793f97dbeee5593371a7390",
+      "source_bytes": 26896,
+      "name": "Thor Hammer",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/thor_hammer.glb",
+      "parts": 1,
+      "verts": 338,
+      "tris": 402,
+      "textures": 2,
+      "size": 637860,
+      "sha256": "c92a54aade7548e478e418f07439143c854400fb4f868a91690eec174c3605a4",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "ca814b9b40cff2cf",
+          "resolved": true,
+          "source": "igz_materials/actors/thor_pro_harmar_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "ca81559b40d003cd",
+          "resolved": true,
+          "source": "igz_materials/actors/thor_pro_harmar_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "ca81389b40cfd286",
+          "resolved": true,
+          "source": "igz_materials/actors/thor_pro_harmar_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/thor_pro_harmar_d.igz",
+          "sha256": "ae3687a7774f92648704d72f0421e3d12c42d887b538294295d5c22786528fe2",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/actors/thor_pro_harmar_n.igz",
+          "sha256": "86fe81e5351e894098369fc37f0acfb6a7fa1f605a3adfed12ff059d08ab9c2c",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/tinkerer_remote",
+      "source": "models/weapons/tinkerer_remote.igz",
+      "source_sha256": "0ec4f278609045e3f36a67a201837326657d031aa16aff3b6b7a2dde36e49925",
+      "source_bytes": 12408,
+      "name": "Tinkerer Remote",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/tinkerer_remote.glb",
+      "parts": 1,
+      "verts": 94,
+      "tris": 76,
+      "textures": 2,
+      "size": 2043076,
+      "sha256": "b9c123093563835c8f9e460a8fc5a301820e473758af20757422f6f42c6307df",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igBlendFunctionAttr",
+        "igBlendStateAttr",
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "e3e27ea31301b260",
+          "resolved": true,
+          "source": "igz_materials/actors/tinkerer_anti_2_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "e3e288a31301c35e",
+          "resolved": true,
+          "source": "igz_materials/actors/tinkerer_anti_2_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "e3e295a31301d975",
+          "resolved": true,
+          "source": "igz_materials/actors/tinkerer_anti_2_s.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "e3e27fa31301b413",
+          "resolved": true,
+          "source": "igz_materials/actors/tinkerer_anti_2_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/tinkerer_anti_2_d.igz",
+          "sha256": "fee5acb6dbe348eb8437e7c4c34d7b465649a040c3ab1eace3c19a64acb28fa8",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/actors/tinkerer_anti_2_n.igz",
+          "sha256": "80f428e73ce014dd8f580a7d47e0fc03720fc16325c661dbbe1a432d76d4311d",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/titaniummanforceprobe",
+      "source": "models/weapons/titaniummanforceprobe.igz",
+      "source_sha256": "1889b05559d7629689d30258ed7d96ad85f25b6b705a73cd22c7991f4cb94602",
+      "source_bytes": 18108,
+      "name": "Titaniummanforceprobe",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/titaniummanforceprobe.glb",
+      "parts": 1,
+      "verts": 200,
+      "tris": 264,
+      "textures": 1,
+      "size": 18384,
+      "sha256": "5275c22a85577ec53e50973c679ec45ef5d8024aa037f083be79693c7792fe58",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "c416c3320ba20c08",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/fprobe_d.igz"
+        },
+        {
+          "unit": 5,
+          "handle": "c416c4320ba20dbb",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/fprobe_e.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/fprobe_d.igz",
+          "sha256": "42da0788e53e1d0a0af6baf3605820f29bc1d7b50ea544fb6894654abadc3bd7",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/wakandanpolearm",
+      "source": "models/weapons/wakandanpolearm.igz",
+      "source_sha256": "2fdbb2e49624fdd4162c9ad3079ed48e5fbc30af940880611c566c31a3cce850",
+      "source_bytes": 32496,
+      "name": "Wakandanpolearm",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/wakandanpolearm.glb",
+      "parts": 1,
+      "verts": 414,
+      "tris": 500,
+      "textures": 2,
+      "size": 184928,
+      "sha256": "369da7b48b267ed8b3f6cda96a5d2329afed1688a6272e9af7e387a2322c62e8",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igShaderParametersAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "b3580e64bd8659e3",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/wakandapolearm_d.igz"
+        },
+        {
+          "unit": 3,
+          "handle": "dc9f35f4273a66ff",
+          "resolved": true,
+          "source": "igz_materials/levels/rebelhideout/cubemapdocks_nx.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "b3581864bd866ae1",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/wakandapolearm_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "b3580364bd864732",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/wakandapolearm_s.igz"
+        },
+        {
+          "unit": 4,
+          "handle": "b3581564bd8665c8",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/wakandapolearm_m.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/wakandapolearm_d.igz",
+          "sha256": "dcde850d30414d1de7e82a2dd340cc2aa37f95582bfbf6e36b27c83dbbaedccc",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/wakandapolearm_n.igz",
+          "sha256": "8dd608b867c07138212ca63277dc028b887092c92bdc3103da1e3d089d1c5ca8",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/whitestar_grenade_launcher",
+      "source": "models/weapons/whitestar_grenade_launcher.igz",
+      "source_sha256": "e70b8e4bdf90103b6a56bbe9bcbcde840d5b93658b25c7135a859ce79b3d55bf",
+      "source_bytes": 69508,
+      "name": "Whitestar Grenade Launcher",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/whitestar_grenade_launcher.glb",
+      "parts": 1,
+      "verts": 1045,
+      "tris": 892,
+      "textures": 2,
+      "size": 145056,
+      "sha256": "91fa0bb2e2ba393024a3dc6985214e6207ff95e0b25d0d8dff8f9682a6346495",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "f0ba63415f681a74",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestarheavy_grenade_launcher_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "f0ba5d415f681042",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestarheavy_grenade_launcher_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "f0ba52415f67fd91",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestarheavy_grenade_launcher_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/whitestarheavy_grenade_launcher_d.igz",
+          "sha256": "fc10b9c53c748665bff0350847c937dbe30c4916e7a8b89e4439c2c2388a2bfb",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/whitestarheavy_grenade_launcher_n.igz",
+          "sha256": "57fa1fa3d6e496dbe82334cf8484f89e69b886c3f82c6fc04ef7831396fd9ad5",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/whitestar_med_gun",
+      "source": "models/weapons/whitestar_med_gun.igz",
+      "source_sha256": "961ce8f5438f77fc911e97cd4c2d92d661fa9866c5cea1ada2414c9f548b592f",
+      "source_bytes": 72464,
+      "name": "Whitestar Med Gun",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/whitestar_med_gun.glb",
+      "parts": 1,
+      "verts": 1087,
+      "tris": 998,
+      "textures": 2,
+      "size": 163412,
+      "sha256": "3d3ee24ffecf7a410e73de828d907a8d443843434fdfd70c259358216f742c1b",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "efafc6392989b348",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestar_medium_gun_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "efafc0392989a916",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestar_medium_gun_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "efafbd392989a3fd",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestar_medium_gun_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/whitestar_medium_gun_d.igz",
+          "sha256": "c1099e600813ee2d989fb998e0a072ab8e52ca5df25bc9b0cbadbb88e5e2b61f",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/whitestar_medium_gun_n.igz",
+          "sha256": "66488c5cf79a504c738f45166a120df5b4d010ac8945d50d91903cf632775610",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/whitestar_med_stun_baton",
+      "source": "models/weapons/whitestar_med_stun_baton.igz",
+      "source_sha256": "630de419307635297da63c35c0befbe7ef5640760037f1e82a907423b6ceac99",
+      "source_bytes": 78152,
+      "name": "Whitestar Med Stun Baton",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/whitestar_med_stun_baton.glb",
+      "parts": 1,
+      "verts": 1174,
+      "tris": 1008,
+      "textures": 2,
+      "size": 162052,
+      "sha256": "4fc2a60202b9ae5ce572606cc78d73a05b866d0d16a45ea769eb512ad948f3fb",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "cd1402f1050b1fe9",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestar_medium_stun_baton_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "cd1408f1050b2a1b",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestar_medium_stun_baton_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "cd13f3f1050b066c",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestar_medium_stun_baton_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/whitestar_medium_stun_baton_d.igz",
+          "sha256": "d0ab8caadbcab377541b497ba42dca0671a12e54ec819b2117df0c26ab979588",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/whitestar_medium_stun_baton_n.igz",
+          "sha256": "a904c4d5810b954728a44977b9599133de58d2d7a3f1036bed041632c55dcd4d",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/whitestar_rpg",
+      "source": "models/weapons/whitestar_rpg.igz",
+      "source_sha256": "e14034f4e3e2c63c46b78584eb6d0272971ccb19f43063f3282ef173dc75f037",
+      "source_bytes": 72672,
+      "name": "Whitestar Rpg",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/whitestar_rpg.glb",
+      "parts": 1,
+      "verts": 1086,
+      "tris": 1046,
+      "textures": 2,
+      "size": 156516,
+      "sha256": "e0ec41caed392434a40185600270ed0adca196399626646e3d84dca81a5a917f",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "b5ccbdae89f2d86f",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestar_rpg_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "b5ccc7ae89f2e96d",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestar_rpg_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "b5ccaaae89f2b826",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestar_rpg_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/whitestar_rpg_d.igz",
+          "sha256": "bd75a12a76693cd55eb7d48d3ff72ad4a9f7e3c7e723287b057b7fe4cd765ae5",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/whitestar_rpg_n.igz",
+          "sha256": "a4268e9786732246e0674cb9f8fb2f8b776f4af64eda3267eb6657d7b5ca3569",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/whitestarheavy_rocket_launcher",
+      "source": "models/weapons/whitestarheavy_rocket_launcher.igz",
+      "source_sha256": "8aefbc6ca89875e892b948301a32e59ff79ec5aad358f4160b632a9f3c5fd883",
+      "source_bytes": 103612,
+      "name": "Whitestarheavy Rocket Launcher",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/whitestarheavy_rocket_launcher.glb",
+      "parts": 1,
+      "verts": 1599,
+      "tris": 1272,
+      "textures": 2,
+      "size": 187980,
+      "sha256": "2ee294cc5a65e7d5ec9336e094ca51a3e4804e8fd32f865f460e887b824d724c",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "ad7a05988aa2e176",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestarheavy_rocket_launcher_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "ad7a0b988aa2eba8",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestarheavy_rocket_launcher_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "ad79f8988aa2cb5f",
+          "resolved": true,
+          "source": "igz_materials/models/weapons/whitestarheavy_rocket_launcher_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/models/weapons/whitestarheavy_rocket_launcher_d.igz",
+          "sha256": "17a1f5549d5fe82a7867409a848dc178009caa52186c76e85f6187a819c26059",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/models/weapons/whitestarheavy_rocket_launcher_n.igz",
+          "sha256": "8dbbfc6dc24ce94f84783a7605061c9f996dd4727f389a9accf86ad44815272d",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weapons/ws_heavy_shield",
+      "source": "models/weapons/ws_heavy_shield.igz",
+      "source_sha256": "49fd05bfbd26b277d6773ac6989a8aac8bdf1772a8f56ebacf4de215954952a0",
+      "source_bytes": 37916,
+      "name": "Ws Heavy Shield",
+      "category": "weapons",
+      "costume": "Armas",
+      "accent": "#d58b58",
+      "file": "assets/props/weapons/ws_heavy_shield.glb",
+      "parts": 1,
+      "verts": 513,
+      "tris": 598,
+      "textures": 2,
+      "size": 184124,
+      "sha256": "1c63d81ced584dab6e10432ecc85fdf35e904af4bcd82f2a37a36b0d1cece75a",
+      "source_bones": 0,
+      "source_geometry_objects": 1,
+      "source_attribute_types": [
+        "igColorAttr",
+        "igGeometryAttr",
+        "igGlobalColorStateAttr",
+        "igMuaMaterialAttr",
+        "igTextureStateAttr"
+      ],
+      "texture_bindings": [
+        {
+          "unit": 0,
+          "handle": "d43391ab1633eb2f",
+          "resolved": true,
+          "source": "igz_materials/actors/whitestar_trooper_anti_weapon_d.igz"
+        },
+        {
+          "unit": 1,
+          "handle": "d4339bab1633fc2d",
+          "resolved": true,
+          "source": "igz_materials/actors/whitestar_trooper_anti_weapon_n.igz"
+        },
+        {
+          "unit": 2,
+          "handle": "d4337eab1633cae6",
+          "resolved": true,
+          "source": "igz_materials/actors/whitestar_trooper_anti_weapon_s.igz"
+        }
+      ],
+      "texture_sources": [
+        {
+          "source": "igz_materials/actors/whitestar_trooper_anti_weapon_d.igz",
+          "sha256": "ea3b71b2f92299d9418fce4e1a0ef5d32f398abfab0162fbdd62caa11794a342",
+          "kind": "diffuse",
+          "unit": 0,
+          "format": "DXT1",
+          "parts": [
+            0
+          ]
+        },
+        {
+          "source": "igz_materials/actors/whitestar_trooper_anti_weapon_n.igz",
+          "sha256": "2008e6cfd8ddd43535e1e17b46cec48bae05358000de56a8e6de8558f81ba69f",
+          "kind": "normal",
+          "unit": 1,
+          "format": "ATI2",
+          "parts": [
+            0
+          ]
+        }
+      ],
+      "limitations": [
+        {
+          "code": "unsupported_texture_units",
+          "units": [
+            2
+          ]
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "id": "common/genericspotlightswinging150f_invisible",
+      "source": "models/common/genericspotlightswinging150f_invisible.igz",
+      "source_sha256": "c53263aa63b4b6589afef7e5485afe835b8bef11b785318b8e035ead14c2a72b",
+      "source_bytes": 9468,
+      "reason": "no geometry found",
+      "error_type": "ValueError"
+    },
+    {
+      "id": "common/genericspotlightswinging_invisible",
+      "source": "models/common/genericspotlightswinging_invisible.igz",
+      "source_sha256": "3f6992a1a2b70c7355be36bc0c1c95ff4f705cad7729927424db13851fec2e48",
+      "source_bytes": 11276,
+      "reason": "no geometry found",
+      "error_type": "ValueError"
+    },
+    {
+      "id": "common/lightspinner01",
+      "source": "models/common/lightspinner01.igz",
+      "source_sha256": "dc406779dd885c930058bab6faba70e97fe130156c8a5d9a581c2834c3c4f81f",
+      "source_bytes": 4484,
+      "reason": "no geometry found",
+      "error_type": "ValueError"
+    },
+    {
+      "id": "weapons/titaniummanforcering",
+      "source": "models/weapons/titaniummanforcering.igz",
+      "source_sha256": "60e0021764de76b82b1097ad135a2ea59fe657e28a88881f0238d3102e3875d3",
+      "source_bytes": 3140,
+      "reason": "no geometry found",
+      "error_type": "ValueError"
+    },
+    {
+      "id": "weapons/titaniummanproj",
+      "source": "models/weapons/titaniummanproj.igz",
+      "source_sha256": "20a665fe9f4b1ab13edd11a7f08048801b237c2ad0beb73516e81b204bb9b78c",
+      "source_bytes": 3208,
+      "reason": "no geometry found",
+      "error_type": "ValueError"
+    }
+  ]
+}

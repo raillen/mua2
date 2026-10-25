@@ -275,39 +275,69 @@ def walk_character(reader, alloc):
     results = []
     seen = set()
 
-    def add_geom(geom_node, tex, bms_indices=None):
+    def get_transform_matrix(node):
+        if node.type_name != 'igTransform':
+            return None
+        return np.array(struct.unpack_from('<16f', node.raw_data, 0x40), dtype=np.float32).reshape(4, 4)
+
+    def add_geom(geom_node, tex, bms_indices=None, mat=None):
         if geom_node.global_offset in seen:
             return
         g = geom_from_node(reader, alloc, geom_node)
         if g and g.positions and g.indices:
             seen.add(geom_node.global_offset)
+            if mat is not None and not np.allclose(mat, np.eye(4, dtype=np.float32)):
+                pts = np.array(g.positions, np.float32)
+                g.positions = (pts @ mat[:3, :3] + mat[3, :3]).tolist()
+                if g.normals:
+                    nrms = np.array(g.normals, np.float32)
+                    rot_nrms = nrms @ mat[:3, :3]
+                    ln = np.linalg.norm(rot_nrms, axis=1, keepdims=True)
+                    g.normals = (rot_nrms / np.maximum(ln, 1e-8)).tolist()
             results.append((g, tex, bms_indices))
 
-    def collect_from_attrset(attrset, tex):
-        for child in _get_child_list(reader, attrset):
-            if child.type_name == 'igGeometry':
-                add_geom(child, tex, None)
-            elif child.type_name == 'igBlendMatrixSelect':
-                bms_indices = extract_bms_indices(reader, child)
-                for geom_node in _get_child_list(reader, child):
-                    if geom_node.type_name == 'igGeometry':
-                        add_geom(geom_node, tex, bms_indices)
+    def visit(node, current_tex, current_bms, current_mat):
+        tex = current_tex
+        bms = current_bms
+        mat = current_mat
+
+        if node.type_name == 'igAttrSet':
+            tb = texture_binds(reader, node)
+            if tb:
+                tex = {**tex, **tb}
+        elif node.type_name == 'igTransform':
+            m = get_transform_matrix(node)
+            if m is not None:
+                mat = mat @ m
+        elif node.type_name == 'igBlendMatrixSelect':
+            bms = extract_bms_indices(reader, node)
+        elif node.type_name == 'igGeometry':
+            add_geom(node, tex, bms, mat)
+            return
+
+        for child in _get_child_list(reader, node):
+            visit(child, tex, bms, mat)
 
     groups = reader.get_objects_by_type('igGroup')
     if groups:
-        for attrset in _get_child_list(reader, groups[0]):
-            if attrset.type_name != 'igAttrSet':
-                continue
-            collect_from_attrset(attrset, texture_binds(reader, attrset))
-    # Fallback for actors without igGroup (props, enemies, heads):
-    # walk every igAttrSet directly.
+        for g in groups:
+            visit(g, {}, None, np.eye(4, dtype=np.float32))
+
     if not results:
-        for attrset in reader.get_objects_by_type('igAttrSet'):
-            collect_from_attrset(attrset, texture_binds(reader, attrset))
-    # Fallback for standalone effect meshes/projectiles without igAttrSet hierarchy:
+        all_children = set()
+        for o in reader.objects.values():
+            for c in _get_child_list(reader, o):
+                all_children.add(c.global_offset)
+        roots = [a for a in reader.get_objects_by_type('igAttrSet') if a.global_offset not in all_children]
+        if not roots:
+            roots = reader.get_objects_by_type('igAttrSet')
+        for a in roots:
+            visit(a, {}, None, np.eye(4, dtype=np.float32))
+
     if not results:
-        for geom_node in reader.get_objects_by_type('igGeometry'):
-            add_geom(geom_node, {}, None)
+        for g in reader.get_objects_by_type('igGeometry'):
+            add_geom(g, {}, None, np.eye(4, dtype=np.float32))
+
     return results
 
 
@@ -561,6 +591,9 @@ def export_glb(actor_path, out_path, name, invert_green=True, use_spec=False, ma
     while len(bin_bytes) % 4:
         bin_bytes += b'\0'
     total = 12 + 8 + len(json_bytes) + 8 + len(bin_bytes)
+    out_dir = os.path.dirname(out_path)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
     with open(out_path, 'wb') as f:
         f.write(struct.pack('<III', 0x46546C67, 2, total))
         f.write(struct.pack('<II', len(json_bytes), 0x4E4F534A)); f.write(json_bytes)

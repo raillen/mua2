@@ -21,9 +21,29 @@ function refreshIcons() {
 // version query busts the old browser/GitHub Pages cache.
 const THUMB_VERSION = 2;
 const thumbUrl = (value) => {
-  const src = typeof value === 'string' ? value : value.thumb;
-  return `${src}?v=${THUMB_VERSION}`;
+  const src = typeof value === 'string' ? value : value?.thumb;
+  return src ? `${src}${src.includes('?') ? '&' : '?'}v=${THUMB_VERSION}` : '';
 };
+const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+})[char]);
+function modelPreview(entry, className) {
+  const src = thumbUrl(entry);
+  return src
+    ? `<img src="${escapeHtml(src)}" class="${className}" alt="${escapeHtml(entry?.name || '')}" loading="lazy">`
+    : `<span class="${className}" style="display:flex;align-items:center;justify-content:center;color:var(--muted);opacity:0.6;font-size:16px;" aria-hidden="true">—</span>`;
+}
+function deriveDisplayName(id = '', rawName = '') {
+  const trimmed = typeof rawName === 'string' ? rawName.trim() : '';
+  const target = (trimmed && !trimmed.includes('/')) ? trimmed : (String(id).split('/').pop() || String(id));
+  const clean = target.replace(/\.[^.]+$/, '').replace(/^(?:wpn|prop|obj|scen|item)[_-]+/i, '');
+  const tokens = clean.split(/[_\-\s]+/).filter(Boolean);
+  if (!tokens.length) return id || 'Prop';
+  return tokens.map((tok) => {
+    if (/^[A-Z0-9]+$/.test(tok) && tok.length <= 4) return tok;
+    return tok.charAt(0).toUpperCase() + tok.slice(1).toLowerCase();
+  }).join(' ');
+}
 
 // ========================================================
 // PERSISTENT SETTINGS (Requirement 5)
@@ -134,6 +154,7 @@ const navBtnChars = document.getElementById('nav-btn-chars');
 const navBtnProps = document.getElementById('nav-btn-props');
 const navBtnVfx = document.getElementById('nav-btn-vfx');
 const navCharsCount = document.getElementById('nav-chars-count');
+const navPropsCount = document.getElementById('nav-props-count');
 const navVfxCount = document.getElementById('nav-vfx-count');
 
 // Gallery Modal DOM (Requirement 2)
@@ -143,11 +164,6 @@ const galleryGrid = document.getElementById('gallery-grid');
 const gallerySearch = document.getElementById('gallery-search');
 const galleryCategorySelect = document.getElementById('gallery-category-select');
 const galleryStatsText = document.getElementById('gallery-stats-text');
-
-// Props Modal DOM
-const propsModal = document.getElementById('props-modal');
-const propsClose = document.getElementById('props-close');
-const btnPropsViewWeapons = document.getElementById('btn-props-view-weapons');
 
 // VFX Modal DOM
 const vfxModal = document.getElementById('vfx-modal');
@@ -258,7 +274,14 @@ controls.autoRotateSpeed = 0.85;
 // STATE & MODEL STORAGE
 // ========================================================
 const loader = new GLTFLoader();
-const models = [];
+const models = []; // Shared with VFX; never replace this array.
+const characterModels = [];
+const propModels = [];
+let modelCatalog = 'characters';
+let propsLoading = false;
+let propsError = '';
+let propsRequest = null;
+const catalogModels = () => modelCatalog === 'props' ? propModels : characterModels;
 let characterGroups = new Map(); // name -> { name, items: [], accent, thumb }
 let current = null;
 let currentEntry = null;
@@ -548,7 +571,9 @@ function prepare(model, entry) {
   }
   const tris = countTris(model);
   const nb = skinned.length ? skinned[0].skeleton.bones.length : 0;
-  metaEl.textContent = `${entry.source}  ·  ${tris.toLocaleString('pt-BR')} tris  ·  ${entry.textures} texturas`
+  const sourceLabel = entry.source || entry.id;
+  const texCount = entry.textures ?? 0;
+  metaEl.textContent = `${sourceLabel}  ·  ${tris.toLocaleString('pt-BR')} tris  ·  ${texCount} texturas`
     + (nb ? `  ·  ${nb} ossos` : '') + '  ·  IGZ v6';
 
   statusEl.textContent = 'pronto';
@@ -635,6 +660,7 @@ function categoryForGroup(group) {
 }
 
 function categoryForModel(m) {
+  if (modelCatalog === 'props') return m.category;
   const group = characterGroups.get(m.name);
   return group ? group.category : 'other';
 }
@@ -642,20 +668,34 @@ function categoryForModel(m) {
 function groupModels(list) {
   const groups = new Map();
   for (const m of list) {
-    if (!groups.has(m.name)) {
-      groups.set(m.name, {
+    const key = modelCatalog === 'props' ? m.id : m.name;
+    if (!groups.has(key)) {
+      groups.set(key, {
         name: m.name,
         accent: m.accent || '#e62429',
         thumb: m.thumb,
         items: [],
       });
     }
-    groups.get(m.name).items.push(m);
+    groups.get(key).items.push(m);
   }
   groups.forEach((group) => {
-    group.category = categoryForGroup(group);
+    group.category = modelCatalog === 'props' ? group.items[0].category : categoryForGroup(group);
   });
   return groups;
+}
+
+function catalogCategories() {
+  if (modelCatalog !== 'props') return CATEGORY_ORDER.map((id) => ({ id, ...CATEGORY_META[id] }));
+  return [...new Set(propModels.map((m) => m.category))].map((id) => {
+    const entry = propModels.find((m) => m.category === id);
+    const label = entry?.costume || (id.charAt(0).toUpperCase() + id.slice(1).replace(/[_-]+/g, ' '));
+    return {
+      id,
+      label,
+      icon: 'box',
+    };
+  });
 }
 
 function buildList(filter = '') {
@@ -667,8 +707,8 @@ function buildList(filter = '') {
   let matchingGroupsCount = 0;
   let matchingItemsCount = 0;
 
-  CATEGORY_ORDER.forEach((cat) => {
-    const groupsInCategory = [...characterGroups.values()].filter((g) => g.category === cat);
+  catalogCategories().forEach((meta) => {
+    const groupsInCategory = [...characterGroups.values()].filter((g) => g.category === meta.id);
     if (!groupsInCategory.length) return;
 
     const visibleGroups = [];
@@ -676,7 +716,7 @@ function buildList(filter = '') {
       const groupMatches = q ? group.name.toLowerCase().includes(q) : true;
       const matchingItems = group.items.filter((item) => {
         if (!q) return true;
-        const hay = `${item.name} ${item.costume || ''} ${item.source} ${item.id}`.toLowerCase();
+        const hay = `${item.name} ${item.costume || ''} ${item.source || ''} ${item.id}`.toLowerCase();
         return hay.includes(q);
       });
       if (q && !groupMatches && matchingItems.length === 0) continue;
@@ -686,16 +726,15 @@ function buildList(filter = '') {
     }
     if (!visibleGroups.length) return;
 
-    // Category section (Heróis & Vilões / Outras / NPC Genérico)
+    // Category section
     const section = document.createElement('section');
     section.className = 'category-section';
-    section.dataset.category = cat;
+    section.dataset.category = meta.id;
 
     const header = document.createElement('button');
     header.type = 'button';
     header.className = 'category-header';
     header.setAttribute('aria-expanded', 'true');
-    const meta = CATEGORY_META[cat];
     header.innerHTML = `
       <span class="category-chevron" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
       <span class="category-icon" aria-hidden="true"><i data-lucide="${meta.icon}"></i></span>
@@ -724,11 +763,16 @@ function buildList(filter = '') {
   if (q) {
     filterCountText.textContent = `${matchingItemsCount} modelo(s) encontrados`;
   } else {
-    filterCountText.textContent = `${characterGroups.size} personagens · ${models.length} variações`;
+    filterCountText.textContent = modelCatalog === 'props'
+      ? `${catalogModels().length} prop(s)`
+      : `${characterGroups.size} personagens · ${catalogModels().length} variações`;
   }
 
   if (matchingGroupsCount === 0) {
-    listEl.innerHTML = '<div class="vfx-empty" style="text-align:center; padding:24px 8px;">Nenhum personagem encontrado.</div>';
+    const emptyMsg = propsLoading
+      ? 'Carregando catálogo de props…'
+      : (propsError || (modelCatalog === 'props' ? 'Nenhum prop encontrado.' : 'Nenhum personagem encontrado.'));
+    listEl.innerHTML = `<div class="vfx-empty" style="text-align:center; padding:24px 8px;">${emptyMsg}</div>`;
   }
 
   refreshIcons();
@@ -760,7 +804,7 @@ function appendGroup(group, itemsToRender, container, isCards, q) {
     <span class="accordion-chevron" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
     ${isCards ? `
       <div class="card-thumb-wrap" style="width:36px; height:36px;">
-        <img src="${thumbUrl(group.thumb || group.items[0].thumb)}" class="card-thumb" alt="${group.name}" loading="lazy">
+        ${modelPreview(group, 'card-thumb')}
       </div>
     ` : `
       <span class="accordion-dot" style="--dot:${group.accent}"></span>
@@ -808,15 +852,15 @@ function createModelButton(m, isCards, isVariation = false) {
     //               actor/0000 IGZ vX
     b.innerHTML = `
       <div class="card-thumb-wrap">
-        <img src="${thumbUrl(m)}" class="card-thumb" alt="${m.name}" loading="lazy">
+        ${modelPreview(m, 'card-thumb')}
       </div>
       <div class="card-info">
         <div class="card-title-row">
-          <span class="card-name">${m.name}</span>
-          ${m.costume ? `<span class="costume-tag">${m.costume}</span>` : ''}
+          <span class="card-name">${escapeHtml(m.name)}</span>
+          ${m.costume ? `<span class="costume-tag">${escapeHtml(m.costume)}</span>` : ''}
         </div>
         <div class="card-sub-row">
-          <span class="card-actor">${m.source}</span>
+          <span class="card-actor">${escapeHtml(m.source || m.id)}</span>
           <span class="card-format">IGZ v6</span>
           <span class="btn-meta">${m.tris ? m.tris.toLocaleString('pt-BR') + 't' : ''}</span>
         </div>
@@ -825,10 +869,10 @@ function createModelButton(m, isCards, isVariation = false) {
   } else {
     // Compact List Mode
     b.innerHTML = `
-      <span class="accordion-dot" style="--dot:${m.accent}"></span>
-      <span class="card-name" style="flex:1 1 auto;">${m.name}</span>
-      ${m.costume ? `<span class="costume-tag">${m.costume}</span>` : ''}
-      <span class="btn-meta">${m.source}</span>
+      <span class="accordion-dot" style="--dot:${m.accent || '#e62429'}"></span>
+      <span class="card-name" style="flex:1 1 auto;">${escapeHtml(m.name)}</span>
+      ${m.costume ? `<span class="costume-tag">${escapeHtml(m.costume)}</span>` : ''}
+      <span class="btn-meta">${escapeHtml(m.source || m.id)}</span>
     `;
   }
 
@@ -915,7 +959,7 @@ function setBackgroundInert(inert) {
 }
 
 function getOpenModal() {
-  const modals = [galleryModal, vfxModal, propsModal, changelogModal, roadmapModal];
+  const modals = [galleryModal, vfxModal, changelogModal, roadmapModal];
   return modals.find((m) => m && m.classList.contains('open'));
 }
 
@@ -955,7 +999,26 @@ function closeAnyOpenModal() {
 // ========================================================
 // MODO GALERIA MODAL (Requirement 2)
 // ========================================================
+function syncGalleryCategories() {
+  galleryCategorySelect.innerHTML = '<option value="all">Todas as Categorias</option>';
+  catalogCategories().forEach(({ id, label }) => {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = label;
+    galleryCategorySelect.appendChild(opt);
+  });
+  if (modelCatalog !== 'props') {
+    const opt = document.createElement('option');
+    opt.value = 'props';
+    opt.textContent = 'Props & Acessórios';
+    galleryCategorySelect.appendChild(opt);
+  }
+}
+
 function openGalleryModal() {
+  const title = document.getElementById('gallery-title');
+  if (title) title.textContent = modelCatalog === 'props' ? 'Galeria de Props & Armas' : 'Galeria de Modelos 3D';
+  syncGalleryCategories();
   buildGalleryGrid();
   openModal(galleryModal, gallerySearch);
 }
@@ -969,14 +1032,15 @@ function buildGalleryGrid() {
   const q = gallerySearch.value.trim().toLowerCase();
   const cat = galleryCategorySelect.value;
 
-  const filtered = models.filter((m) => {
+  const entries = catalogModels();
+  const filtered = entries.filter((m) => {
     // Text search
     if (q) {
-      const hay = `${m.name} ${m.costume || ''} ${m.source} ${m.id}`.toLowerCase();
+      const hay = `${m.name} ${m.costume || ''} ${m.source || ''} ${m.id}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     // Category filter (mirrors the sidebar sections)
-    if (cat === 'props') {
+    if (modelCatalog !== 'props' && cat === 'props') {
       return ['baton', 'bola', 'staff', 'chain', 'waldos', 'webmace', 'tongue'].some((k) => m.id.toLowerCase().includes(k));
     }
     if (cat !== 'all') {
@@ -985,7 +1049,7 @@ function buildGalleryGrid() {
     return true;
   });
 
-  galleryStatsText.textContent = `Exibindo ${filtered.length} de ${models.length} modelos`;
+  galleryStatsText.textContent = `Exibindo ${filtered.length} de ${entries.length} modelos`;
 
   filtered.forEach((m) => {
     const card = document.createElement('button');
@@ -995,14 +1059,14 @@ function buildGalleryGrid() {
     if (currentEntry && m.id === currentEntry.id) card.classList.add('active');
 
     card.innerHTML = `
-      <img src="${thumbUrl(m)}" class="gallery-card-thumb" alt="${m.name}" loading="lazy">
+      ${modelPreview(m, 'gallery-card-thumb')}
       <div class="gallery-card-body">
         <div class="gallery-card-title-row">
-          <span class="gallery-card-name" title="${m.name}">${m.name}</span>
-          ${m.costume ? `<span class="costume-tag">${m.costume}</span>` : ''}
+          <span class="gallery-card-name" title="${escapeHtml(m.name)}">${escapeHtml(m.name)}</span>
+          ${m.costume ? `<span class="costume-tag">${escapeHtml(m.costume)}</span>` : ''}
         </div>
         <div class="gallery-card-meta">
-          <span>${m.source}</span>
+          <span>${escapeHtml(m.source || m.id)}</span>
           <span>${m.tris ? m.tris.toLocaleString('pt-BR') + ' tris' : ''}</span>
         </div>
       </div>
@@ -1019,6 +1083,7 @@ function buildGalleryGrid() {
   if (filtered.length === 0) {
     galleryGrid.innerHTML = '<div class="vfx-empty" style="grid-column:1/-1; text-align:center; padding:40px;">Nenhum modelo corresponde aos filtros aplicados.</div>';
   }
+  refreshIcons();
 }
 
 btnOpenGallery.addEventListener('click', openGalleryModal);
@@ -1027,27 +1092,6 @@ gallerySearch.addEventListener('input', buildGalleryGrid);
 galleryCategorySelect.addEventListener('change', buildGalleryGrid);
 galleryModal.addEventListener('click', (e) => {
   if (e.target === galleryModal) closeGalleryModal();
-});
-
-// ========================================================
-// PROPS & SCENERY MODAL (Requirement 7)
-// ========================================================
-function openPropsModal() {
-  openModal(propsModal);
-}
-function closePropsModal() {
-  closeModal(propsModal);
-}
-navBtnProps.addEventListener('click', openPropsModal);
-propsClose.addEventListener('click', closePropsModal);
-propsModal.addEventListener('click', (e) => {
-  if (e.target === propsModal) closePropsModal();
-});
-btnPropsViewWeapons.addEventListener('click', () => {
-  closePropsModal();
-  openGalleryModal();
-  galleryCategorySelect.value = 'props';
-  buildGalleryGrid();
 });
 
 // ========================================================
@@ -1085,19 +1129,32 @@ function switchSidebarTab(tab) {
       if (vfxCatalog) vfxCatalog.activate();
     }
   } else {
-    navBtnChars.classList.add('active');
-    navBtnProps.classList.remove('active');
+    modelCatalog = tab === 'props' ? 'props' : 'characters';
+    navBtnChars.classList.toggle('active', modelCatalog === 'characters');
+    navBtnProps.classList.toggle('active', modelCatalog === 'props');
     navBtnVfx.classList.remove('active');
     if (modelsCatalog) modelsCatalog.hidden = false;
     if (vfxCatalogPanel) vfxCatalogPanel.hidden = true;
+    const sidebarLabel = document.getElementById('catalog-sidebar-label');
+    if (sidebarLabel) sidebarLabel.textContent = modelCatalog === 'props' ? 'PROPS / ARMAS' : 'MODELOS 3D';
+    searchEl.placeholder = modelCatalog === 'props' ? 'Filtrar por nome, categoria ou ID…' : 'Filtrar por nome, traje ou ID…';
+    gallerySearch.placeholder = searchEl.placeholder;
+    searchEl.value = '';
+    gallerySearch.value = '';
+    btnClearSearch.style.display = 'none';
+    characterGroups = groupModels(catalogModels());
+    galleryLaunchCount.textContent = catalogModels().length;
+    syncGalleryCategories();
+    buildList();
+    if (galleryModal.classList.contains('open')) {
+      buildGalleryGrid();
+    }
+    if (modelCatalog === 'props') loadPropsCatalog();
   }
 }
 
-navBtnChars.addEventListener('click', () => {
-  switchSidebarTab('chars');
-  searchEl.value = '';
-  buildList('');
-});
+navBtnChars.addEventListener('click', () => switchSidebarTab('characters'));
+navBtnProps.addEventListener('click', () => switchSidebarTab('props'));
 
 navBtnVfx.addEventListener('click', () => {
   switchSidebarTab('vfx');
@@ -1365,8 +1422,9 @@ window.addEventListener('keydown', (e) => {
   }
 
   const n = Number(e.key);
-  if (n >= 1 && n <= 9 && models[n - 1]) {
-    loadEntry(models[n - 1]);
+  const activeEntries = catalogModels();
+  if (n >= 1 && n <= 9 && activeEntries[n - 1]) {
+    loadEntry(activeEntries[n - 1]);
   } else if (e.key.toLowerCase() === 'r') {
     btnReset.click();
   } else if (e.key.toLowerCase() === 'w') {
@@ -1440,23 +1498,87 @@ vfxCatalog = initVfxCatalog({
 });
 window.__vfxCatalog = vfxCatalog;
 
+function loadPropsCatalog() {
+  if (propsRequest) return propsRequest;
+  propsLoading = true;
+  propsRequest = fetch('assets/props/props.json?v=' + Date.now())
+    .then((r) => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    })
+    .then((data) => {
+      propsLoading = false;
+      const items = Array.isArray(data?.models) ? data.models : [];
+      propModels.length = 0;
+      propModels.push(...items.map((m) => {
+        const category = m.category || (m.id && m.id.includes('/') ? m.id.split('/')[0] : 'props');
+        const stem = (m.id && m.id.includes('/')) ? m.id.split('/').pop() : (m.id || 'prop');
+        return {
+          ...m,
+          name: deriveDisplayName(m.id, m.name),
+          category,
+          file: m.file || `assets/props/${category}/${stem}.glb`,
+          costume: m.costume || (category.charAt(0).toUpperCase() + category.slice(1).replace(/[_-]+/g, ' ')),
+        };
+      }));
+      for (const p of propModels) {
+        if (!models.some((existing) => existing.id === p.id)) {
+          models.push(p);
+        }
+      }
+      propsError = '';
+      if (navPropsCount) navPropsCount.textContent = propModels.length;
+      if (modelCatalog === 'props') {
+        characterGroups = groupModels(propModels);
+        galleryLaunchCount.textContent = propModels.length;
+        syncGalleryCategories();
+        buildList(searchEl.value);
+        if (galleryModal.classList.contains('open')) {
+          buildGalleryGrid();
+        }
+      }
+      return propModels;
+    })
+    .catch(() => {
+      propsLoading = false;
+      propsError = 'Catálogo de props não encontrado ou ainda em exportação.';
+      if (navPropsCount) navPropsCount.textContent = '0';
+      if (modelCatalog === 'props') {
+        characterGroups = groupModels([]);
+        galleryLaunchCount.textContent = 0;
+        syncGalleryCategories();
+        buildList(searchEl.value);
+        if (galleryModal.classList.contains('open')) {
+          buildGalleryGrid();
+        }
+      }
+      return [];
+    });
+  return propsRequest;
+}
+
 // ========================================================
 // BOOT
 // ========================================================
 async function boot() {
   const res = await fetch('assets/models/models.json?v=' + Date.now());
   const data = await res.json();
-  models.push(...data.models);
+  const list = Array.isArray(data?.models) ? data.models : [];
+  characterModels.push(...list);
+  models.push(...characterModels);
 
   // Group characters by base name (Requirement 1)
-  characterGroups = groupModels(models);
+  characterGroups = groupModels(characterModels);
 
   // Update counts
-  if (navCharsCount) navCharsCount.textContent = models.length;
-  if (galleryLaunchCount) galleryLaunchCount.textContent = models.length;
+  if (navCharsCount) navCharsCount.textContent = characterModels.length;
+  if (galleryLaunchCount) galleryLaunchCount.textContent = characterModels.length;
 
   buildList();
-  loadEntry(models[0]);
+  if (characterModels.length > 0) {
+    loadEntry(characterModels[0]);
+  }
+  loadPropsCatalog();
 }
 
 boot().catch((err) => {

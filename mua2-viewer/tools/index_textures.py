@@ -9,6 +9,7 @@ ROOTS = [
     '/home/raillen/Documentos/decomp-games/_work/igz_textures',
     '/home/raillen/Documentos/decomp-games/_work/igz_materials/effects',
     '/home/raillen/Documentos/decomp-games/_work/igz_materials/levels',
+    '/home/raillen/Documentos/decomp-games/_work/igz_materials/models',
 ]
 OUT = '/home/raillen/Documentos/decomp-games/_work/texture_index.json'
 

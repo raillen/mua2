@@ -42,8 +42,8 @@
         </button>
         <button id="nav-btn-props" class="topbar-nav-btn" data-tab="props">
           <i data-lucide="box" class="nav-icon"></i>
-          <span class="nav-label">Props</span>
-          <span class="nav-badge notice">Em breve</span>
+          <span class="nav-label">Props / Armas</span>
+          <span class="nav-badge" id="nav-props-count">—</span>
         </button>
         <button id="nav-btn-vfx" class="topbar-nav-btn" data-tab="vfx">
           <i data-lucide="sparkles" class="nav-icon"></i>
@@ -69,7 +69,7 @@
       <div id="models-catalog" class="catalog-panel">
       <div class="sidebar-header">
         <div class="sidebar-title-row">
-          <span class="sidebar-label">MODELOS 3D</span>
+          <span class="sidebar-label" id="catalog-sidebar-label">MODELOS 3D</span>
           <!-- View toggle: Lista vs Miniaturas (Requirement 3) -->
           <div class="view-mode-toggle" role="group" aria-label="Modo de exibição">
             <button id="btn-view-cards" class="view-toggle-chip active" title="Exibição em Miniaturas (Cards)" aria-pressed="true">
@@ -310,40 +310,6 @@
         </div>
         
         <div class="modal-resize-handle" title="Arraste para redimensionar a janela"></div>
-      </div>
-    </div>
-
-    <!-- Props Modal / Notice (Requirement 7) -->
-    <div class="modal props-modal" id="props-modal" role="dialog" aria-modal="true" aria-labelledby="props-title">
-      <div class="modal-dialog small-modal" id="props-modal-dialog">
-        <div class="modal-head">
-          <div>
-            <div class="sidebar-label">ARQUIVO DE CENÁRIOS & OBJETOS</div>
-            <h2 id="props-title">Props & Cenários (Em Breve)</h2>
-            <p class="modal-sub">Modelos de ambiente, armas e objetos interativos da Alchemy Engine.</p>
-          </div>
-          <button class="modal-close" id="props-close" title="Fechar" aria-label="Fechar">
-            <i data-lucide="x"></i>
-          </button>
-        </div>
-        <div class="props-modal-body">
-          <div class="props-info-card">
-            <div class="props-icon-wrap">
-              <i data-lucide="box" class="props-icon-lucide"></i>
-            </div>
-            <div class="props-details">
-              <h3>5.341 Modelos Extraídos</h3>
-              <p>O arquivo <code>models.bin</code> contém todos os cenários (fábrica química, prisão da Zona Negativa, Washington DC, Wakanda) e armas/objetos do jogo.</p>
-              <p>Armas de personagens (como os bastões do Demolidor, cartas do Gambit e garras do Aranha de Ferro) já estão integradas como itens do catálogo!</p>
-            </div>
-          </div>
-          <div class="props-action-row">
-            <button id="btn-props-view-weapons" class="chip active">
-              <i data-lucide="grid-2x2" class="chip-icon"></i>
-              Ver Acessórios / Armas Já Disponíveis
-            </button>
-          </div>
-        </div>
       </div>
     </div>
 
