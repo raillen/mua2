@@ -304,6 +304,10 @@ def walk_character(reader, alloc):
     if not results:
         for attrset in reader.get_objects_by_type('igAttrSet'):
             collect_from_attrset(attrset, texture_binds(reader, attrset))
+    # Fallback for standalone effect meshes/projectiles without igAttrSet hierarchy:
+    if not results:
+        for geom_node in reader.get_objects_by_type('igGeometry'):
+            add_geom(geom_node, {}, None)
     return results
 
 
@@ -333,7 +337,7 @@ def png_bytes(img):
 
 
 def export_glb(actor_path, out_path, name, invert_green=True, use_spec=False, max_texture=0,
-               skeleton=True):
+               skeleton=True, normalize=True):
     reader = IGZReader(actor_path); reader.read()
     alloc = IGZDataAllocator(reader)
     parts = walk_character(reader, alloc)
@@ -357,10 +361,15 @@ def export_glb(actor_path, out_path, name, invert_green=True, use_spec=False, ma
     all_pos = np.array(all_pos, np.float32)
     yup = np.stack([all_pos[:, 0], all_pos[:, 2], -all_pos[:, 1]], axis=1)
     lo, hi = yup.min(0), yup.max(0)
-    scale = 2.0 / max(hi - lo)
-    # final = T * R * S * p  =>  T = -s * c   (c = centre of the rotated bounds)
-    centre = np.array([(lo[0] + hi[0]) / 2, lo[1], (lo[2] + hi[2]) / 2], np.float64)
-    root_translation = -scale * centre
+    if normalize:
+        scale = 2.0 / max(hi - lo) if max(hi - lo) > 1e-8 else 1.0
+        # final = T * R * S * p  =>  T = -s * c   (c = centre of the rotated bounds)
+        centre = np.array([(lo[0] + hi[0]) / 2, lo[1], (lo[2] + hi[2]) / 2], np.float64)
+        root_translation = -scale * centre
+    else:
+        scale = 1.0
+        centre = np.zeros(3, np.float64)
+        root_translation = np.zeros(3, np.float64)
     # rotation Z-up -> Y-up  (RotX(-90): (x,y,z) -> (x,z,-y))
     root_rotation = np.array([-0.7071067811865476, 0.0, 0.0, 0.7071067811865476], np.float64)
 
@@ -520,9 +529,12 @@ def export_glb(actor_path, out_path, name, invert_green=True, use_spec=False, ma
             arr = np.frombuffer(buf.data, np.float32, count=acc['count'] * 3,
                                 offset=bv['byteOffset']).reshape(-1, 3)
             arr = np.stack([arr[:, 0], arr[:, 2], -arr[:, 1]], 1)
-            arr = (arr - np.array([(lo[0] + hi[0]) / 2, lo[1], (lo[2] + hi[2]) / 2],
-                                  np.float32)) * scale
+            if normalize:
+                arr = (arr - np.array([(lo[0] + hi[0]) / 2, lo[1], (lo[2] + hi[2]) / 2],
+                                      np.float32)) * scale
             buf.data[bv['byteOffset']:bv['byteOffset'] + arr.nbytes] = arr.tobytes()
+            acc['min'] = arr.min(0).tolist()
+            acc['max'] = arr.max(0).tolist()
         scene_nodes = list(range(len(meshes)))
 
     gltf = {

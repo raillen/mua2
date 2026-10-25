@@ -146,6 +146,7 @@
             </div>
             <span id="vfx-catalog-count" class="launch-badge">—</span>
           </button>
+          <nav id="vfx-sidebar-navigation" class="vfx-navigation" aria-label="Navegação do catálogo VFX"></nav>
           <div class="search-box">
             <i data-lucide="search" class="search-icon"></i>
             <input id="vfx-search" class="model-search" type="search" placeholder="Filtrar por nome, pasta ou textura…" autocomplete="off" aria-label="Buscar efeito VFX">
@@ -164,6 +165,15 @@
               <label for="vfx-character-select" class="vfx-filter-label">Personagem</label>
               <select id="vfx-character-select" class="vfx-filter-select" aria-label="Filtrar efeitos por personagem">
                 <option value="all">Todos os personagens</option>
+              </select>
+            </div>
+            <div class="vfx-filter-group">
+              <label for="vfx-model-select" class="vfx-filter-label">Modelo / Prop</label>
+              <select id="vfx-model-select" class="vfx-filter-select" aria-label="Filtrar efeitos por modelo ou prop 3D">
+                <option value="all">Todos os vínculos</option>
+                <option value="with-model">Com modelo 3D</option>
+                <option value="with-prop">Com props / armas</option>
+                <option value="loaded">Modelo carregado</option>
               </select>
             </div>
           </div>
@@ -350,6 +360,7 @@
             <i data-lucide="x"></i>
           </button>
         </div>
+        <nav id="vfx-modal-navigation" class="vfx-navigation" aria-label="Navegação da galeria VFX"></nav>
         <div class="vfx-modal-toolbar">
           <div class="search-box">
             <i data-lucide="search" class="search-icon"></i>
@@ -371,13 +382,22 @@
                 <option value="all">Todos os personagens</option>
               </select>
             </div>
+            <div class="vfx-filter-group">
+              <label for="vfx-modal-model-select" class="sr-only">Modelo / Prop</label>
+              <select id="vfx-modal-model-select" class="vfx-filter-select" aria-label="Filtrar por modelo ou prop 3D">
+                <option value="all">Todos os vínculos</option>
+                <option value="with-model">Com modelo 3D</option>
+                <option value="with-prop">Com props / armas</option>
+                <option value="loaded">Modelo carregado</option>
+              </select>
+            </div>
           </div>
           <span id="vfx-modal-stats" class="gallery-stats" role="status"></span>
         </div>
         <div class="modal-body">
           <div class="vfx-grid-container">
             <div class="vfx-grid" id="vfx-grid"></div>
-            <div id="vfx-modal-pages" class="vfx-pages" style="display:none;"></div>
+            <div id="vfx-modal-pages" class="vfx-pages" hidden></div>
           </div>
           <aside class="vfx-detail" id="vfx-detail">
             <div class="vfx-empty">Selecione um efeito para ver os detalhes.</div>
@@ -401,6 +421,20 @@
         </div>
         <div class="modal-scroll-body">
           <div class="changelog-list">
+            <article class="changelog-entry">
+              <div class="changelog-version">
+                <span class="version-tag">0.5.0</span>
+                <span class="version-date">Out 2026</span>
+              </div>
+              <h3>Sistema de Efeitos Visuais (Alchemy VFX) e Extensões</h3>
+              <ul>
+                <li>Decodificação autêntica de curvas quadráticas (<code>_rqSize</code>, <code>_rqAlpha</code>, <code>_rqLength</code>) e parâmetros de shake/sound de <code>CFxPrimitiveTemplate</code>.</li>
+                <li>Extração de 1.229 texturas de efeitos (DXT1 com alpha de 1 bit, DXT5, ATI2 e BGRA8) com mapeamento em <code>texture_map.json</code>.</li>
+                <li>Correção de renderização: eliminação do cilindro branco opaco e ajuste fino de blend modes aditivos para <code>ScreenDistortion</code> e sprites.</li>
+                <li>Navegação com breadcrumbs / voltar e filtro direto por modelo de personagem e prop no painel de VFX.</li>
+                <li>Quatro extensões do motor: sincronização de animação com VFX, Camera Shake autêntico, reprodução de áudio FMOD (FSB5) e conversão de malhas 3D de efeito (<code>.igb</code> &rarr; <code>.glb</code>).</li>
+              </ul>
+            </article>
             <article class="changelog-entry">
               <div class="changelog-version">
                 <span class="version-tag">0.4.0</span>
@@ -476,15 +510,15 @@
         <div class="modal-scroll-body">
           <div class="roadmap-summary">
             <div class="roadmap-metric">
-              <strong>10</strong>
+              <strong>11</strong>
               <span>implementados</span>
             </div>
             <div class="roadmap-metric pending">
-              <strong>8</strong>
+              <strong>7</strong>
               <span>pendentes</span>
             </div>
-            <div class="roadmap-progress" role="img" aria-label="56% do roadmap concluído">
-              <span style="width:56%"></span>
+            <div class="roadmap-progress" role="img" aria-label="61% do roadmap concluído">
+              <span style="width:61%"></span>
             </div>
           </div>
           <table class="roadmap-table">
@@ -546,15 +580,15 @@
                 <td>Categorias, changelog e roadmap</td>
                 <td>Heróis &amp; Vilões, Outras e NPC Genérico.</td>
               </tr>
+              <tr class="done">
+                <td class="col-status"><input type="checkbox" checked disabled aria-label="Implementado"></td>
+                <td>VFX completos</td>
+                <td>5.333 efeitos, 1.229 texturas, curvas quadráticas, sincronização, áudio e malhas 3D.</td>
+              </tr>
               <tr class="pending">
                 <td class="col-status"><input type="checkbox" disabled aria-label="Pendente"></td>
                 <td>Props e cenários</td>
                 <td>Explorar os 5.341 modelos de <code>models.bin</code>.</td>
-              </tr>
-              <tr class="pending">
-                <td class="col-status"><input type="checkbox" disabled aria-label="Pendente"></td>
-                <td>VFX completos</td>
-                <td>Ampliar a galeria de efeitos de <code>effects_igx.bin</code>.</td>
               </tr>
               <tr class="pending">
                 <td class="col-status"><input type="checkbox" disabled aria-label="Pendente"></td>

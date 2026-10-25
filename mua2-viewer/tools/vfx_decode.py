@@ -67,7 +67,7 @@ def decode_nibbles(data, offset, count, add_one=True):
     return res
 
 def _parse_strings(data, start, end, count):
-    """Parse null-terminated ASCII strings with optional single padding null."""
+    """Parse counted, null-terminated ASCII strings, preserving empty entries."""
     res = []
     p = start
     for _ in range(count):
@@ -79,8 +79,6 @@ def _parse_strings(data, start, end, count):
             np = end
         res.append(data[p:np].decode('ascii', errors='replace'))
         p = np + 1
-        if p < end and data[p] == 0:
-            p += 1
     return res
 
 def parse_igz_v6(data):
@@ -229,7 +227,7 @@ def decode_effect_data(data, filepath=''):
     decoded_prims = []
     for p in primitives:
         g = p['g']
-        if g + 1012 > data_len:
+        if g + 1028 > data_len:
             unsupported.append(f'truncated_primitive_at_0x{g:X}')
             continue
 
@@ -242,6 +240,12 @@ def decode_effect_data(data, filepath=''):
         delay, count, life, drag, grav, r1, r2, h, drag2, grav2, p_travel, p_spawn, sv1, sv2, sv3 = struct.unpack_from(
             '<15f', data, g + 752
         )
+        rq_size = [round(x, 4) for x in struct.unpack_from('<5f', data, g + 16)]
+        rq_alpha = [round(x, 4) for x in struct.unpack_from('<5f', data, g + 48)]
+        rq_length = [round(x, 4) for x in struct.unpack_from('<5f', data, g + 80)]
+        shake_speed, shake_scale = struct.unpack_from('<2f', data, g + 1016)
+        shake_type = struct.unpack_from('<i', data, g + 1024)[0]
+        shader_name = p['rstt'].get(1064) or None
         f1, f2, sf = struct.unpack_from('<3I', data, g + 936)
         c_start1, c_mid1, c_end1, c_start2, c_mid2, c_end2 = struct.unpack_from('<6I', data, g + 984)
         bmode = struct.unpack_from('<i', data, g + 1008)[0]
@@ -250,7 +254,7 @@ def decode_effect_data(data, filepath=''):
         shader_texs = [
             p['rstt'][off].replace('\\', '/')
             for off in (1168, 1176, 1184, 1192, 1200, 1208)
-            if off in p['rstt'] and p['rstt'][off]
+            if off in p['rstt'] and p['rstt'][off].lower().endswith(('.tga', '.dds'))
         ]
         other_texs = [
             s.replace('\\', '/')
@@ -260,9 +264,17 @@ def decode_effect_data(data, filepath=''):
         ]
         model_ref = None
         for off, s in p['rstt'].items():
-            if s.lower().endswith('.igb'):
+            if s.lower().endswith(('.igb', '.igz')):
                 model_ref = s.replace('\\', '/')
                 break
+
+        sound_bank = None
+        sound_name = None
+        if ptype == 21:  # FXPRIM_TYPE_SOUND
+            sb = p['rstt'].get(1184)
+            sn = p['rstt'].get(1192)
+            sound_bank = sb.replace('\\', '/') if sb else None
+            sound_name = sn.replace('\\', '/') if sn else None
 
         # Also add any primitive textures to all_textures
         for tex in shader_texs + other_texs:
@@ -295,6 +307,15 @@ def decode_effect_data(data, filepath=''):
                 'start1': f'0x{c_start1:08x}', 'mid1': f'0x{c_mid1:08x}', 'end1': f'0x{c_end1:08x}',
                 'start2': f'0x{c_start2:08x}', 'mid2': f'0x{c_mid2:08x}', 'end2': f'0x{c_end2:08x}',
             },
+            'rqSize': rq_size,
+            'rqAlpha': rq_alpha,
+            'rqLength': rq_length,
+            'shakeSpeed': round(shake_speed, 4),
+            'shakeScale': round(shake_scale, 4),
+            'shakeType': shake_type,
+            'shaderName': shader_name,
+            'soundBank': sound_bank,
+            'soundName': sound_name,
             'blendMode': bmode,
             'lut': lut,
             'shaderTextures': shader_texs,

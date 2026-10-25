@@ -19,6 +19,7 @@ MODELS_CATALOG = os.path.abspath('mua2-viewer/assets/models/models.json')
 OUT_DIR = os.path.abspath('mua2-viewer/assets/vfx')
 OUT_TEX_DIR = os.path.join(OUT_DIR, 'textures')
 OUT_CATALOG = os.path.join(OUT_DIR, 'effects.json')
+OUT_TEXTURE_MAP = os.path.join(OUT_DIR, 'texture_map.json')
 
 CHAR_MAP = {
     'abomb': ['a_bomb_anti_1'],
@@ -125,8 +126,8 @@ CHAR_CANONICAL = {
     'lukecageminiboss': 'lukecage',
 }
 
-def decode_dxt1(data, w, h):
-    """Vectorized DXT1 decompressor returning RGB numpy array."""
+def decode_dxt1(data, w, h, alpha=False):
+    """Vectorized DXT1 decompressor returning RGB or RGBA numpy array with 1-bit alpha."""
     bw, bh = (w + 3) // 4, (h + 3) // 4
     nb = bw * bh
     raw = np.frombuffer(data[:nb * 8], dtype=np.uint8).reshape((nb, 8))
@@ -143,20 +144,46 @@ def decode_dxt1(data, w, h):
     g1 = (((c1 >> 5) & 63) * 255 // 63).astype(np.uint8)
     b1 = ((c1 & 31) * 255 // 31).astype(np.uint8)
 
-    col = np.zeros((nb, 4, 3), dtype=np.uint8)
-    col[:, 0, 0] = r0; col[:, 0, 1] = g0; col[:, 0, 2] = b0
-    col[:, 1, 0] = r1; col[:, 1, 1] = g1; col[:, 1, 2] = b1
-    col[:, 2, :] = ((2 * col[:, 0, :].astype(np.uint16) + col[:, 1, :].astype(np.uint16)) // 3).astype(np.uint8)
-    col[:, 3, :] = ((col[:, 0, :].astype(np.uint16) + 2 * col[:, 1, :].astype(np.uint16)) // 3).astype(np.uint8)
+    if not alpha:
+        col = np.zeros((nb, 4, 3), dtype=np.uint8)
+        col[:, 0, 0] = r0; col[:, 0, 1] = g0; col[:, 0, 2] = b0
+        col[:, 1, 0] = r1; col[:, 1, 1] = g1; col[:, 1, 2] = b1
+        col[:, 2, :] = ((2 * col[:, 0, :].astype(np.uint16) + col[:, 1, :].astype(np.uint16)) // 3).astype(np.uint8)
+        col[:, 3, :] = ((col[:, 0, :].astype(np.uint16) + 2 * col[:, 1, :].astype(np.uint16)) // 3).astype(np.uint8)
 
-    b_idx = np.arange(nb)[:, None]
-    block_indices = np.zeros((nb, 16), dtype=np.uint8)
-    for i in range(16):
-        block_indices[:, i] = (bits >> (2 * i)) & 3
+        b_idx = np.arange(nb)[:, None]
+        block_indices = np.zeros((nb, 16), dtype=np.uint8)
+        for i in range(16):
+            block_indices[:, i] = (bits >> (2 * i)) & 3
 
-    pixels = col[b_idx, block_indices]
-    img = pixels.reshape((bh, bw, 4, 4, 3)).transpose((0, 2, 1, 3, 4)).reshape((bh * 4, bw * 4, 3))
-    return img[:h, :w]
+        pixels = col[b_idx, block_indices]
+        img = pixels.reshape((bh, bw, 4, 4, 3)).transpose((0, 2, 1, 3, 4)).reshape((bh * 4, bw * 4, 3))
+        return img[:h, :w]
+    else:
+        col = np.zeros((nb, 4, 4), dtype=np.uint8)
+        col[:, 0, 0] = r0; col[:, 0, 1] = g0; col[:, 0, 2] = b0; col[:, 0, 3] = 255
+        col[:, 1, 0] = r1; col[:, 1, 1] = g1; col[:, 1, 2] = b1; col[:, 1, 3] = 255
+
+        is_gt = c0 > c1
+        col[is_gt, 2, :3] = ((2 * col[is_gt, 0, :3].astype(np.uint16) + col[is_gt, 1, :3].astype(np.uint16)) // 3).astype(np.uint8)
+        col[is_gt, 2, 3] = 255
+        col[is_gt, 3, :3] = ((col[is_gt, 0, :3].astype(np.uint16) + 2 * col[is_gt, 1, :3].astype(np.uint16)) // 3).astype(np.uint8)
+        col[is_gt, 3, 3] = 255
+
+        not_gt = ~is_gt
+        col[not_gt, 2, :3] = ((col[not_gt, 0, :3].astype(np.uint16) + col[not_gt, 1, :3].astype(np.uint16)) // 2).astype(np.uint8)
+        col[not_gt, 2, 3] = 255
+        col[not_gt, 3, :3] = 0
+        col[not_gt, 3, 3] = 0
+
+        b_idx = np.arange(nb)[:, None]
+        block_indices = np.zeros((nb, 16), dtype=np.uint8)
+        for i in range(16):
+            block_indices[:, i] = (bits >> (2 * i)) & 3
+
+        pixels = col[b_idx, block_indices]
+        img = pixels.reshape((bh, bw, 4, 4, 4)).transpose((0, 2, 1, 3, 4)).reshape((bh * 4, bw * 4, 4))
+        return img[:h, :w]
 
 def decode_dxt5(data, w, h):
     """Vectorized DXT5 decompressor returning RGBA numpy array."""
@@ -249,9 +276,9 @@ def decode_ati2(data, w, h):
     img = pix.reshape((bh, bw, 4, 4, 3)).transpose((0, 2, 1, 3, 4)).reshape((bh * 4, bw * 4, 3))
     return img[:h, :w]
 
-def export_texture_png(tex_info, out_png_path):
+def export_texture_png(tex_info, out_png_path, overwrite=False):
     """Decompress texture and save thumbnail PNG preserving hash identity."""
-    if os.path.exists(out_png_path):
+    if not overwrite and os.path.exists(out_png_path):
         return True
     src_file = tex_info.get('file')
     if not src_file or not os.path.exists(src_file):
@@ -268,14 +295,29 @@ def export_texture_png(tex_info, out_png_path):
 
     try:
         if fmt == 'DXT1':
-            arr = decode_dxt1(raw_data, w, h)
-            img = Image.fromarray(arr)
+            arr = decode_dxt1(raw_data, w, h, alpha=True)
+            if (arr[:, :, 3] < 255).any():
+                img = Image.fromarray(arr)
+            else:
+                img = Image.fromarray(arr[:, :, :3])
         elif fmt == 'DXT5':
             arr = decode_dxt5(raw_data, w, h)
             img = Image.fromarray(arr)
         elif fmt == 'ATI2':
             arr = decode_ati2(raw_data, w, h)
             img = Image.fromarray(arr)
+        elif fmt == 'BGRA8':
+            expected_bytes = w * h * 4
+            if len(raw_data) >= expected_bytes:
+                raw = np.frombuffer(raw_data[:expected_bytes], dtype=np.uint8).reshape((h, w, 4))
+                arr = np.empty_like(raw)
+                arr[:, :, 0] = raw[:, :, 2]
+                arr[:, :, 1] = raw[:, :, 1]
+                arr[:, :, 2] = raw[:, :, 0]
+                arr[:, :, 3] = raw[:, :, 3]
+                img = Image.fromarray(arr)
+            else:
+                return False
         else:
             return False
 
@@ -315,6 +357,7 @@ def scan_all_effects():
     print(f'Scanning {total_files} effects from {EFFECTS_DIR}...', file=sys.stderr)
 
     exported_textures = set()
+    all_vfx_texture_strings = set()
     category_counts = {}
     character_counts = {}
     status_counts = {'decoded': 0, 'partial': 0, 'metadata-only': 0, 'error': 0}
@@ -348,7 +391,16 @@ def scan_all_effects():
 
         status_counts[status] = status_counts.get(status, 0) + 1
 
-        # Pick primary preview texture (prefer non-LUT, non-normal, material/actor/effect texture)
+        for t in raw_textures:
+            all_vfx_texture_strings.add(t)
+        if defn:
+            for p in defn.get('primitives', []):
+                for st in p.get('shaderTextures', []):
+                    all_vfx_texture_strings.add(st)
+                for ot in p.get('otherTextures', []):
+                    all_vfx_texture_strings.add(ot)
+
+        # Pick primary preview texture (prefer non-LUT, non-normal, non-mask texture)
         thumb_path = None
         picked_tex_info = None
         for t in raw_textures:
@@ -356,12 +408,26 @@ def scan_all_effects():
             t_base = os.path.basename(t_low)
             if t_base.startswith(('lut_', 'textures/luts')) or t_base.endswith(('_n.tga', '_n.dds')):
                 continue
+            if 'mask' in t_base or 'distortion' in t_low:
+                continue
             entry = by_path.get(t_low) or (by_base.get(t_base)[0] if t_base in by_base else None)
             if entry:
                 picked_tex_info = entry
                 break
 
-        # If none found, fallback to any valid texture
+        # Fallback to non-LUT
+        if not picked_tex_info:
+            for t in raw_textures:
+                t_low = t.replace('\\', '/').lower().strip()
+                t_base = os.path.basename(t_low)
+                if t_base.startswith(('lut_', 'textures/luts')) or t_base.endswith(('_n.tga', '_n.dds')):
+                    continue
+                entry = by_path.get(t_low) or (by_base.get(t_base)[0] if t_base in by_base else None)
+                if entry:
+                    picked_tex_info = entry
+                    break
+
+        # Final fallback
         if not picked_tex_info:
             for t in raw_textures:
                 t_low = t.replace('\\', '/').lower().strip()
@@ -395,6 +461,45 @@ def scan_all_effects():
 
         if (i + 1) % 500 == 0 or (i + 1) == total_files:
             print(f'Progress: {i + 1}/{total_files} effects processed ({status_counts["decoded"]} decoded, {len(exported_textures)} textures exported)...', file=sys.stderr)
+
+    # Export all referenced and VFX material textures into texture_map.json
+    print('Exporting all referenced VFX textures and building texture_map.json...', file=sys.stderr)
+    tex_map = {}
+
+    for k, v in tex_index.items():
+        name_clean = v['name'].replace('\\', '/').lower().strip()
+        file_clean = v['file'].replace('\\', '/').lower().strip()
+        if 'materials/effects' in name_clean or 'materials/effects' in file_clean:
+            png_dest = os.path.join(OUT_TEX_DIR, f'{k}.png')
+            if export_texture_png(v, png_dest):
+                exported_textures.add(k)
+                target_rel = f'assets/vfx/textures/{k}.png'
+                bname = os.path.basename(name_clean)
+                bname_noext = os.path.splitext(bname)[0]
+                tex_map[name_clean] = target_rel
+                tex_map[bname] = target_rel
+                tex_map[bname_noext] = target_rel
+
+    for t in all_vfx_texture_strings:
+        t_clean = t.replace('\\', '/').lower().strip()
+        t_base = os.path.basename(t_clean)
+        t_noext = os.path.splitext(t_base)[0]
+        entry = by_path.get(t_clean) or (by_base.get(t_base)[0] if t_base in by_base else None)
+        if entry:
+            tex_key = entry['key']
+            png_dest = os.path.join(OUT_TEX_DIR, f'{tex_key}.png')
+            if export_texture_png(entry, png_dest):
+                exported_textures.add(tex_key)
+                target_rel = f'assets/vfx/textures/{tex_key}.png'
+                tex_map[t_clean] = target_rel
+                tex_map[t_base] = target_rel
+                tex_map[t_noext] = target_rel
+
+    tmp_map = OUT_TEXTURE_MAP + '.tmp'
+    with open(tmp_map, 'w', encoding='utf-8') as f:
+        json.dump(tex_map, f, indent=1)
+    os.replace(tmp_map, OUT_TEXTURE_MAP)
+    print(f'Saved {len(tex_map)} texture map mappings to {OUT_TEXTURE_MAP}', file=sys.stderr)
 
     # 3. Sort effects predictably: character effects first, then map, then others
     def sort_key(row):

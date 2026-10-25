@@ -92,6 +92,13 @@ Offset  Type     Field
 | 14 | `NSPC` | Namespace table |
 | 16 | `RPID` | Resource pool IDs |
 
+### 2.1 String Pool (`TSTR`) Encoding & Parsing Rules
+
+The string pool block (`tag == 1`) contains `count` null-terminated ASCII strings stored sequentially:
+- **Null-Byte Handling**: An empty string is encoded as a single `0x00` byte. It is not padded or aligned to 2-byte or 4-byte boundaries.
+- **Parser Invariant**: Parsers must strictly increment by `np + 1` (advancing past the terminating null byte). Skipping subsequent null bytes (e.g. attempting to skip presumed word padding) drops valid empty strings from the table, shifting table indices for all subsequent strings.
+- **Binary Impact**: Skipping padding nulls corrupts string tables in 2,068 files and shifts string values in 4,257 files across the 5,333 MUA2 `.igz` effect files, causing lookup-table (`LUT`) texture paths or texture filenames to be misread as shader names or audio banks.
+
 ---
 
 ## 3. Relocation & Fixup Decoding
@@ -137,6 +144,34 @@ Encoded 32-bit offsets reference specific chunk buffers:
 
 `CFxPrimitiveTemplate` defines individual emitters, particles, ribbons, flashes, models, or lighting components. Total instance size is typically 1,216 bytes.
 
+#### Quadratic Curve Parameter Blocks (`CRangedQuadraticMetaField`)
+
+Particle temporal evolution is modeled by `CRangedQuadraticMetaField` structures in Alchemy Engine (located in `Alliance.exe` `.rdata` type descriptors). Each `CRangedQuadraticMetaField` occupies exactly 32 bytes (8 contiguous single-precision 32-bit floats):
+
+| Index | Field Name | Description |
+|---|---|---|
+| `[0]` | `a` | Quadratic acceleration coefficient ($a \cdot t^2$) |
+| `[1]` | `b` | Linear velocity coefficient ($b \cdot t$) |
+| `[2]` | `c` | Constant baseline offset ($c$) |
+| `[3]` | `min` | Minimum clamp boundary |
+| `[4]` | `max` | Maximum clamp boundary |
+| `[5]` | `varA` | Quadratic variance deviation coefficient |
+| `[6]` | `varB` | Linear variance deviation coefficient |
+| `[7]` | `varC` | Constant variance deviation offset |
+
+The deterministic curve trajectory at normalized particle progress $t = \frac{\text{localTime}}{\text{life}} \in [0, 1]$ evaluates as:
+$$y(t) = \text{clamp}\big((a \cdot t + b) \cdot t + c, \ \text{min}, \ \text{max}\big)$$
+
+When non-zero variance coefficients (`varA`, `varB`, `varC`) are present, each spawned particle perturbs the base polynomial by a randomized variance factor. The JavaScript viewer runtime (`vfx.js::evaluateQuadratic`) consumes the primary 5-float vector `[a, b, c, min, max]`.
+
+`CFxPrimitiveTemplate` contains three consecutive `CRangedQuadraticMetaField` instances:
+
+| Offset (dec) | Size (bytes) | Field Name | Target Property |
+|---|---|---|---|
+| +16 (`0x10`) | 32 | `_rqSize` | Particle diameter / scale curve over lifespan |
+| +48 (`0x30`) | 32 | `_rqAlpha` | Opacity / alpha curve over lifespan |
+| +80 (`0x50`) | 32 | `_rqLength` | Particle / ribbon elongation curve over lifespan |
+
 #### Continuous Float Parameter Block (Offset +752 to +812)
 
 | Offset (dec) | Type | Field Name | Description |
@@ -179,17 +214,44 @@ Encoded 32-bit offsets reference specific chunk buffers:
 | +1004 | `uint32` | `_colorEnd2` | Secondary color gradient end (ARGB) |
 | +1008 | `int32` | `_blendMode` | Blend mode integer (0 = Opaque, 1 = Additive, 2 = Alpha Blend, etc.) |
 
-#### String Resource Pointers (`RSTT` Fixups)
+#### Camera Shake & Shader Identifier (Offset +1016 to +1064)
 
-| Offset (dec) | Target Description |
-|---|---|
-| +1136 | Lookup Table (`LUT`) color grading texture path |
-| +1168 | Primary diffuse / particle texture path |
-| +1176 | Normal / bump map texture path |
-| +1184 | Secondary / detail texture path |
-| +1192 | Mask / alpha texture path |
-| +1200 | Distortion / displacement texture path |
-| +1208 | Specular / environment map texture path |
+| Offset (dec) | Type | Field Name | Description |
+|---|---|---|---|
+| +1016 | `float` | `_shakeSpeed` | Camera shake frequency / oscillation speed |
+| +1020 | `float` | `_shakeScale` | Camera shake amplitude / displacement magnitude |
+| +1024 | `int32` | `_shakeType` | Camera shake profile enumeration |
+| +1064 | `RSTT` | `_shaderName` | Specialized material shader identifier (`'ScreenDistortion'`, `'*UberShader'`, or null) |
+
+#### String Resource Pointers (`RSTT` Fixups) & Primitive Disambiguation
+
+String fixups reference zero-based string indices in the file's `TSTR` pool. Offsets +1168 through +1208 are multiplexed depending on `_primitiveType`:
+
+##### Visual / Rendering Primitives (`_primitiveType != 21`)
+
+| Offset (dec) | Field Name | Target Description |
+|---|---|---|
+| +1064 | `_shaderName` | Specialized material shader identifier (`'ScreenDistortion'`, `'*UberShader'`) |
+| +1136 | `_postProcessLutTexture` | Lookup Table (`LUT`) color grading texture path (e.g. `'textures/luts/lut_blank'`) |
+| +1168 | `_shaderTexture0` | Primary diffuse / particle texture path |
+| +1176 | `_shaderTexture1` | Normal / bump map texture path |
+| +1184 | `_shaderTexture2` | Secondary / detail texture path |
+| +1192 | `_shaderTexture3` | Mask / alpha texture path |
+| +1200 | `_shaderTexture4` | Distortion / displacement texture path |
+| +1208 | `_shaderTexture5` | Specular / environment map texture path |
+
+All texture paths resolved from `_shaderTexture0` through `_shaderTexture5` must be filtered strictly for `.tga` and `.dds` file extensions. For non-sound primitives, `soundBank` and `soundName` must always resolve to `null`.
+
+##### Audio Emitter Primitives (`_primitiveType == 21` / `FXPRIM_TYPE_SOUND`)
+
+When `_primitiveType == 21`, offsets +1184 through +1208 map to audio metadata rather than visual shader textures:
+
+| Offset (dec) | Field Name | Target Description |
+|---|---|---|
+| +1184 | `_audioBankName` | FMOD audio bank name (e.g. `'FX_explosion_container_bank'`) |
+| +1192 | `_soundName1` | Primary sound event name (e.g. `'ENV_Cap_Arena_Pipe_Break'`) |
+| +1200 | `_soundName2` | Secondary sound event variant name |
+| +1208 | `_soundName3` | Tertiary sound event variant name |
 
 #### Primitive Type Enumeration
 

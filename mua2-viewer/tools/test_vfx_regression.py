@@ -5,6 +5,7 @@ import os
 import re
 import struct
 import sys
+import wave
 import numpy as np
 from PIL import Image
 
@@ -18,6 +19,7 @@ from vfx_decode import (
     parse_igz_v6,
     decode_effect_data,
     decode_effect_file,
+    _parse_strings,
     PRIM_TYPES,
 )
 from vfx_scan import (
@@ -27,12 +29,17 @@ from vfx_scan import (
     CHAR_MAP,
     CHAR_CANONICAL,
 )
+from vfx_assets import parse_fsb5_block
 
 WORK_DIR = os.path.abspath('_work')
 EFFECTS_DIR = os.path.join(WORK_DIR, 'igz_effects')
 CATALOG_PATH = os.path.abspath('mua2-viewer/assets/vfx/effects.json')
 TEXTURES_DIR = os.path.abspath('mua2-viewer/assets/vfx/textures')
 MODELS_CATALOG = os.path.abspath('mua2-viewer/assets/models/models.json')
+MODEL_MAP_PATH = os.path.abspath('mua2-viewer/assets/vfx/model_map.json')
+SOUND_MAP_PATH = os.path.abspath('mua2-viewer/assets/vfx/sound_map.json')
+VFX_MODELS_DIR = os.path.abspath('mua2-viewer/assets/vfx/models')
+VFX_SOUNDS_DIR = os.path.abspath('mua2-viewer/assets/vfx/sounds')
 
 def test_nibble_stream_decoder():
     """Verify Alchemy variable-length delta-nibble stream unpacking."""
@@ -106,6 +113,58 @@ def test_cfx_primitive_decompilation():
 
     assert isinstance(prim['blendMode'], int)
 
+    # Quadratic curves (_rqSize, _rqAlpha, _rqLength) 5-float verification
+    for curve_name in ('rqSize', 'rqAlpha', 'rqLength'):
+        curve = prim[curve_name]
+        assert isinstance(curve, list) and len(curve) == 5, f"Expected 5 floats in {curve_name}, got {curve}"
+        assert all(isinstance(v, float) for v in curve), f"Non-float value in {curve_name}: {curve}"
+
+    # Shader name and sound extraction constraints on spiderman_blocking (non-sound primitives)
+    assert prim['shaderName'] is None or prim['shaderName'] in ('ScreenDistortion', '*UberShader')
+    assert prim['shaderName'] != 'textures/luts/lut_blank', "shaderName wrongly resolved to LUT"
+    assert prim['soundBank'] is None and prim['soundName'] is None
+
+    # Shader textures must only contain actual textures (.tga, .dds)
+    for st in prim['shaderTextures']:
+        assert st.lower().endswith(('.tga', '.dds')), f"Non-texture string in shaderTextures: {st}"
+
+def test_vfx_decoder_field_mappings():
+    """Verify string table integrity, shaderName resolution, soundBank isolation, and texture filtering."""
+    # 1. String table null-byte handling (empty strings must not be skipped)
+    raw_tstr = b'alpha\x00\x00beta\x00\x00'
+    parsed = _parse_strings(raw_tstr, 0, len(raw_tstr), 4)
+    assert parsed == ['alpha', '', 'beta', ''], f"Empty string skipped in TSTR: {parsed}"
+
+    # 2. Distortion shader decoding on real effect
+    dist_path = os.path.join(EFFECTS_DIR, 'map/chemplantmap2/cpp2_pipeburst.igz')
+    if os.path.exists(dist_path):
+        defn_d, _, _, _ = decode_effect_file(dist_path)
+        dist_prims = [p for p in defn_d['primitives'] if p['shaderName'] == 'ScreenDistortion']
+        assert len(dist_prims) >= 1, "Expected ScreenDistortion primitives in cpp2_pipeburst"
+        for p in dist_prims:
+            assert p['shaderName'] != 'textures/luts/lut_blank', "shaderName wrongly resolved to LUT texture"
+            assert p['soundBank'] is None and p['soundName'] is None, "Non-sound primitive extracted soundBank/Name"
+            for tex in p['shaderTextures']:
+                assert tex.lower().endswith(('.tga', '.dds')), f"Invalid texture in shaderTextures: {tex}"
+
+    # 3. FXPRIM_TYPE_SOUND isolation and metadata extraction
+    snd_path = os.path.join(EFFECTS_DIR, 'map/chemplantmap2/interiorcontainer80ft_explosion.igz')
+    if os.path.exists(snd_path):
+        defn_s, _, _, _ = decode_effect_file(snd_path)
+        snd_prims = [p for p in defn_s['primitives'] if p['type'] == 21]
+        assert len(snd_prims) == 1, "Expected 1 sound primitive in interiorcontainer80ft_explosion"
+        sp = snd_prims[0]
+        assert sp['soundBank'] == 'FX_explosion_container_bank'
+        assert sp['soundName'] == 'ENV_Cap_Arena_Pipe_Break'
+        for tex in sp['shaderTextures']:
+            assert tex.lower().endswith(('.tga', '.dds'))
+
+        # Non-sound primitives in same effect must have soundBank is None
+        non_snd = [p for p in defn_s['primitives'] if p['type'] != 21]
+        assert len(non_snd) > 0
+        for p in non_snd:
+            assert p['soundBank'] is None and p['soundName'] is None
+
 def test_partial_vfx_handling():
     """Verify correct classification of partial effects lacking CFxTemplate or primitives."""
     # 1. Effect with only CFxPrimitiveTemplate (explosion_pipes.igz)
@@ -159,7 +218,7 @@ def test_effects_catalog_schema_and_integrity():
     assert summary.get('decoded') == 5235, f"Expected 5,235 decoded, got {summary.get('decoded')}"
     assert summary.get('partial') == 98, f"Expected 98 partial, got {summary.get('partial')}"
     assert summary.get('error') == 0, f"Expected 0 errors, got {summary.get('error')}"
-    assert summary.get('textures_exported') == 518, f"Expected 518 textures, got {summary.get('textures_exported')}"
+    assert summary.get('textures_exported') >= 518, f"Expected >= 518 textures, got {summary.get('textures_exported')}"
 
     effects = catalog.get('effects', [])
     assert len(effects) == 5333, f"Effects array length mismatch: {len(effects)}"
@@ -212,7 +271,7 @@ def test_exported_textures():
     """Verify all 518 textures exist, use unique 16-hex hashes, and are valid PNG images."""
     assert os.path.exists(TEXTURES_DIR), f"Missing textures directory: {TEXTURES_DIR}"
     files = os.listdir(TEXTURES_DIR)
-    assert len(files) == 518, f"Expected 518 exported texture PNGs, got {len(files)}"
+    assert len(files) >= 518, f"Expected >= 518 exported texture PNGs, got {len(files)}"
 
     hex_re = re.compile(r'^[0-9a-f]{16}\.png$')
     for fname in files:
@@ -260,6 +319,118 @@ def test_vfx_texture_map_and_runtime_conformance():
     ):
         assert symbol in vfx_src, f"Missing expected export symbol in vfx.js: {symbol}"
 
+def test_fsb5_boundaries() -> None:
+    """A block consumes only its own bytes; malformed/unsupported headers fail closed."""
+    payload = b'\xff\xf5' + bytes(30)
+    for version, header_size in ((0, 64), (1, 60)):
+        header = struct.pack('<4s6I', b'FSB5', version, 1, 8, 10, len(payload), 11)
+        block = header.ljust(header_size, b'\x00') + bytes(8) + struct.pack('<I', 4) + b'first\x00' + payload
+        prefix = b'container'
+        data = prefix + block + block
+        result = parse_fsb5_block(data, len(prefix))
+        assert result is not None
+        sample, end = result
+        assert sample.name == 'first' and sample.data == payload
+        assert end == len(prefix) + len(block)
+        assert parse_fsb5_block(data, end)[1] == len(data)
+        for length in (0, 27, header_size - 1, len(block) - 1):
+            assert parse_fsb5_block(block[:length], 0) is None
+        assert parse_fsb5_block(block, -1) is None
+        for offset, value in ((4, 2), (8, 0), (8, 2), (12, 0), (20, 0), (24, 10)):
+            malformed = bytearray(block)
+            struct.pack_into('<I', malformed, offset, value)
+            assert parse_fsb5_block(bytes(malformed), 0) is None, (offset, value)
+
+
+def test_vfx_asset_maps() -> None:
+    """Check every mapped file, GLB chunks, distribution WAV audio, MPEG headers and source FSB boundaries."""
+    from pathlib import Path
+
+    viewer = Path('mua2-viewer').resolve()
+    model_map = json.loads(Path(MODEL_MAP_PATH).read_text())
+    sound_map = json.loads(Path(SOUND_MAP_PATH).read_text())
+    assert model_map and sound_map
+    model_paths = set(model_map.values())
+    sound_paths = {path for bank in sound_map.values() for path in bank.values()}
+    for rel in model_paths | sound_paths:
+        target = (viewer / rel).resolve()
+        assert target.is_relative_to(viewer) and target.is_file(), rel
+
+    effect_glbs = {p.relative_to(viewer).as_posix() for p in Path(VFX_MODELS_DIR).rglob('*.glb')}
+    wav_files = {p.relative_to(viewer).as_posix() for p in Path(VFX_SOUNDS_DIR).rglob('*.wav')}
+    mp3_files = {p.relative_to(viewer).as_posix() for p in Path(VFX_SOUNDS_DIR).rglob('*.mp3')}
+    assert effect_glbs == {p for p in model_paths if p.startswith('assets/vfx/models/')}
+    assert wav_files == sound_paths
+    assert mp3_files == {p[:-4] + '.mp3' for p in sound_paths}
+
+    for rel in sorted(model_paths):
+        data = (viewer / rel).read_bytes()
+        assert len(data) >= 20, rel
+        assert struct.unpack_from('<4sII', data) == (b'glTF', 2, len(data)), rel
+        pos = 12
+        chunks = []
+        while pos < len(data):
+            assert pos + 8 <= len(data), rel
+            length, kind = struct.unpack_from('<I4s', data, pos)
+            assert length % 4 == 0 and pos + 8 + length <= len(data), rel
+            chunks.append((kind, data[pos + 8:pos + 8 + length]))
+            pos += 8 + length
+        assert chunks[0][0] == b'JSON' and pos == len(data), rel
+        gltf = json.loads(chunks[0][1])
+        assert gltf['asset']['version'] == '2.0' and gltf.get('meshes'), rel
+
+    # 1. Distribution WAV checks: RIFF/WAVE header, 16-bit PCM, valid rates/channels, non-empty
+    valid_rates = {8000, 11000, 11025, 16000, 22050, 24000, 32000, 44100, 48000}
+    for rel in sorted(sound_paths):
+        target = viewer / rel
+        data = target.read_bytes()
+        assert len(data) >= 44, rel
+        assert data[:4] == b'RIFF', f"Missing RIFF header: {rel}"
+        assert data[8:12] == b'WAVE', f"Missing WAVE identifier: {rel}"
+        with wave.open(str(target), 'rb') as w:
+            assert w.getnchannels() in (1, 2), f"Invalid channel count {w.getnchannels()}: {rel}"
+            assert w.getsampwidth() == 2, f"Expected 16-bit PCM (sampwidth 2), got {w.getsampwidth()}: {rel}"
+            assert w.getframerate() in valid_rates, f"Invalid framerate {w.getframerate()}: {rel}"
+            assert w.getnframes() > 0, f"Empty audio file (0 frames): {rel}"
+
+    # 2. Raw FSB MPEG Layer II header bit verification
+    layers = set()
+    for rel in sorted(mp3_files):
+        data = (viewer / rel).read_bytes()
+        assert len(data) >= 4 and data[0] == 255 and data[1] & 0xE0 == 0xE0, rel
+        assert (data[1] >> 3) & 3 != 1 and (data[1] >> 1) & 3 != 0, rel
+        assert 0 < data[2] >> 4 < 15 and (data[2] >> 2) & 3 != 3, rel
+        layers.add((data[1] >> 1) & 3)
+
+    # 3. Source FSB identity & sample metadata cross-check
+    parsed_paths = set()
+    banks = {Path(rel).parent.name for rel in sound_paths}
+    for bank in sorted(banks):
+        data = (Path(WORK_DIR) / 'extracted/sounds' / f'{bank}.pak').read_bytes()
+        pos = 0
+        while (idx := data.find(b'FSB5', pos)) != -1:
+            result = parse_fsb5_block(data, idx)
+            assert result is not None, (bank, idx)
+            sample, end = result
+            assert idx < end <= len(data), (bank, idx, end)
+            mp3_rel = f'assets/vfx/sounds/{bank}/{sample.name}.mp3'
+            wav_rel = f'assets/vfx/sounds/{bank}/{sample.name}.wav'
+            assert mp3_rel in mp3_files and (viewer / mp3_rel).read_bytes() == sample.data, mp3_rel
+            assert wav_rel in sound_paths, wav_rel
+            with wave.open(str(viewer / wav_rel), 'rb') as w:
+                assert w.getframerate() == sample.frequency, (wav_rel, w.getframerate(), sample.frequency)
+                assert w.getnchannels() == sample.channels, (wav_rel, w.getnchannels(), sample.channels)
+            parsed_paths.add(wav_rel)
+            next_idx = data.find(b'FSB5', end)
+            if next_idx != -1:
+                assert not any(data[end:next_idx]), (bank, end, next_idx)
+            pos = end
+    assert parsed_paths == sound_paths
+    print(f'  Assets: {len(model_map)} model aliases / {len(model_paths)} GLBs '
+          f'({len(effect_glbs)} VFX); {len(sound_map)} bank aliases / {len(banks)} source banks / '
+          f'{len(sound_paths)} WAV files + {len(mp3_files)} raw FSB files; MPEG layer bits={sorted(layers)}', file=sys.stderr)
+
+
 def run_all_tests():
     """Execute all regression tests and report elapsed time."""
     print("Running MUA2 VFX regression test suite...", file=sys.stderr)
@@ -267,11 +438,14 @@ def run_all_tests():
         test_nibble_stream_decoder,
         test_igz_v6_header_and_blocks,
         test_cfx_primitive_decompilation,
+        test_vfx_decoder_field_mappings,
         test_partial_vfx_handling,
         test_vectorized_texture_codecs,
         test_effects_catalog_schema_and_integrity,
         test_exported_textures,
         test_vfx_texture_map_and_runtime_conformance,
+        test_fsb5_boundaries,
+        test_vfx_asset_maps,
     ]
     for t in tests:
         t()

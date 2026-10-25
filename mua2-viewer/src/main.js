@@ -443,6 +443,7 @@ function frameModel(model) {
 }
 
 function prepare(model, entry) {
+  model.userData.catalogEntry = entry;
   model.traverse((o) => {
     if (o.isMesh) {
       o.castShadow = true;
@@ -1392,11 +1393,12 @@ renderer.setAnimationLoop(() => {
   if (mixer && animPlaying) {
     mixer.update(delta * animSpeed);
   }
+  controls.update();
   if (vfxCatalog) {
     vfxCatalog.update(delta);
   }
-  controls.update();
   renderer.render(scene, camera);
+  vfxCatalog?.restoreCamera();
 });
 
 // VFX gallery uses the same focus trap and Escape handling as other dialogs.
@@ -1413,6 +1415,12 @@ vfxCatalog = initVfxCatalog({
   scene,
   camera,
   renderer,
+  controls,
+  gltfLoader: loader,
+  getMixer: () => mixer,
+  getCurrentAction: () => currentAction,
+  getAnimPlaying: () => animPlaying,
+  applyAnimation,
   getModel: () => current,
   THREE,
 });
