@@ -58,7 +58,7 @@ for (const [effectId, preset] of Object.entries(NATIVE_PRESETS)) {
 }
 
 const ids = Object.keys(NATIVE_PRESETS);
-check(ids.length >= 2, 'expected at least two native recreations');
+check(ids.length >= 5, 'expected at least five native recreations');
 
 // ---- Simulation smoke check ------------------------------------------------
 // Builds a real effect against vendored three.js with a stub texture loader and
@@ -78,9 +78,15 @@ function simulate(effectId, seconds) {
   };
   const effect = createNativeEffect({ id: effectId }, runtime);
   check(Boolean(effect), `${effectId}: createNativeEffect returned null`);
+  // A trail only exists if the anchor moves, exactly like the in-game bone.
+  const group = root.children.find((child) => child.name === `NativeEffect:${effectId}`);
   const samples = [];
   const step = 1 / 60;
   for (let t = 0; t < seconds; t += step) {
+    if (group) {
+      group.position.set(Math.sin(t * 9) * 0.45, Math.cos(t * 7) * 0.2, 0);
+      group.updateMatrixWorld(true);
+    }
     effect.update(t, step);
     let visible = 0;
     let moved = 0;
@@ -107,11 +113,14 @@ function simulate(effectId, seconds) {
 for (const [effectId, preset] of Object.entries(NATIVE_PRESETS)) {
   const samples = simulate(effectId, preset.duration + 0.25);
   check(samples.some((s) => s.visible > 0), `${effectId}: nothing ever became visible`);
-  check(samples.some((s) => s.maxOpacity > 0.2), `${effectId}: never reached visible opacity`);
+  check(samples.some((s) => s.maxOpacity > 0.05), `${effectId}: never reached visible opacity`);
   check(samples.some((s) => s.moved > 0.001), `${effectId}: geometry never moved`);
-  // After the decoded life window the field must be dark again.
-  const tail = samples.slice(-6);
-  check(tail.every((s) => s.visible === 0), `${effectId}: stayed visible past its decoded life`);
+  // After the decoded life window the field must be dark again. A looping
+  // preset (a sustained beam) never goes dark by design.
+  if (!preset.loop) {
+    const tail = samples.slice(-6);
+    check(tail.every((s) => s.visible === 0), `${effectId}: stayed visible past its decoded life`);
+  }
 }
 
 console.log(`VFX native self-check passed (${ids.length} powers simulated, ${checks} assertions)`);

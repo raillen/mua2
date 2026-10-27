@@ -1052,6 +1052,12 @@ html, body {
   z-index: 20;
   max-width: calc(100% - 40px);
   white-space: nowrap;
+  /* Chips outgrew the pill; scroll rather than clip the last control. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.toolbar::-webkit-scrollbar {
+  display: none;
 }
 
 .toolbar-group {

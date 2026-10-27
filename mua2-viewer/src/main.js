@@ -2,6 +2,10 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { loadGameAnimations } from './animations.js';
 import { initVfxCatalog } from './vfx.js';
 
@@ -57,6 +61,7 @@ const DEFAULT_SETTINGS = {
   tex: true,
   grid: true,
   rig: false,
+  bloom: true,
   anim: 'none',
   animPlaying: false,
   animSpeed: 1.0,
@@ -71,7 +76,7 @@ function loadSettings() {
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return { ...DEFAULT_SETTINGS };
     const result = { ...DEFAULT_SETTINGS };
-    for (const key of ['rotate', 'wire', 'tex', 'grid', 'rig', 'animPlaying']) {
+    for (const key of ['rotate', 'wire', 'tex', 'grid', 'rig', 'animPlaying', 'bloom']) {
       if (typeof parsed[key] === 'boolean') result[key] = parsed[key];
     }
     if (['cards', 'list'].includes(parsed.sidebarView)) result.sidebarView = parsed.sidebarView;
@@ -148,6 +153,7 @@ const btnGrid = document.getElementById('btn-grid');
 const btnReset = document.getElementById('btn-reset');
 const btnRig = document.getElementById('btn-rig');
 const btnVfx = document.getElementById('btn-vfx');
+const btnBloom = document.getElementById('btn-bloom');
 
 // Topbar Navigation (Requirement 7)
 const navBtnChars = document.getElementById('nav-btn-chars');
@@ -269,6 +275,28 @@ controls.maxDistance = 10;
 controls.maxPolarAngle = Math.PI * 0.95;
 controls.autoRotate = settings.rotate;
 controls.autoRotateSpeed = 0.85;
+
+// ========================================================
+// POST-PROCESSING (Bloom)
+// ========================================================
+// Additive VFX (repulsors, lightning, webs) saturate flat without bloom; the
+// composer adds the missing glow. Threshold is high so only emissive material
+// blooms, not the lit character.
+const composer = new EffectComposer(renderer);
+composer.setPixelRatio(renderer.getPixelRatio());
+composer.setSize(viewport.clientWidth, viewport.clientHeight);
+composer.addPass(new RenderPass(scene, camera));
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(viewport.clientWidth, viewport.clientHeight),
+  0.9,  // strength
+  0.5,  // radius
+  0.55, // threshold
+);
+composer.addPass(bloomPass);
+composer.addPass(new OutputPass());
+let bloomOn = settings.bloom;
+btnBloom.classList.toggle('active', bloomOn);
+btnBloom.setAttribute('aria-pressed', String(bloomOn));
 
 // ========================================================
 // STATE & MODEL STORAGE
@@ -1213,6 +1241,13 @@ btnTex.addEventListener('click', (e) => {
 });
 
 // 4. Ground Grid
+btnBloom.addEventListener('click', () => {
+  bloomOn = !bloomOn;
+  btnBloom.classList.toggle('active', bloomOn);
+  btnBloom.setAttribute('aria-pressed', String(bloomOn));
+  saveSetting('bloom', bloomOn);
+});
+
 btnGrid.addEventListener('click', (e) => {
   const isVisible = !grid.visible;
   grid.visible = isVisible;
@@ -1445,6 +1480,7 @@ function onWindowResize() {
   camera.aspect = viewport.clientWidth / viewport.clientHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(viewport.clientWidth, viewport.clientHeight);
+  composer.setSize(viewport.clientWidth, viewport.clientHeight);
 }
 window.addEventListener('resize', onWindowResize);
 
@@ -1463,7 +1499,8 @@ renderer.setAnimationLoop(() => {
   if (vfxCatalog) {
     vfxCatalog.update(delta);
   }
-  renderer.render(scene, camera);
+  if (bloomOn) composer.render(delta);
+  else renderer.render(scene, camera);
   vfxCatalog?.restoreCamera();
 });
 

@@ -276,6 +276,58 @@ def decode_effect_data(data, filepath=''):
             sound_bank = sb.replace('\\', '/') if sb else None
             sound_name = sn.replace('\\', '/') if sn else None
 
+        # --- tail slots (offsets 872..1128) ---------------------------------
+        # The first decoder pass stopped at the shake struct (+1028) and dropped
+        # everything after it. These offsets are object/string references that
+        # the engine used to chain effects and to drive mesh/havok behaviour;
+        # they are emitted only when the file actually carries them so the
+        # schema stays identical for primitives that have none.
+        #   +872  ROFS -> CFxParentRender (render parent)
+        #   +952  RSTT -> spawned sub-effect (primary)
+        #   +960  RSTT -> spawned sub-effect (secondary: impact/trail)
+        #   +1032 RSTT -> effect set / combat bank name
+        #   +1040 ROFS -> CFxMeshPrimitiveAnimationDataList
+        #   +1072..+1112 RSTT -> distortion/decal/mask texture slots
+        #   +1120 ROFS -> CHavokRigidBodyInfo
+        #   +1128 ROFS -> CHavokForceInfo
+        child_effects = []
+        for off in (952, 960):
+            ref = p['rstt'].get(off)
+            if ref and ref.strip():
+                ref = ref.replace('\\', '/')
+                if ref not in child_effects:
+                    child_effects.append(ref)
+        effect_set = (p['rstt'].get(1032) or '').replace('\\', '/').strip() or None
+        mask_textures = [
+            p['rstt'][off].replace('\\', '/')
+            for off in (1072, 1080, 1088, 1096, 1104, 1112)
+            if p['rstt'].get(off) and p['rstt'][off].lower().endswith(('.tga', '.dds'))
+        ]
+        havok = {}
+        if p['rofs'].get(1120):
+            havok['rigidBodyOffset'] = p['rofs'][1120]
+        if p['rofs'].get(1128):
+            havok['forceOffset'] = p['rofs'][1128]
+
+        tail = {}
+        if p['rofs'].get(872):
+            tail['parentRenderOffset'] = p['rofs'][872]
+        if child_effects:
+            tail['childEffects'] = child_effects
+        if effect_set:
+            tail['effectSet'] = effect_set
+        if p['rofs'].get(1040):
+            tail['animationDataOffset'] = p['rofs'][1040]
+        if mask_textures:
+            tail['maskTextures'] = mask_textures
+        if havok:
+            tail['havok'] = havok
+
+        for tex in mask_textures:
+            if tex not in seen_tex:
+                seen_tex.add(tex)
+                all_textures.append(tex)
+
         # Also add any primitive textures to all_textures
         for tex in shader_texs + other_texs:
             if tex not in seen_tex:
@@ -322,6 +374,7 @@ def decode_effect_data(data, filepath=''):
             'otherTextures': other_texs,
             'modelRef': model_ref,
             'nextPrimitiveOffset': p['rofs'].get(928, 0),
+            **tail,
         })
 
     definition = {

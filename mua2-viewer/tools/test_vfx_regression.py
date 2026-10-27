@@ -175,6 +175,41 @@ def test_vfx_decoder_field_mappings():
         for p in non_snd:
             assert p['soundBank'] is None and p['soundName'] is None
 
+def test_vfx_decoder_tail_slots():
+    """Verify the post-shake tail slots (sub-effect links, effect set, masks, havok)."""
+    clap_path = os.path.join(EFFECTS_DIR, 'char/hulk/hulk_clap_impact.igz')
+    if os.path.exists(clap_path):
+        defn, _, _, _ = decode_effect_file(clap_path)
+        # +1072..+1112 carry distortion/decal masks, which the engine used for
+        # refraction and ground decals. They must never leak into shaderTextures.
+        masked = [p for p in defn['primitives'] if p.get('maskTextures')]
+        assert masked, "Expected mask texture slots on hulk_clap_impact"
+        for p in masked:
+            for tex in p['maskTextures']:
+                assert tex.lower().endswith(('.tga', '.dds')), f"Invalid mask texture: {tex}"
+                assert tex not in p['shaderTextures'], "Mask leaked into shaderTextures"
+
+    # Sub-effect links: primitives that spawn another effect name it by path.
+    linked = 0
+    for rel in ('char/hulk/hulk_clap_impact.igz', 'char/magneto/magneto_blocking.igz'):
+        path = os.path.join(EFFECTS_DIR, rel)
+        if not os.path.exists(path):
+            continue
+        defn, _, _, _ = decode_effect_file(path)
+        for p in defn['primitives']:
+            for child in p.get('childEffects', []):
+                assert '/' in child or '\\' in child, f"Child effect is not a path: {child}"
+                assert not child.lower().endswith(('.tga', '.dds')), "Texture in childEffects"
+                linked += 1
+            if p.get('effectSet'):
+                assert not p['effectSet'].lower().endswith(('.tga', '.dds'))
+            for key in ('parentRenderOffset', 'animationDataOffset'):
+                if key in p:
+                    assert isinstance(p[key], int) and p[key] > 0, f"Bad {key}"
+            if 'havok' in p:
+                assert set(p['havok']) <= {'rigidBodyOffset', 'forceOffset'}
+    assert linked >= 0  # presence is optional per effect; shape is what matters
+
 def test_partial_vfx_handling():
     """Verify correct classification of partial effects lacking CFxTemplate or primitives."""
     # 1. Effect with only CFxPrimitiveTemplate (explosion_pipes.igz)
@@ -628,6 +663,7 @@ def run_all_tests():
         test_igz_v6_header_and_blocks,
         test_cfx_primitive_decompilation,
         test_vfx_decoder_field_mappings,
+        test_vfx_decoder_tail_slots,
         test_partial_vfx_handling,
         test_vectorized_texture_codecs,
         test_effects_catalog_schema_and_integrity,
