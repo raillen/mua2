@@ -1,3 +1,5 @@
+import { createNativeEffect, isNativeEffect } from './vfx-native.js';
+
 const PAGE_SIZE = 100;
 const PLAYBACK_NOTICE = 'Reprodução indisponível: emissor ainda não decodificado';
 const STATUS_LABELS = { decoded: 'Decodificado', partial: 'Parcial', 'metadata-only': 'Metadados', error: 'Erro' };
@@ -48,7 +50,10 @@ export function matches(effect, query, category, character) {
 }
 
 export function badge(effect) {
-  return `<span class="vfx-badge status-${effect.status}">${STATUS_LABELS[effect.status]}</span>`;
+  const native = isNativeEffect(effect?.id)
+    ? '<span class="vfx-badge status-decoded" title="Simulação recriada em Three.js com os valores autênticos do .igz">Nativo</span>'
+    : '';
+  return `<span class="vfx-badge status-${effect.status}">${STATUS_LABELS[effect.status]}</span>${native}`;
 }
 
 // ========================================================
@@ -1223,6 +1228,7 @@ export class VfxRuntime {
     this.activeEffect = null;
     this.primitives = [];
     this.runners = [];
+    this.nativeEffect = null;
     this.isPlaying = false;
     this.isLooping = true;
     this.speed = 1.0;
@@ -1495,7 +1501,6 @@ export class VfxRuntime {
       0,
     );
     this.isLooping = tmpl ? tmpl.persistLoop !== 0 : true;
-
     // Authentic bindings win over the name/texture heuristic. The heuristic is
     // only consulted for effects with no powerstyle entry at all.
     const target = resolveAttachmentTarget(effect.id, effect.textures);
@@ -1515,16 +1520,32 @@ export class VfxRuntime {
     this.lastSyncLocal = null;
     this.rebindAttachment();
 
-    // Instantiate primitive runners
-    if (this.root && this.THREE) {
+    // Instantiate primitive runners. Native recreations bypass the generic
+    // runner: they build their own emitters from the same decoded values and
+    // register as a runner so every timeline path (update/reset/dispose) works.
+    if (effect && this.root && this.THREE) {
+      const native = createNativeEffect(effect, this);
+      if (native) {
+        this.nativeEffect = native;
+        this.runners.push(native);
+      }
+    }
+    if (!this.nativeEffect && this.root && this.THREE) {
       for (const p of prims) {
         const runner = new VfxPrimitiveRunner(p, this, effect.thumb);
         this.runners.push(runner);
       }
     }
 
+    if (this.nativeEffect) {
+      // Native presets declare their own editorial duration; the timeline is
+      // still the decoded primitive span, so nothing is cut off or invented.
+      this.duration = Math.max(this.duration, this.nativeEffect.duration);
+      this.isLooping = this.nativeEffect.loop;
+    }
+
     this.elapsed = 0.0;
-    this.isPlaying = prims.length > 0;
+    this.isPlaying = Boolean(this.nativeEffect) || (prims.length > 0 && this.runners.length > 0);
   }
 
   measureWorldScale() {
@@ -1821,6 +1842,7 @@ export class VfxRuntime {
   stop() {
     this.isPlaying = false;
     this.elapsed = 0.0;
+    this.nativeEffect = null;
     this.lastSyncTime = null;
     this.lastSyncLocal = null;
     this.waitingForTrigger = false;
