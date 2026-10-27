@@ -3614,7 +3614,7 @@
     "sourceSha256": "907987bfc0cf06534c77527f8f1f4c9a4dfc7dda30ac4a7303b03d5b533a66e1"
    }
   ],
-  "catalog": "assets/vfx/effects.json",
+  "catalog": "assets/vfx/effects.json.gz",
   "animations": "assets/animations/index.json + exported HKX clips",
   "note": "Explicit references only; missing actors, clips and event times stay null.",
   "limitations": [
@@ -3624,7 +3624,7 @@
   ],
   "dataBin": "_work/extracted/data.bin",
   "dataBinSha256": "670af1e4e25616949d5fd57ea875dad65e048cd7510e885fc3e77b2540972c47",
-  "catalogSha256": "c43d6eb66cd375a8344cb3e07302297ed3b9bb4bc5e7454c182f458c18dccd7b",
+  "catalogSha256": "97b4c5c9b1c181f4fed6e7aa6f07b81bb8dd4ab7422f7616941a5ff3ebb122a1",
   "modelsSha256": "b3a54709127e37b28c264237c2512ce00786defd32679ead4f0ef62007920061",
   "animIndexSha256": "1a7d0f9c9cff3c4d47113ddb51591eefff3aac58a3b80d8245a20cc40911f8e6"
  },

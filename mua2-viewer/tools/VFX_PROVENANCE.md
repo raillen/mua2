@@ -5,7 +5,7 @@
 - **Target Binary**: *Marvel: Ultimate Alliance 2* (PC / x64, 2016 re-release), `_work/extracted/Alliance.exe`
 - **Engine**: Alchemy Engine (Vicarious Visions / n-Space), File Container Version 6 (`IGZ\x01`)
 - **Asset Scope**: 5,333 effect files located in `_work/igz_effects/**/*.igz`
-- **Catalog Output**: `mua2-viewer/assets/vfx/effects.json`
+- **Catalog Output**: `mua2-viewer/assets/vfx/effects.json.gz` (~1.8 MB comprimido de ~56 MB de JSON; o viewer descomprime no cliente)
 - **Catalog Format**: `mua2_vfx_catalog_v1`
 - **Scan Statistics**:
   - Total scanned: 5,333
@@ -384,6 +384,6 @@ Character directories under `_work/igz_effects/char/<name>/` map to exact 3D mod
 
 ## 7. Verification & Conformance
 
-- All 5,333 original MUA2 effects are cataloged in `effects.json`.
+- All 5,333 original MUA2 effects are cataloged in `effects.json.gz`.
 - Zero synthetic effect parameters were invented; unknown primitive types are flagged explicitly as `unknown_primitive_type_<id>` in `unsupported`.
 - Automated regression suite `mua2-viewer/tools/test_vfx_regression.py` validates fixup decoding, primitive decompilation, texture decompressors, catalog schema compliance, and thumbnail integrity.

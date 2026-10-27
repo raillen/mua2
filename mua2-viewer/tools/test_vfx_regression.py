@@ -16,6 +16,8 @@ if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
 from vfx_decode import (
+    CATALOG_FILENAME,
+    load_effects_catalog,
     decode_nibbles,
     parse_igz_v6,
     decode_effect_data,
@@ -43,7 +45,7 @@ from vfx_actions import (
 
 WORK_DIR = os.path.abspath('_work')
 EFFECTS_DIR = os.path.join(WORK_DIR, 'igz_effects')
-CATALOG_PATH = os.path.abspath('mua2-viewer/assets/vfx/effects.json')
+CATALOG_PATH = os.path.abspath(f'mua2-viewer/assets/vfx/{CATALOG_FILENAME}')
 TEXTURES_DIR = os.path.abspath('mua2-viewer/assets/vfx/textures')
 MODELS_CATALOG = os.path.abspath('mua2-viewer/assets/models/models.json')
 MODEL_MAP_PATH = os.path.abspath('mua2-viewer/assets/vfx/model_map.json')
@@ -254,8 +256,7 @@ def test_vectorized_texture_codecs():
 def test_effects_catalog_schema_and_integrity():
     """Verify effects.json schema compliance, totals, model associations, and thumb paths."""
     assert os.path.exists(CATALOG_PATH), f"Missing catalog file: {CATALOG_PATH}"
-    with open(CATALOG_PATH, 'r', encoding='utf-8') as f:
-        catalog = json.load(f)
+    catalog = load_effects_catalog(CATALOG_PATH)
 
     assert catalog.get('format') == 'mua2_vfx_catalog_v1', f"Invalid format: {catalog.get('format')}"
     summary = catalog.get('summary', {})

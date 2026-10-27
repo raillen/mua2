@@ -2227,11 +2227,24 @@ export class VfxCatalogController {
   }
 
   async _loadCatalog() {
-    for (const source of ['effects.json', 'effects_curated.json']) {
+    for (const source of ['effects.json.gz', 'effects_curated.json']) {
       try {
         const response = await fetch(`assets/vfx/${source}?v=${Date.now()}`);
         if (!response.ok) continue;
-        const data = await response.json();
+        let data = null;
+        if (source.endsWith('.gz')) {
+          // ~56 MB of JSON; tracked compressed (~2 MB) to stay under GitHub's
+          // 50 MB file guidance. A server that sets Content-Encoding has already
+          // inflated the body, so sniff the magic bytes instead of assuming.
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          const gzipped = bytes[0] === 0x1f && bytes[1] === 0x8b;
+          const json = gzipped
+            ? await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).text()
+            : new TextDecoder().decode(bytes);
+          data = JSON.parse(json);
+        } else {
+          data = await response.json();
+        }
         if (!data || !Array.isArray(data.effects)) continue;
         const effects = data.effects.map(normalizeEffect).filter(Boolean);
         if (data.effects.length && !effects.length) continue;

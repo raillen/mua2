@@ -1,0 +1,2 @@
+# Generated catalogs are tracked compressed; never diff them as text.
+*.gz binary

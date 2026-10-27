@@ -33,6 +33,7 @@ if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
 from mua2_glb import export_glb  # type: ignore
+from vfx_decode import CATALOG_FILENAME, load_effects_catalog
 
 
 @dataclass
@@ -198,7 +199,7 @@ def build_vfx_assets(
     work_path = Path(work_dir).resolve()
     viewer_path = Path(viewer_dir).resolve()
 
-    effects_json_path = viewer_path / "assets" / "vfx" / "effects.json"
+    effects_json_path = viewer_path / "assets" / "vfx" / CATALOG_FILENAME
     models_json_path = viewer_path / "assets" / "models" / "models.json"
     vfx_models_dir = viewer_path / "assets" / "vfx" / "models"
     vfx_sounds_dir = viewer_path / "assets" / "vfx" / "sounds"
@@ -211,8 +212,7 @@ def build_vfx_assets(
     # 1. Load VFX effects catalog
     if not effects_json_path.exists():
         raise FileNotFoundError(f"Effects catalog not found: {effects_json_path}")
-    with open(effects_json_path, "r", encoding="utf-8") as f:
-        effects_data = json.load(f)
+    effects_data = load_effects_catalog(effects_json_path)
 
     # Gather modelRef, soundBank, soundName from effects catalog
     catalog_model_refs: Set[str] = set()

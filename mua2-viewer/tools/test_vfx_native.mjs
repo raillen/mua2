@@ -4,13 +4,14 @@
 //
 // Run: node mua2-viewer/tools/test_vfx_native.mjs
 import { readFileSync, existsSync } from 'node:fs';
+import { gunzipSync } from 'node:zlib';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { NATIVE_PRESETS } from '../src/vfx-native.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
-const catalog = JSON.parse(readFileSync(join(root, 'assets/vfx/effects.json'), 'utf8')).effects;
+const catalog = JSON.parse(gunzipSync(readFileSync(join(root, 'assets/vfx/effects.json.gz'))).toString('utf8')).effects;
 const textureMap = JSON.parse(readFileSync(join(root, 'assets/vfx/texture_map.json'), 'utf8'));
 
 let checks = 0;
@@ -24,7 +25,7 @@ const fields = ['life', 'delay', 'gravity', 'blendMode'];
 
 for (const [effectId, preset] of Object.entries(NATIVE_PRESETS)) {
   const effect = byPath.get(effectId);
-  check(Boolean(effect), `${effectId}: not in assets/vfx/effects.json`);
+  check(Boolean(effect), `${effectId}: not in assets/vfx/effects.json.gz`);
   check(preset.parts.length > 0, `${effectId}: preset has no parts`);
 
   for (const part of preset.parts) {

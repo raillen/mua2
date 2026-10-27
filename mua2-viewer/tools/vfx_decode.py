@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """MUA2 VFX IGZ decoder: parses Alchemy v6 CFxTemplate and CFxPrimitiveTemplate structures."""
+import gzip
+import json
 import os
 import struct
 
 IGZ_MAGIC = 0x49475A01
 V6_INNER_HDR_SIZE = 28  # 0x1C
+# Generated data, 56 MB of JSON that gzips to ~1.9 MB. Tracked compressed so
+# the repo and clones stay small; gzip is deterministic enough that a re-export
+# with no decoder change produces a byte-identical file.
+CATALOG_FILENAME = 'effects.json.gz'
 
 TAG_MAP = {
     0: 'TMET', 1: 'TSTR', 2: 'EXNM', 4: 'RSTT',
@@ -389,6 +395,25 @@ def decode_effect_file(path):
     """Convenience helper reading filepath and decoding."""
     with open(path, 'rb') as f:
         return decode_effect_data(f.read(), filepath=path)
+
+
+def load_effects_catalog(path):
+    """Read a catalog, gzipped (the tracked artifact) or plain JSON (curated)."""
+    with open(path, 'rb') as f:
+        raw = f.read()
+    if raw[:2] == b'\x1f\x8b':
+        raw = gzip.decompress(raw)
+    return json.loads(raw.decode('utf-8'))
+
+
+def write_effects_catalog(path, catalog):
+    """Write the effects catalog compressed, minified, with a fixed mtime so a
+    re-export that changed nothing is byte-identical."""
+    payload = json.dumps(catalog, separators=(',', ':')).encode('utf-8')
+    with open(path, 'wb') as raw:
+        with gzip.GzipFile(filename='', mode='wb', fileobj=raw, mtime=0) as gz:
+            gz.write(payload)
+    return len(payload)
 
 if __name__ == '__main__':
     import sys

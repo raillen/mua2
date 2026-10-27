@@ -4,6 +4,7 @@ import sys, os, glob, json, re, collections
 import igb_import
 from igb_blender.igz_format.igz_reader import IGZReader
 from PIL import Image
+from vfx_decode import CATALOG_FILENAME, write_effects_catalog
 
 ROOT = '/home/raillen/Documentos/decomp-games/_work'
 OUT = '/home/raillen/Documentos/decomp-games/mua2-viewer/assets/vfx'
@@ -118,5 +119,5 @@ def rank(row):
     if p.startswith('fx'): return 2
     return 3
 rows.sort(key=lambda r: (rank(r), r['name']))
-json.dump({'effects': rows}, open(f'{OUT}/effects.json', 'w'), indent=1)
+write_effects_catalog(f'{OUT}/{CATALOG_FILENAME}', {'effects': rows})
 print("wrote", len(rows), "effects", file=sys.stderr)

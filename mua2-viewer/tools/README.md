@@ -76,7 +76,7 @@ python3 export_all.py
 ## 5. VFX
 
 ```bash
-python3 index_effects.py     # lê igz_effects/**, gera thumbs e effects.json
+python3 index_effects.py     # lê igz_effects/**, gera thumbs e effects.json.gz
 ```
 
 A galeria usa `assets/vfx/effects_curated.json`. Cada efeito lista as

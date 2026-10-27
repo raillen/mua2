@@ -24,13 +24,19 @@ import tempfile
 from collections import Counter, defaultdict
 from typing import Any, Iterable
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, SCRIPT_DIR)
+
+from vfx_decode import CATALOG_FILENAME, load_effects_catalog
+
 IGX_RE = re.compile(r'<igx\s+name="([^"]+)"', re.I)
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 DEFAULT_DATA_BIN = os.path.join(ROOT, '_work', 'extracted', 'data.bin')
 DEFAULT_MUA2BIN = os.path.join(ROOT, 'mua2-viewer', 'tools', 'mua2bin')
 DEFAULT_OUT = os.path.join(ROOT, 'mua2-viewer', 'assets', 'vfx', 'action_map.json')
-DEFAULT_CATALOG = os.path.join(ROOT, 'mua2-viewer', 'assets', 'vfx', 'effects.json')
+DEFAULT_CATALOG = os.path.join(ROOT, 'mua2-viewer', 'assets', 'vfx', CATALOG_FILENAME)
 DEFAULT_MODELS = os.path.join(ROOT, 'mua2-viewer', 'assets', 'models', 'models.json')
 DEFAULT_ANIM_INDEX = os.path.join(ROOT, 'mua2-viewer', 'assets', 'animations', 'index.json')
 DEFAULT_ANIM_DIR = os.path.join(ROOT, 'mua2-viewer', 'assets', 'animations')
@@ -785,7 +791,7 @@ def build_action_map(
             'sources': [{
                 'sourcePath': source['sourcePath'], 'sourceSha256': source['sourceSha256'],
             } for source in sources],
-            'catalog': 'assets/vfx/effects.json',
+            'catalog': f'assets/vfx/{CATALOG_FILENAME}',
             'animations': 'assets/animations/index.json + exported HKX clips',
             'note': 'Explicit references only; missing actors, clips and event times stay null.',
             'limitations': [
@@ -841,7 +847,7 @@ def main() -> int:
     if not os.path.isdir(muc_dir):
         raise SystemExit(f'data directory not found: {muc_dir}')
 
-    catalog = load_json(args.catalog)['effects']
+    catalog = load_effects_catalog(args.catalog)['effects']
     models = load_json(args.models)['models']
     animation_index = load_json(args.anim_index)
 

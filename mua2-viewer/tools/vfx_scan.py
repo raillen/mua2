@@ -10,7 +10,7 @@ import numpy as np
 from PIL import Image
 
 # Import our robust tag-based v6 decoder
-from vfx_decode import decode_effect_data, PRIM_TYPES
+from vfx_decode import CATALOG_FILENAME, decode_effect_data, write_effects_catalog, PRIM_TYPES
 
 WORK_ROOT = os.path.abspath('_work')
 EFFECTS_DIR = os.path.join(WORK_ROOT, 'igz_effects')
@@ -18,7 +18,7 @@ TEX_INDEX_PATH = os.path.join(WORK_ROOT, 'texture_index.json')
 MODELS_CATALOG = os.path.abspath('mua2-viewer/assets/models/models.json')
 OUT_DIR = os.path.abspath('mua2-viewer/assets/vfx')
 OUT_TEX_DIR = os.path.join(OUT_DIR, 'textures')
-OUT_CATALOG = os.path.join(OUT_DIR, 'effects.json')
+OUT_CATALOG = os.path.join(OUT_DIR, CATALOG_FILENAME)
 OUT_TEXTURE_MAP = os.path.join(OUT_DIR, 'texture_map.json')
 
 CHAR_MAP = {
@@ -524,10 +524,9 @@ def scan_all_effects():
         'effects': effects,
     }
 
-    # Atomic write to avoid partial writes
+    # Atomic write to avoid partial writes (compressed: see CATALOG_FILENAME)
     tmp_out = OUT_CATALOG + '.tmp'
-    with open(tmp_out, 'w', encoding='utf-8') as f:
-        json.dump(catalog, f, indent=1)
+    write_effects_catalog(tmp_out, catalog)
     os.replace(tmp_out, OUT_CATALOG)
 
     elapsed = time.time() - t0
