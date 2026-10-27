@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MUA2 // Alchemy Asset Viewer</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="src/style.css?v=8">
+  <link rel="stylesheet" href="src/style.css?v=9">
   <script src="vendor/lucide.min.js"></script>
   <script type="importmap">
     {
@@ -53,6 +53,12 @@
       </nav>
 
       <div class="header-right">
+        <a id="btn-site" class="header-action icon-only neutral" href="https://raillen.site" target="_blank" rel="noopener" title="Abrir raillen.site" aria-label="Abrir meu site em nova aba">
+          <i data-lucide="globe"></i>
+        </a>
+        <button id="btn-support" class="header-action icon-only support" title="Apoiar o projeto" aria-label="Apoiar o projeto" aria-haspopup="dialog">
+          <i data-lucide="coffee"></i>
+        </button>
         <button id="btn-changelog" class="header-action icon-only" title="Changelog" aria-label="Abrir changelog" aria-haspopup="dialog">
           <i data-lucide="badge-alert"></i>
         </button>
@@ -596,12 +602,53 @@
       </div>
     </div>
 
+    <!-- Support Modal -->
+    <div class="modal" id="support-modal" role="dialog" aria-modal="true" aria-labelledby="support-title">
+      <div class="modal-dialog info-modal">
+        <div class="modal-head">
+          <div>
+            <div class="sidebar-label">APOIE O PROJETO</div>
+            <h2 id="support-title">Support the project</h2>
+            <p class="modal-sub">Help me feed my pets and pay the rent.</p>
+          </div>
+          <button class="modal-close" id="support-close" title="Fechar" aria-label="Fechar janela de apoio">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="modal-scroll-body">
+          <p class="support-lead">
+            This viewer is free, ad-free and built from scratch. Every asset was extracted by hand
+            from the game files, with no ripped tool, no tracking and no paywall. If it helped you,
+            a small tip keeps the lights on.
+          </p>
+          <div class="support-options">
+            <a class="support-option" href="https://buymeacoffee.com/raillen" target="_blank" rel="noopener">
+              <i data-lucide="coffee" class="support-icon"></i>
+              <span class="support-option-text">
+                <strong>Buy me a coffee</strong>
+                <span>buymeacoffee.com/raillen</span>
+              </span>
+            </a>
+            <div class="support-option">
+              <i data-lucide="wallet" class="support-icon"></i>
+              <span class="support-option-text">
+                <strong>PIX (Brazil)</strong>
+                <span id="pix-key">contato@raillen.site</span>
+              </span>
+              <button id="btn-copy-pix" class="support-copy" aria-label="Copy PIX key">Copy</button>
+            </div>
+          </div>
+          <p class="support-thanks">Thank you — the pets are already wagging.</p>
+        </div>
+      </div>
+    </div>
+
     <div class="loading" id="loading" aria-live="assertive">
       <div class="spinner"></div>
       <span id="loading-text">Carregando modelo…</span>
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=7"></script>
+  <script type="module" src="src/main.js?v=8"></script>
 </body>
 </html>

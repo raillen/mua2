@@ -258,6 +258,28 @@ html, body {
   background: rgba(240, 180, 41, 0.16);
   border-color: rgba(240, 180, 41, 0.55);
 }
+/* Site / support keep the icon-only footprint but read as links, not
+   warnings, so they get the plain hover instead of the amber accent. */
+.header-action.icon-only.neutral {
+  color: var(--text-dim);
+  border-color: var(--line);
+  background: var(--panel-2);
+}
+.header-action.icon-only.neutral:hover {
+  color: #fff;
+  background: var(--panel-3);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.header-action.icon-only.support {
+  color: #ffb27a;
+  border-color: rgba(255, 150, 90, 0.32);
+  background: rgba(255, 150, 90, 0.09);
+}
+.header-action.icon-only.support:hover {
+  color: #ffd2b3;
+  background: rgba(255, 150, 90, 0.18);
+  border-color: rgba(255, 150, 90, 0.55);
+}
 
 .status {
   font-family: 'IBM Plex Mono', monospace;
@@ -1356,6 +1378,78 @@ html, body {
   margin: 0;
   color: var(--muted);
   font-size: 11.5px;
+}
+
+/* Support modal: two stacked options, second one with a copy affordance. */
+.support-lead {
+  margin: 0 0 18px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+.support-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.support-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+a.support-option:hover {
+  border-color: rgba(255, 178, 122, 0.5);
+  background: rgba(255, 150, 90, 0.08);
+}
+.support-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #ffb27a;
+}
+.support-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.support-option-text strong {
+  font-size: 13px;
+  color: #fff;
+}
+.support-option-text span {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.support-copy {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel-3);
+  color: var(--text-dim);
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  cursor: pointer;
+}
+.support-copy:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.support-thanks {
+  margin: 16px 0 0;
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--muted);
 }
 
 .modal-head-controls {

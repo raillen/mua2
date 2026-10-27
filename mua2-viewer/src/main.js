@@ -112,7 +112,11 @@ const loading = document.getElementById('loading');
 const loadingText = document.getElementById('loading-text');
 const statusEl = document.getElementById('status');
 
-// Header info actions (changelog / roadmap)
+// Header info actions (support / changelog / roadmap)
+const btnSupport = document.getElementById('btn-support');
+const supportModal = document.getElementById('support-modal');
+const supportClose = document.getElementById('support-close');
+const btnCopyPix = document.getElementById('btn-copy-pix');
 const btnChangelog = document.getElementById('btn-changelog');
 const btnRoadmap = document.getElementById('btn-roadmap');
 const changelogModal = document.getElementById('changelog-modal');
@@ -987,7 +991,7 @@ function setBackgroundInert(inert) {
 }
 
 function getOpenModal() {
-  const modals = [galleryModal, vfxModal, changelogModal, roadmapModal];
+  const modals = [galleryModal, vfxModal, supportModal, changelogModal, roadmapModal];
   return modals.find((m) => m && m.classList.contains('open'));
 }
 
@@ -1131,6 +1135,21 @@ function openInfoModal(modal) {
 function closeInfoModal(modal) {
   closeModal(modal);
 }
+
+btnSupport.addEventListener('click', () => openInfoModal(supportModal));
+supportClose.addEventListener('click', () => closeInfoModal(supportModal));
+supportModal.addEventListener('click', (e) => {
+  if (e.target === supportModal) closeInfoModal(supportModal);
+});
+btnCopyPix.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(document.getElementById('pix-key').textContent.trim());
+    btnCopyPix.textContent = 'Copied';
+  } catch {
+    btnCopyPix.textContent = 'Select and copy';
+  }
+  setTimeout(() => { btnCopyPix.textContent = 'Copy'; }, 1800);
+});
 
 btnChangelog.addEventListener('click', () => openInfoModal(changelogModal));
 btnRoadmap.addEventListener('click', () => openInfoModal(roadmapModal));
