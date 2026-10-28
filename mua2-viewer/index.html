@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MUA2 // Alchemy Asset Viewer</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="src/style.css?v=9">
+  <link rel="stylesheet" href="src/style.css?v=10">
   <script src="vendor/lucide.min.js"></script>
   <script type="importmap">
     {
@@ -216,6 +216,10 @@
         <div class="caption-title-row">
           <span id="model-name">—</span>
           <span id="model-costume-tag" class="costume-badge" style="display:none;"></span>
+          <button id="btn-download-model" class="caption-download" type="button" title="Baixar modelo com texturas e animações (.zip)" aria-label="Baixar modelo com texturas e animações" disabled>
+            <i data-lucide="download"></i>
+            <span>Baixar</span>
+          </button>
         </div>
         <div id="model-meta" class="meta"></div>
       </div>
@@ -399,6 +403,19 @@
           <div class="changelog-list">
             <article class="changelog-entry">
               <div class="changelog-version">
+                <span class="version-tag">0.6.0</span>
+                <span class="version-date">Out 2026</span>
+              </div>
+              <h3>Download de modelos com texturas e animações</h3>
+              <ul>
+                <li>Botão <b>Baixar</b> no palco e ícone de download em cada card, linha e item da galeria.</li>
+                <li>Pacote <code>.zip</code> com o <code>.glb</code>, texturas PNG extraídas e os clipes Havok decodificados.</li>
+                <li>Animações embutidas no glTF (<code>gltf.animations</code>) quando o modelo tem clipes catalogados.</li>
+                <li><code>metadata.json</code> e <code>README.txt</code> com origem, contagens e mapeamento das texturas.</li>
+              </ul>
+            </article>
+            <article class="changelog-entry">
+              <div class="changelog-version">
                 <span class="version-tag">0.5.0</span>
                 <span class="version-date">Out 2026</span>
               </div>
@@ -486,15 +503,15 @@
         <div class="modal-scroll-body">
           <div class="roadmap-summary">
             <div class="roadmap-metric">
-              <strong>11</strong>
+              <strong>12</strong>
               <span>implementados</span>
             </div>
             <div class="roadmap-metric pending">
-              <strong>7</strong>
+              <strong>6</strong>
               <span>pendentes</span>
             </div>
-            <div class="roadmap-progress" role="img" aria-label="61% do roadmap concluído">
-              <span style="width:61%"></span>
+            <div class="roadmap-progress" role="img" aria-label="67% do roadmap concluído">
+              <span style="width:67%"></span>
             </div>
           </div>
           <table class="roadmap-table">
@@ -576,10 +593,10 @@
                 <td>Reproduzir animações originais</td>
                 <td>Ligar os clipes do jogo ao <code>AnimationMixer</code>.</td>
               </tr>
-              <tr class="pending">
-                <td class="col-status"><input type="checkbox" disabled aria-label="Pendente"></td>
+              <tr class="done">
+                <td class="col-status"><input type="checkbox" checked disabled aria-label="Implementado"></td>
                 <td>Exportar GLB animado</td>
-                <td>Embutir animações nos arquivos glTF.</td>
+                <td>Download em <code>.zip</code> com animações embutidas no glTF.</td>
               </tr>
               <tr class="pending">
                 <td class="col-status"><input type="checkbox" disabled aria-label="Pendente"></td>
@@ -649,6 +666,6 @@
     </div>
   </div>
 
-  <script type="module" src="src/main.js?v=8"></script>
+  <script type="module" src="src/main.js?v=9"></script>
 </body>
 </html>

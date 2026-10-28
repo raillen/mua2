@@ -8,6 +8,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { loadGameAnimations } from './animations.js';
 import { initVfxCatalog } from './vfx.js';
+import { downloadModelPackage } from './download.js';
 
 // Lucide icon refresh helper
 function refreshIcons() {
@@ -143,6 +144,7 @@ const galleryLaunchCount = document.getElementById('gallery-launch-count');
 const nameEl = document.getElementById('model-name');
 const costumeTagEl = document.getElementById('model-costume-tag');
 const metaEl = document.getElementById('model-meta');
+const btnDownloadModel = document.getElementById('btn-download-model');
 
 // Animation controls
 const animSelect = document.getElementById('anim-select');
@@ -317,6 +319,7 @@ const catalogModels = () => modelCatalog === 'props' ? propModels : characterMod
 let characterGroups = new Map(); // name -> { name, items: [], accent, thumb }
 let current = null;
 let currentEntry = null;
+let modelLoading = false;
 
 // Display flags (initialized from persistent settings)
 let spin = settings.rotate;
@@ -412,6 +415,36 @@ sidebarOverlay.addEventListener('click', () => setSidebarOpen(false));
 function setLoading(on, text = 'Carregando modelo…') {
   loadingText.textContent = text;
   loading.classList.toggle('hidden', !on);
+}
+
+async function requestModelDownload(entry, button) {
+  if (!entry) return;
+  const trigger = button || btnDownloadModel;
+  if (trigger?.dataset.busy === '1') return;
+
+  if (trigger) {
+    trigger.dataset.busy = '1';
+    trigger.disabled = true;
+    trigger.classList.add('downloading');
+    trigger.setAttribute('aria-busy', 'true');
+  }
+
+  try {
+    const result = await downloadModelPackage(entry, {
+      onStatus: (message) => { statusEl.textContent = message; },
+    });
+    statusEl.textContent = `download pronto · ${result.filename}`;
+  } catch (error) {
+    console.error('Falha no download:', error);
+    statusEl.textContent = 'falha no download';
+  } finally {
+    if (trigger) {
+      trigger.dataset.busy = '0';
+      trigger.classList.remove('downloading');
+      trigger.removeAttribute('aria-busy');
+      trigger.disabled = trigger === btnDownloadModel && (!current || modelLoading);
+    }
+  }
 }
 
 function clearModel() {
@@ -608,12 +641,17 @@ function prepare(model, entry) {
   metaEl.textContent = `${sourceLabel}  ·  ${tris.toLocaleString('pt-BR')} tris  ·  ${texCount} texturas`
     + (nb ? `  ·  ${nb} ossos` : '') + '  ·  IGZ v6';
 
+  modelLoading = false;
+  btnDownloadModel.disabled = false;
+  btnDownloadModel.title = `Baixar ${entry.name} com texturas e animações (.zip)`;
   statusEl.textContent = 'pronto';
 }
 
 function loadEntry(entry) {
   if (!entry) return Promise.resolve(null);
   currentEntry = entry;
+  modelLoading = true;
+  btnDownloadModel.disabled = true;
   setLoading(true, `Carregando ${entry.name}…`);
   statusEl.textContent = 'carregando…';
 
@@ -635,6 +673,7 @@ function loadEntry(entry) {
       }
     }, (err) => {
       console.error(err);
+      modelLoading = false;
       loadingText.textContent = `Falha ao carregar ${entry.name}`;
       reject(err);
     });
@@ -873,7 +912,11 @@ function appendGroup(group, itemsToRender, container, isCards, q) {
 }
 
 function createModelButton(m, isCards, isVariation = false) {
+  const row = document.createElement('div');
+  row.className = 'model-row';
+
   const b = document.createElement('button');
+  b.type = 'button';
   b.className = 'model-btn';
   b.dataset.id = m.id;
   if (currentEntry && m.id === currentEntry.id) b.classList.add('active');
@@ -918,7 +961,20 @@ function createModelButton(m, isCards, isVariation = false) {
     }
   });
 
-  return b;
+  const download = document.createElement('button');
+  download.type = 'button';
+  download.className = 'model-download-btn';
+  download.title = `Baixar ${m.name} com texturas e animações (.zip)`;
+  download.setAttribute('aria-label', download.title);
+  download.innerHTML = '<i data-lucide="download"></i>';
+  download.addEventListener('click', (e) => {
+    e.stopPropagation();
+    requestModelDownload(m, download);
+  });
+
+  row.appendChild(b);
+  row.appendChild(download);
+  return row;
 }
 
 // View toggle handlers
@@ -1084,6 +1140,9 @@ function buildGalleryGrid() {
   galleryStatsText.textContent = `Exibindo ${filtered.length} de ${entries.length} modelos`;
 
   filtered.forEach((m) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'gallery-card-wrap';
+
     const card = document.createElement('button');
     card.type = 'button';
     card.className = 'gallery-card';
@@ -1109,7 +1168,20 @@ function buildGalleryGrid() {
       closeGalleryModal();
     });
 
-    galleryGrid.appendChild(card);
+    const download = document.createElement('button');
+    download.type = 'button';
+    download.className = 'gallery-download-btn';
+    download.title = `Baixar ${m.name} com texturas e animações (.zip)`;
+    download.setAttribute('aria-label', download.title);
+    download.innerHTML = '<i data-lucide="download"></i>';
+    download.addEventListener('click', (e) => {
+      e.stopPropagation();
+      requestModelDownload(m, download);
+    });
+
+    wrap.appendChild(card);
+    wrap.appendChild(download);
+    galleryGrid.appendChild(wrap);
   });
 
   if (filtered.length === 0) {
@@ -1206,6 +1278,8 @@ navBtnProps.addEventListener('click', () => switchSidebarTab('props'));
 navBtnVfx.addEventListener('click', () => {
   switchSidebarTab('vfx');
 });
+
+btnDownloadModel.addEventListener('click', () => requestModelDownload(currentEntry, btnDownloadModel));
 
 // ========================================================
 // BOTTOM TOOLBAR CONTROLS & PERSISTENCE (Requirement 4 & 5)

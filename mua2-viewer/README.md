@@ -27,6 +27,7 @@ Controles:
 | Toggle do Rig (ossos) | `B` ou botão `🦴 Rig` |
 | Auto-rotação | `Espaço` |
 | Galeria VFX | botão `✦ VFX` |
+| Baixar modelo | botão **Baixar** no canto superior esquerdo ou ícone ↓ em cada card/linha |
 
 ## O que está incluído
 
@@ -37,6 +38,10 @@ Controles:
   Tocha Humana, Ms. Marvel, Nick Fury, Luke Cage, Duende Verde,
   Mulher Invisível, She-Hulk, Colossus, Goliath, Hércules, O Coisa
   e outros. Use a busca da barra lateral para filtrar.
+- **Download por modelo**: o botão **Baixar** (ou o ícone ↓ nos cards) gera um
+  `.zip` com o modelo `.glb`, as texturas extraídas em PNG e os clipes Havok.
+  Quando há animações catalogadas, elas também são embutidas no `.glb`
+  (`gltf.animations`), pronto para importar no Blender.
 - **Galeria VFX** com 54 efeitos e as texturas originais extraídas de
   `effects_igx.bin` (`assets/vfx/effects_curated.json`).
 - **Esqueleto & Rig integrados**: cada modelo agora carrega sua
@@ -87,8 +92,9 @@ O parser IGZ usa o projeto **[igb-blender](https://github.com/KaikoClanworth1/ig
 
 ## Limitações conhecidas
 
-- **Bind pose**: os modelos são estáticos. O skeleton e as animações
-  existem nos arquivos, mas ainda não foram exportados.
+- **Bind pose**: o visualizador abre no bind pose; as animações Havok podem
+  ser reproduzidas no seletor superior e o download `.zip` inclui um `.glb`
+  com os clipes embutidos.
 - **VFX**: a galeria mostra as texturas e a definição dos efeitos; o grafo
   de partículas original do jogo não é reproduzido.
 - Alguns atlas têm regiões cinzas que aparecem como manchas em certos

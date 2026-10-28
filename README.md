@@ -27,8 +27,9 @@ cd mua2-viewer
 
 O viewer inclui **184 personagens, variantes, NPCs e props** em glTF 2.0 com diffuse + normal map
 (Spider-Man, Iron Man, Wolverine, Capitão América, Hulk, Deadpool, Thor,
-Venom, Magneto, Storm, Psylocke e Sr. Fantástico) e uma **galeria VFX**
-com 54 efeitos e suas texturas originais.
+Venom, Magneto, Storm, Psylocke e Sr. Fantástico), uma **galeria VFX**
+com 54 efeitos e suas texturas originais, e **download de cada modelo**
+em `.zip` com texturas e animações embutidas.
 
 ## Pipeline
 
